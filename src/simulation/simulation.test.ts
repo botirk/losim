@@ -1,4 +1,5 @@
-import { Simulation, WheelItem, WheelItemRejection } from "./simulation";
+import { Rejection } from "../defered";
+import { Simulation, WheelItem } from "./simulation";
 
 test("Simulation.time", () => {
   const sim = new Simulation();
@@ -54,7 +55,7 @@ test("Simulation.wait", async () => {
   await Promise.all([w700, w300]);
   expect(sim.time).toBe(2500 + 700);
 
-  expect(sim.waitFor(15000)).rejects.toBe(WheelItemRejection.SimulationStopped);
+  expect(sim.waitFor(15000)).rejects.toBe(Rejection.SimulationStopped);
 });
 
 test("Simulation.start", async () => {
@@ -62,5 +63,5 @@ test("Simulation.start", async () => {
   expect(sim.wheel).toHaveLength(1);
   expect(sim.wheel[0].time).toBe(25000);
 
-  expect(sim.waitFor(25001)).rejects.toBe(WheelItemRejection.SimulationStopped);
+  expect(sim.waitFor(25001)).rejects.toBe(Rejection.SimulationStopped);
 });

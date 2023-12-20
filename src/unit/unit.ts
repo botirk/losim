@@ -1,10 +1,12 @@
 import { Simulation } from "../simulation/simulation";
 import { UnitAction } from "./unitAction";
+import { UnitInteraction } from "./unitInteraction";
 
 export abstract class Unit {
   sim: Simulation;
 
   abstract action: UnitAction;
+  interaction: UnitInteraction = new UnitInteraction(this);
 
   health = 0;
   maxHealth = 0;
@@ -12,12 +14,14 @@ export abstract class Unit {
   attackAnimation = 0.4;
   armor = 0;
   as = 0;
+  dead = false;
 
   calcRawPhysicHit(value: number): number {
     return (1 - this.armor/(100 + this.armor)) * value;
   }
   init(simIN?: Simulation): this {
     this.sim = simIN;
+    this.dead = false;
     return this;
   }
 }

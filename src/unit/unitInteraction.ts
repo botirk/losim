@@ -11,7 +11,6 @@ export class UnitInteraction {
     this.takeDamageListeners = [];
     if (this.unit.health === 0) {
       this.unit.dead = true;
-      this.unit.action.cancelAttack();
       for (const listener of this.deathListeners) listener.resolve();
       this.deathListeners = [];
     }

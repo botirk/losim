@@ -1,10 +1,4 @@
-import { Defered, Rejection } from "../defered";
-
-export class WheelItem extends Defered {
-  constructor(internal = (i1: any, i2: any) => { return undefined; }, readonly time: number) {
-    super(internal);
-  }
-}
+import { Rejection, WheelItem } from "../defered";
 
 export class Simulation { // optimized queue of actions
   private _time = 0;
@@ -24,8 +18,8 @@ export class Simulation { // optimized queue of actions
     this.wheel.splice(start, 0, wheelItem);
   }
 
-  waitFor(time: number): Defered {
-    const wheelItem = new WheelItem(undefined, this.time + time);
+  waitFor(time: number): WheelItem {
+    const wheelItem = new WheelItem(undefined, this, time);
     this.insertIntoWheel(wheelItem);
     return wheelItem;
   }
@@ -53,8 +47,3 @@ export class Simulation { // optimized queue of actions
     return this;
   }
 }
-
-export class Actor { // champion inside isolated
-
-}
-

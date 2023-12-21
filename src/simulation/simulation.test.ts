@@ -1,5 +1,5 @@
-import { Rejection } from "../defered";
-import { Simulation, WheelItem } from "./simulation";
+import { Rejection, WheelItem } from "../defered";
+import { Simulation } from "./simulation";
 
 test("Simulation.time", () => {
   const sim = new Simulation();
@@ -11,15 +11,15 @@ test("Simulation.insertIntoWheel", async () => {
   const sim = new Simulation() as any;
   expect(sim.wheel).toHaveLength(0);
 
-  const wheelItem = new WheelItem(undefined, 1000);
+  const wheelItem = new WheelItem(undefined, sim, 1000);
   expect(wheelItem.time).toBe(1000);
 
   sim.insertIntoWheel(wheelItem);
   expect(sim.wheel).toHaveLength(1);
 
-  const wheelItem1 = new WheelItem(undefined, 500);
+  const wheelItem1 = new WheelItem(undefined, sim, 500);
   expect(wheelItem1.time).toBe(500);
-  const wheelItem2 = new WheelItem(undefined, 2500);
+  const wheelItem2 = new WheelItem(undefined, sim, 2500);
   expect(wheelItem2.time).toBe(2500);
 
   sim.insertIntoWheel(wheelItem1);

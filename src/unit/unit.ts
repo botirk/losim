@@ -1,6 +1,7 @@
 import { Simulation } from "../simulation/simulation";
 import { UnitAction } from "./unitAction";
 import { UnitInteraction } from "./unitInteraction";
+import { Buff } from "./buff";
 
 export abstract class Unit {
   sim: Simulation;
@@ -15,6 +16,7 @@ export abstract class Unit {
   armor = 0;
   as = 0;
   dead = false;
+  buffs: Buff[] = [];
 
   calcRawPhysicHit(value: number): number {
     return (1 - this.armor/(100 + this.armor)) * value;

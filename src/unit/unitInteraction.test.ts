@@ -40,7 +40,7 @@ test("UnitInteraction.onDeath", async () => {
   const yi2 = new MasterYi().init(sim);
   const prom = yi2.interaction.onDeath();
   while (!sim.isStopped && !yi2.dead) {
-    await yi1.action.attack(yi2);
+    await yi1.action.attack.cast(yi2);
   }
   expect(sim.isStopped).toBeFalsy();
   expect(sim.time).toBeLessThan(20000);

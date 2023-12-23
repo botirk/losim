@@ -2,7 +2,7 @@ import { WheelItem } from "../defered";
 import { Unit } from "./unit";
 
 export class Buff {
-  constructor(private readonly unit: Unit) {
+  constructor(public readonly name: string, private readonly unit: Unit) {
     unit.buffs.push(this);
   }
 
@@ -17,8 +17,8 @@ export class Buff {
 }
 
 export class TimedBuff extends Buff {
-  constructor(unit: Unit, timeToFade: number) {
-    super(unit);
+  constructor(name: string, unit: Unit, timeToFade: number) {
+    super(name, unit);
     this.promise = unit.sim.waitFor(timeToFade);
     this.promise.then(() => this.fade()).catch(() => {});
   }

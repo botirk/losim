@@ -6,6 +6,8 @@ test("UnitAction.attack", async () => {
   const yi1 = new MasterYi().init(sim);
   const yi2 = new MasterYi().init(sim);
   expect(yi1.health).toBe(yi2.health);
+  expect(yi1.action.attack.name).toBe("Attack");
+  expect(yi2.action.attack.name).toBe("Attack");
   
   await yi1.action.attack.cast(yi2);
   expect(sim.time).toBeGreaterThan(100);

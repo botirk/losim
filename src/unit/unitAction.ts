@@ -60,6 +60,15 @@ export abstract class TimedSingletonAction {
     cooldown.then(() => { if (this.cooldown === cooldown) this.cooldown = undefined; }).catch(() => {});
     this.cooldown = cooldown;
   }
+
+  protected _onHitUnit: ((target: Unit) => void)[] = [];
+  onHitUnit(cb: typeof this._onHitUnit[0]) {
+    this._onHitUnit.push(cb);
+    return () => {
+      const i = this._onHitUnit.indexOf(cb);
+      if (i !== -1) this._onHitUnit.splice(i, 1);
+    }
+  }
 }
 
 export class Attack extends TimedSingletonAction {
@@ -75,7 +84,8 @@ export class Attack extends TimedSingletonAction {
       } else {
         this.startCast((1 / this.unit.as) * this.unit.attackAnimation * 1000, [[ownerDeath, Rejection.UnitDeath], [targetDeath, Rejection.TargetDeath]]);
         await this.waitForCast();
-        target.interaction.takeDamage(this.unit.calcRawPhysicHit(this.unit.ad));
+        target.interaction.takeDamage(this.unit.calcRawPhysicHit(this.unit.ad), this.unit);
+        for (const listener of this._onHitUnit) listener(target);
         this.startCooldown((1 / this.unit.as) * (1 - this.unit.attackAnimation) * 1000);
       }
     } catch {

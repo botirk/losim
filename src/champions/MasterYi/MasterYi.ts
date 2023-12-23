@@ -1,5 +1,9 @@
-import { UnitAction } from "../../unit/unitAction";
+import { TimedSingletonAction, UnitAction } from "../../unit/unitAction";
 import { Champion } from "../champion/champion";
+
+export class MasterYiE extends TimedSingletonAction {
+  
+}
 
 export class MasterYiAction extends UnitAction {
 

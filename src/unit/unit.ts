@@ -15,6 +15,8 @@ export abstract class Unit {
   attackAnimation = 0.4;
   armor = 0;
   as = 0;
+  baseAs = 0;
+  bonusAs = 0;
   dead = false;
   buffs: Buff[] = [];
 

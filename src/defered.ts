@@ -42,7 +42,7 @@ export class WheelItem extends Defered {
   }
   private timeStart: number;
   get time() { return this.timeStart + this._waitFor; }
-  get remainingTime() { return this.time - this._sim.time; }
+  get remainingTime() { return Math.max(0, this.time - this._sim.time); }
   get waitFor() { return this._waitFor; }
 
   canceledBy(event: Defered, rej: Rejection) {

@@ -4,17 +4,16 @@ import { Unit } from "../../unit/unit";
 export abstract class Champion extends Unit {
   level = 1;
 
-  baseHealth = 0;
-  healthGrowth = 0;
+  protected baseHealth = 0;
+  protected healthGrowth = 0;
 
-  baseAd = 0;
-  adGrowth = 0;
+  protected baseAd = 0;
+  protected adGrowth = 0;
 
-  baseArmor = 0;
-  armorGrowth = 0;
+  protected baseArmor = 0;
+  protected armorGrowth = 0;
 
-  baseAs = 0;
-  asGrowth = 0;
+  protected asGrowth = 0;
 
   calcStatGrowth(growth: number) {
     return growth * (this.level - 1) * (0.7025 + 0.0175 * (this.level - 1));

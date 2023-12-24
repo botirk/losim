@@ -28,7 +28,7 @@ export class MasterYiE extends TimedSingletonAction {
 
   cast() {
     if (this.level === 0 || this.isCooldown) return;
-    this.startCooldown(14);
+    this.startCooldown(14000);
     new MasterYiEBuff(this.unit, this.level);
   }
 }
@@ -40,15 +40,15 @@ export class MasterYiAction extends UnitAction {
 export class MasterYi extends Champion {
   action: MasterYiAction = new MasterYiAction(this);
 
-  baseHealth = 669;
-  healthGrowth = 100;
+  protected baseHealth = 669;
+  protected healthGrowth = 100;
 
-  baseAd = 65;
-  adGrowth = 2.2;
+  protected baseAd = 65;
+  protected adGrowth = 2.2;
 
-  baseArmor = 33;
-  armorGrowth = 4.2;
+  protected baseArmor = 33;
+  protected armorGrowth = 4.2;
 
-  baseAs = 0.679;
-  asGrowth = 0.02;
+  protected baseAs = 0.679;
+  protected asGrowth = 0.02;
 }

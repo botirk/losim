@@ -1,4 +1,4 @@
-import { Rejection, WheelItem } from "../defered";
+import { Rejection, WheelItem } from "./defered";
 import { Simulation } from "./simulation";
 
 test("Simulation.time", () => {
@@ -11,15 +11,15 @@ test("Simulation.insertIntoWheel", async () => {
   const sim = new Simulation() as any;
   expect(sim.wheel).toHaveLength(0);
 
-  const wheelItem = new WheelItem(undefined, sim, 1000);
+  const wheelItem = new WheelItem(undefined, sim, 1000, () => {});
   expect(wheelItem.time).toBe(1000);
 
   sim.insertIntoWheel(wheelItem);
   expect(sim.wheel).toHaveLength(1);
 
-  const wheelItem1 = new WheelItem(undefined, sim, 500);
+  const wheelItem1 = new WheelItem(undefined, sim, 500, () => {});
   expect(wheelItem1.time).toBe(500);
-  const wheelItem2 = new WheelItem(undefined, sim, 2500);
+  const wheelItem2 = new WheelItem(undefined, sim, 2500, () => {});
   expect(wheelItem2.time).toBe(2500);
 
   sim.insertIntoWheel(wheelItem1);
@@ -58,6 +58,20 @@ test("Simulation.wait", async () => {
   expect(sim.waitFor(15000)).rejects.toBe(Rejection.SimulationStopped);
 });
 
+test("Simulation.wait reschedule", async () => {
+  const sim = new Simulation().start(15000);
+
+  const wait = sim.waitFor(1000);
+  await sim.waitFor(500);
+  expect(sim.time).toBe(500);
+  expect(wait.remainingTime).toBe(500);
+
+  wait.waitFor = 750;
+  expect(wait.remainingTime).toBe(250);
+  await wait;
+  expect(sim.time).toBe(750);
+});
+
 test("Simulation.start", async () => {
   const sim = new Simulation().start(25000) as any;
   expect(sim.wheel).toHaveLength(1);
@@ -65,3 +79,4 @@ test("Simulation.start", async () => {
 
   expect(sim.waitFor(25001)).rejects.toBe(Rejection.SimulationStopped);
 });
+

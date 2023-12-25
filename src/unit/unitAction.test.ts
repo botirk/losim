@@ -166,3 +166,25 @@ test("UnitAction.attack onHit", async () => {
   expect(hit).toBe(3);
   expect(yi1.action.attack._onHitUnit).toHaveLength(0);
 });
+
+test("UnitAction.attack change of unit.bonusAS", async () => {
+  const sim = new Simulation().start(15000);
+  const yi1 = new MasterYi().init(sim);
+  const yi2 = new MasterYi().init(sim);
+  
+  const prom = yi1.action.attack.cast(yi2);
+  expect(yi1.action.attack.remainingCast).toBeGreaterThan(50);
+  expect(yi1.action.attack.remainingCast).toBeLessThan(700);
+  const savedCastTime = yi1.action.attack.remainingCast;
+  yi1.bonusAs += 1;
+  expect(yi1.action.attack.remainingCast).toBeGreaterThan(50);
+  expect(yi1.action.attack.remainingCast).toBeLessThan(savedCastTime);
+
+  await prom;
+  expect(yi1.action.attack.remainingCooldown).toBeGreaterThan(300);
+  expect(yi1.action.attack.remainingCooldown).toBeLessThan(1500);
+  const savedCd = yi1.action.attack.remainingCooldown;
+  yi1.bonusAs = 0;
+  expect(yi1.action.attack.remainingCooldown).toBeGreaterThan(savedCd);
+  expect(yi1.action.attack.remainingCooldown).toBeLessThan(1500);
+});

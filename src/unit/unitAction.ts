@@ -42,7 +42,7 @@ export abstract class TimedSingletonAction {
     }
   }
   protected startCast(waitFor: number, cancelEvents: Array<[Defered, Rejection]> = []) {
-    if (this.currentCast) return;
+    if (this.isCasting) return;
     const currentCast = this.unit.sim.waitFor(waitFor);
     for (const cancel of cancelEvents) currentCast.canceledBy(cancel[0], cancel[1]);
     currentCast.then(() => { if (this.currentCast === currentCast) this.currentCast = undefined; }).catch(() => {});
@@ -70,7 +70,7 @@ export abstract class TimedSingletonAction {
     }
   }
   protected startCooldown(waitFor: number) {
-    if (this.cooldown && !this.cooldown.isProcced) return;
+    if (this.isCooldown) return;
     const cooldown = this.unit.sim.waitFor(waitFor);
     cooldown.then(() => { if (this.cooldown === cooldown) this.cooldown = undefined; }).catch(() => {});
     this.cooldown = cooldown;

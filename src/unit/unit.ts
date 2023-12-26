@@ -35,10 +35,11 @@ export abstract class Unit {
     }
   }
   get as() {
-    return this.baseAs * (1 + this._bonusAs);
+    return this.baseAs * (1 + this._bonusAs / 100);
   }
 
   buffs: Buff[] = [];
+  lastBuff: {[buffName: string]: Buff;} = {};
 
   calcRawPhysicHit(value: number): number {
     return (1 - this.armor/(100 + this.armor)) * value;

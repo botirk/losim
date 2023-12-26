@@ -188,3 +188,22 @@ test("UnitAction.attack change of unit.bonusAS", async () => {
   expect(yi1.action.attack.remainingCooldown).toBeGreaterThan(savedCd);
   expect(yi1.action.attack.remainingCooldown).toBeLessThan(1500);
 });
+
+test("UnitAction.attack cancel", async () => {
+  const sim = new Simulation().start(15000);
+  const yi1 = new MasterYi().init(sim);
+  const yi2 = new MasterYi().init(sim);
+
+  expect(yi1.action.attack.isCancelableByUser).toBe(true);
+  yi1.action.attack.cast(yi2);
+  const aaCastTime = yi1.action.attack.remainingCast;
+  expect(aaCastTime).toBeGreaterThan(100);
+  await sim.waitFor(100);
+  expect(yi1.action.attack.isCasting).toBe(true);
+  yi1.action.attack.cancelByUser();
+  expect(yi1.action.attack.isCasting).toBe(false);
+  expect(yi1.action.attack.isCooldown).toBe(false);
+
+  await yi1.action.attack.cast(yi2);
+  expect(sim.time).toBe(100 + aaCastTime);
+});

@@ -2,8 +2,9 @@ import { WheelItem } from "../simulation/defered";
 import { Unit } from "./unit";
 
 export class Buff {
-  constructor(public readonly name: string, private readonly unit: Unit) {
+  constructor(public readonly name: string, protected readonly unit: Unit) {
     unit.buffs.push(this);
+    unit.lastBuff[name] = this;
   }
 
   get isActive() {
@@ -13,6 +14,7 @@ export class Buff {
   fade() {
     const i = this.unit.buffs.indexOf(this);
     if (i !== -1) this.unit.buffs.splice(i, 1);
+    if (this.unit.lastBuff[this.name] === this) delete this.unit.lastBuff[this.name];
   }
 }
 

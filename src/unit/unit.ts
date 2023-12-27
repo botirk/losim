@@ -39,7 +39,9 @@ export abstract class Unit {
   }
 
   buffs: Buff[] = [];
-  lastBuff: {[buffName: string]: Buff;} = {};
+  buffsNamed(name: string) {
+    return this.buffs.filter((buff) => buff.name === name);
+  }
 
   calcRawPhysicHit(value: number): number {
     return (1 - this.armor/(100 + this.armor)) * value;

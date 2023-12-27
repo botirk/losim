@@ -1,7 +1,30 @@
-import { Buff, TimedBuff } from "../../unit/buff";
+import { TimedBuff } from "../../unit/buff";
 import { Unit } from "../../unit/unit";
 import { TimedSingletonAction, UnitAction } from "../../unit/unitAction";
 import { Champion } from "../champion/champion";
+
+export class MasterYiPassiveSkill {
+  static readonly pname = "Double Strike";
+
+  constructor(private readonly unit: Unit) {
+
+  }
+}
+
+export class MasterYiPassiveBuff extends TimedBuff {
+  private removeOnHit?: () => void;
+  private stacks = 1;
+  constructor(unit: Unit) {
+    super(MasterYiPassiveSkill.pname, unit, 4000);
+    this.removeOnHit = unit.action.attack.onHitUnit((target) => {
+      // this.stacks += 1;
+    });
+  }
+  fade(): void {
+    super.fade();
+    this.removeOnHit?.();
+  }
+}
 
 export class MasterYiEBuff extends TimedBuff {
   private removeOnHit?: () => void;
@@ -15,19 +38,24 @@ export class MasterYiEBuff extends TimedBuff {
   }
   fade(): void {
     super.fade();
-    this?.removeOnHit();
+    this.removeOnHit?.();
   }
 }
 
 export class MasterYiRBuff extends TimedBuff {
+  private removeTakedown?: () => void;
   constructor(unit: Unit, readonly level: number) {
     level = Math.max(0, Math.min(3, level));
     super(MasterYiR.rname, unit, level ? 7000 : 0);
     if (!level) return;
+    this.removeTakedown = unit.interaction.onTakedown((enemy, damagedTime) => {
+      if (damagedTime + 10000 >= unit.sim.time) this.duration += 7000;
+    });
     unit.bonusAs += 15 + level * 10;
   }
   fade(): void {
     super.fade();
+    this.removeTakedown?.();
     this.unit.bonusAs -= 15 + this.level * 10;
   }
 }
@@ -44,6 +72,10 @@ export class MasterYiE extends TimedSingletonAction {
     this.startCooldown(14000);
     new MasterYiEBuff(this.unit, this.level);
   }
+  
+  setLevel(value: number): void {
+    super.setLevel(Math.max(0, Math.min(5, value)));
+  }
 }
 
 export class MasterYiR extends TimedSingletonAction {
@@ -57,6 +89,10 @@ export class MasterYiR extends TimedSingletonAction {
     if (this.level === 0 || this.isCooldown) return;
     this.startCooldown(85000);
     new MasterYiRBuff(this.unit, this.level);
+  }
+
+  setLevel(value: number): void {
+    super.setLevel(Math.max(0, Math.min(3, value)));
   }
 }
 

@@ -43,6 +43,9 @@ export class WheelItem extends Defered {
   private timeStart: number;
   get time() { return this.timeStart + this._waitFor; }
   get remainingTime() { return Math.max(0, this.time - this._sim.time); }
+  set remainingTime(remainingTime: number) {
+    this.waitFor += (remainingTime - this.remainingTime);
+  }
   get waitFor() { return this._waitFor; }
   set waitFor(waitFor: number) {
     const oldWaitFor = this._waitFor;

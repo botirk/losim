@@ -7,7 +7,7 @@ export abstract class Unit {
   sim: Simulation;
 
   abstract action: UnitAction;
-  interaction: UnitInteraction = new UnitInteraction(this);
+  interaction: UnitInteraction;
 
   health = 0;
   maxHealth = 0;
@@ -47,6 +47,7 @@ export abstract class Unit {
     return (1 - this.armor/(100 + this.armor)) * value;
   }
   init(simIN?: Simulation): this {
+    if (!this.interaction) this.interaction = new UnitInteraction(this);
     this.sim = simIN;
     this.dead = false;
     return this;

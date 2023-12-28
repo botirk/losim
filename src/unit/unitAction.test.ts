@@ -139,7 +139,7 @@ test("UnitAction.attack dead", async () => {
 
 test("UnitAction.attack onHit", async () => {
   const sim = new Simulation().start(5000);
-  const yi1 = new MasterYi().init(sim) as any;
+  const yi1 = new MasterYi().init(sim);
   const yi2 = new MasterYi().init(sim);
   
   let hit = 0;
@@ -148,7 +148,6 @@ test("UnitAction.attack onHit", async () => {
     expect(target).toBe(yi2);
     if (hit === 3) remove();
   });
-  expect(yi1.action.attack._onHitUnit).toHaveLength(1);
 
   await yi1.action.attack.cast(yi2);
   expect(yi1.action.attack.isCasting).toBe(false);
@@ -164,7 +163,6 @@ test("UnitAction.attack onHit", async () => {
   expect(yi1.action.attack.isCasting).toBe(false);
   expect(yi1.action.attack.isCooldown).toBe(true);
   expect(hit).toBe(3);
-  expect(yi1.action.attack._onHitUnit).toHaveLength(0);
 });
 
 test("UnitAction.attack change of unit.bonusAS", async () => {

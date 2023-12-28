@@ -70,6 +70,12 @@ test("Simulation.wait reschedule", async () => {
   expect(wait.remainingTime).toBe(250);
   await wait;
   expect(sim.time).toBe(750);
+
+  const wait2 = sim.waitFor(1000);
+  wait2.remainingTime = 500;
+  expect(wait2.waitFor).toBe(500);
+  await wait2;
+  expect(sim.time).toBe(750 + 500);
 });
 
 test("Simulation.start", async () => {

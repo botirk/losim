@@ -2,6 +2,7 @@ import { Simulation } from "../../simulation/simulation";
 import { TimedBuff } from "../../unit/buff";
 import { Unit } from "../../unit/unit";
 import { TimedSingletonAction, UnitAction } from "../../unit/unitAction";
+import { DamageType } from "../../unit/unitInteraction";
 import { Champion } from "../champion/champion";
 import { MasterYiStats } from "./MasterYiStats";
 
@@ -18,7 +19,7 @@ export class MasterYiPassiveSkill {
         buff.remainingTime = 4000;
         if (buff.stacks >= 3) {
           buff.stacks = 0;
-          target.interaction.takeDamage(target.calcRawPhysicHit(this.unit.ad * 0.5), this.unit);
+          target.interaction.takeDamage({ value: this.unit.ad * 0.5, src: this.unit, type: DamageType.PHYSIC });
           this.unit.action.attack.procOnHitUnit(target);
         }
       } else {
@@ -50,7 +51,7 @@ export class MasterYiEBuff extends TimedBuff {
     super(MasterYiE.ename, unit, level ? 5000 : 0);
     if (!level) return;
     this.removeOnHit = unit.action.attack.onHitUnit((target) => {
-      target.interaction.takeDamage(25+level*5, unit);
+      target.interaction.takeDamage({ value: 25+level*5, src: unit, type: DamageType.TRUE });
     });
   }
   fade(): void {

@@ -43,11 +43,8 @@ export abstract class Unit {
     return this.buffs.filter((buff) => buff.name === name);
   }
 
-  calcRawPhysicHit(value: number): number {
-    return (1 - this.armor/(100 + this.armor)) * value;
-  }
   init(simIN?: Simulation): this {
-    if (!this.interaction) this.interaction = new UnitInteraction(this);
+    if (!this.interaction) this.interaction = new UnitInteraction(this).init();
     this.sim = simIN;
     this.dead = false;
     return this;

@@ -8,11 +8,12 @@ export abstract class TimedSingletonAction {
   }
   // settings
   private _level = 0;
+  protected abstract readonly maxLevel: number;
   get level() {
     return this._level;
   }
   setLevel(value: number) {
-    this._level = value;
+    this._level = Math.max(0, Math.min(this.maxLevel, value));
   }
   // options
   protected _isCancelableByUser = false;
@@ -20,34 +21,28 @@ export abstract class TimedSingletonAction {
   get isCancelableByUser() { return this._isCancelableByUser; }
   cancelByUser() {
     if (!this._isCancelableByUser) throw new Error("Attempt to cancel uncancelable action");
-    this.currentCast?.reject(Rejection.Canceled);
+    this.currentCast?.resolve(false);
+    this.currentCast = undefined;
   }
-  cancelByDeath() {
-    this.currentCast?.reject(Rejection.UnitDeath);
-  }
-  cancelByTargetDeath() {
-    this.currentCast?.reject(Rejection.TargetDeath);
+  cancel() {
+    this.currentCast?.resolve(false);
+    this.currentCast = undefined;
   }
 
   private currentCast?: WheelItem;
   get isCasting() {
-    return !!this.currentCast && !this.currentCast.isProcced;
+    return !!this.currentCast && this.currentCast.result === undefined;
   }
   async waitForCast() {
-    try {
-      if (this.currentCast && !this.currentCast.isProcced) await this.currentCast;
-    } catch {
-      
-    } finally {
-      if (this.currentCast?.isProcced) this.currentCast = undefined;
-    }
+    if (!this.isCasting) return true;
+    const cc = this.currentCast;
+    const result = await cc;
+    if (this.currentCast === cc) this.currentCast = undefined;
+    return result;
   }
-  protected startCast(waitFor: number, cancelEvents: Array<[Defered, Rejection]> = []) {
-    if (this.isCasting) return;
-    const currentCast = this.unit.sim.waitFor(waitFor);
-    for (const cancel of cancelEvents) currentCast.canceledBy(cancel[0], cancel[1]);
-    currentCast.then(() => { if (this.currentCast === currentCast) this.currentCast = undefined; }).catch(() => {});
-    this.currentCast = currentCast;
+  protected async startCast(waitFor: number) {
+    if (!this.isCasting) this.currentCast = this.unit.sim.waitFor(waitFor);
+    return await this.waitForCast();
   }
   get remainingCast() {
     return this.currentCast?.remainingTime || 0;
@@ -59,22 +54,18 @@ export abstract class TimedSingletonAction {
 
   private cooldown?: WheelItem;
   get isCooldown() {
-    return !!this.cooldown && !this.cooldown.isProcced;
+    return !!this.cooldown && this.cooldown.result === undefined;
   }
   async waitForCooldown() {
-    try {
-      if (this.cooldown && !this.cooldown.isProcced) await this.cooldown;
-    } catch {
-      
-    } finally {
-      if (this.cooldown?.isProcced) this.cooldown = undefined;
-    }
+    if (!this.isCooldown) return true;
+    const cc = this.cooldown;
+    const result = await cc;
+    if (this.cooldown === cc) this.cooldown = undefined;
+    return result;
   }
-  protected startCooldown(waitFor: number) {
-    if (this.isCooldown) return;
-    const cooldown = this.unit.sim.waitFor(waitFor);
-    cooldown.then(() => { if (this.cooldown === cooldown) this.cooldown = undefined; }).catch(() => {});
-    this.cooldown = cooldown;
+  protected async startCooldown(waitFor: number) {
+    if (!this.isCooldown) this.cooldown = this.unit.sim.waitFor(waitFor);
+    return await this.waitForCooldown();
   }
   get remainingCooldown() {
     return this.cooldown?.remainingTime || 0;
@@ -107,31 +98,27 @@ export class Attack extends TimedSingletonAction {
         this.changeCooldown((1 / this.unit.as) * (1 - this.unit.attackAnimation) * 1000);
     });
   }
-
+  maxLevel: number = 0;
   protected _isCancelableByUser = true;
 
   async cast(target: Unit) {
     if (target.dead) return;
-    const ownerDeathCancel = this.unit.interaction.onDeath(() => { this.cancelByDeath(); interuptPromise.reject(Rejection.UnitDeath); });
-    const targetDeathCancel = target.interaction.onDeath(() => { this.cancelByTargetDeath(); interuptPromise.reject(Rejection.TargetDeath); });
-    const interuptPromise = new Defered();
-    interuptPromise.catch(() => {});
-    try {
-      if (this.isCooldown) await Promise.any([ this.waitForCooldown(), interuptPromise ]);
-      if (this.isCasting) {
-        await this.waitForCast();
-      } else {
-        this.startCast((1 / this.unit.as) * this.unit.attackAnimation * 1000);
-        await this.waitForCast();
+    
+    if (this.isCooldown) {
+      await Promise.any([ this.waitForCooldown(), target.interaction.onDeathPromise(), this.unit.interaction.onDeathPromise() ]);
+      if (this.unit.dead || target.dead) return;
+    }
+    if (this.isCasting) {
+      await this.waitForCast();
+    } else {
+      const result = await Promise.any([ this.startCast((1 / this.unit.as) * this.unit.attackAnimation * 1000), target.interaction.onDeathPromise(), this.unit.interaction.onDeathPromise() ]);
+      if (result === true) {
         target.interaction.takeDamage({ value: this.unit.ad, src: this.unit, type: DamageType.PHYSIC });
         this.procOnHitUnit(target);
         this.startCooldown((1 / this.unit.as) * (1 - this.unit.attackAnimation) * 1000);
+      } else if (result === undefined) {
+        this.cancel();
       }
-    } catch {
-
-    } finally {
-      ownerDeathCancel();
-      targetDeathCancel();
     }
   }
 

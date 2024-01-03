@@ -1,4 +1,3 @@
-import { Defered } from "../simulation/defered";
 import { Unit } from "./unit";
 
 export enum DamageType {
@@ -72,6 +71,14 @@ export class UnitInteraction {
       const i = this._deathListeners.indexOf(cb);
       if (i !== -1) this._deathListeners.splice(i, 1);
     }
+  }
+  onDeathPromise() {
+    return new Promise<void>((resolve) => {
+      const cancel = this.onDeath(() => {
+        cancel();
+        resolve();
+      });
+    });
   }
 
   private readonly _onKill: ((unit: Unit) => void)[] = [];

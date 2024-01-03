@@ -1,4 +1,4 @@
-import { Defered, Rejection, WheelItem } from "../simulation/defered";
+import { WheelItem } from "../simulation/defered";
 import { Unit } from "./unit";
 import { DamageType } from "./unitInteraction";
 
@@ -21,10 +21,10 @@ export abstract class TimedSingletonAction {
   get isCancelableByUser() { return this._isCancelableByUser; }
   cancelByUser() {
     if (!this._isCancelableByUser) throw new Error("Attempt to cancel uncancelable action");
-    this.currentCast?.resolve(false);
-    this.currentCast = undefined;
+    this.cancel();
   }
   cancel() {
+    if (this.unit.action.current === this) this.unit.action.current = undefined;
     this.currentCast?.resolve(false);
     this.currentCast = undefined;
   }
@@ -37,11 +37,15 @@ export abstract class TimedSingletonAction {
     if (!this.isCasting) return true;
     const cc = this.currentCast;
     const result = await cc;
+    if (this.unit.action.current === this) this.unit.action.current = undefined;
     if (this.currentCast === cc) this.currentCast = undefined;
     return result;
   }
   protected async startCast(waitFor: number) {
-    if (!this.isCasting) this.currentCast = this.unit.sim.waitFor(waitFor);
+    if (!this.isCasting) {
+      this.unit.action.current = this;
+      this.currentCast = this.unit.sim.waitFor(waitFor);
+    }
     return await this.waitForCast();
   }
   get remainingCast() {
@@ -102,11 +106,11 @@ export class Attack extends TimedSingletonAction {
   protected _isCancelableByUser = true;
 
   async cast(target: Unit) {
-    if (target.dead) return;
+    if (this.unit.dead || (this.unit.action.current && this.unit.action.current !== this) || target.dead) return;
     
     if (this.isCooldown) {
       await Promise.any([ this.waitForCooldown(), target.interaction.onDeathPromise(), this.unit.interaction.onDeathPromise() ]);
-      if (this.unit.dead || target.dead) return;
+      if (this.unit.dead || (this.unit.action.current && this.unit.action.current !== this) || target.dead) return;
     }
     if (this.isCasting) {
       await this.waitForCast();
@@ -131,6 +135,14 @@ export class UnitAction {
   constructor(protected readonly unit: Unit) {}
 
   attack: Attack;
+  private _current?: TimedSingletonAction;
+  get current(): TimedSingletonAction | undefined {
+    if (this._current?.isCasting) return this._current;
+  }
+  set current(newCurrent: TimedSingletonAction) {
+    if (newCurrent && this.current) throw new Error("UnitAction.current not checked");
+    this._current = newCurrent;
+  }
 
   init(): this { 
     this.attack = new Attack(this.unit);

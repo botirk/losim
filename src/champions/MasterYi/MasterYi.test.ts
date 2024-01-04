@@ -223,6 +223,7 @@ test("MasterYi W NoLevel", async () => {
   const yi1 = new MasterYi().init(sim);
 
   yi1.action.w.cast();
+  expect(yi1.action.w.isCasting).toBe(false);
   expect(yi1.action.current).toBeFalsy();
 });
 
@@ -235,10 +236,11 @@ test("MasterYi W just cast", async () => {
   expect(yi1.action.current).toBe(yi1.action.w);
   expect(yi1.action.w.isCasting).toBe(true);
   expect(yi1.action.w.remainingCast).toBe(4000);
+  expect(yi1.action.w.remainingCooldown).toBe(9000);
   await prom;
   expect(sim.time).toBe(4000);
   expect(yi1.action.w.isCasting).toBe(false);
-  expect(yi1.action.w.remainingCooldown).toBe(9000);
+  expect(yi1.action.w.remainingCooldown).toBe(5000);
   expect(yi1.action.current).toBeFalsy();
 });
 

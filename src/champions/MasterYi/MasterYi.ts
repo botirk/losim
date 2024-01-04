@@ -136,6 +136,7 @@ export class MasterYiW extends TimedSingletonAction {
       await this.waitForCast();
     } else {
       this.startCast(4000);
+      this.startCooldown(9000);
       this.unit.action.attack.finishCooldown();
       const cancelDR = this.unit.interaction.percentDamageReduction((e) => {
         if (e.type === DamageType.TRUE) return;
@@ -152,7 +153,6 @@ export class MasterYiW extends TimedSingletonAction {
         }
       }
       cancelDR();
-      this.startCooldown(9000);
     }
   }
 }

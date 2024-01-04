@@ -245,8 +245,8 @@ test("MasterYi W just cast", async () => {
 test("MasterYi W Damage Reduction", async () => {
   const sim = new Simulation().start(500000);
   const yi1 = new MasterYi().init(sim);
-  
   yi1.action.w.setLevel(1);
+
   yi1.action.w.cast();
   let amt = yi1.interaction.calcPercentDamageReduction({ value: 100, src: yi1, type: DamageType.PHYSIC }).value;
   expect(amt).toBeGreaterThan(1);
@@ -272,10 +272,59 @@ test("MasterYi W AA reset", async () => {
   const sim = new Simulation().start(500000);
   const yi1 = new MasterYi().init(sim);
   const yi2 = new MasterYi().init(sim);
+  yi1.action.w.setLevel(1);
   
   await yi1.action.attack.cast(yi2);
   expect(yi1.action.attack.isCooldown).toBe(true);
 
-  yi2.action.w.cast();
+  yi1.action.w.cast();
   expect(yi1.action.attack.isCooldown).toBe(false);
+});
+
+test("MasterYi W Healing", async () => {
+  const sim = new Simulation().start(500000);
+  const yi1 = new MasterYi().init(sim);
+  yi1.action.w.setLevel(1);
+  yi1.health = 1;
+
+  let health = yi1.health;
+  yi1.action.w.cast();
+  await sim.waitFor(600);
+  expect(yi1.health).toBeGreaterThan(health);
+  health = yi1.health;
+
+  // 1100
+  await sim.waitFor(500);
+  expect(yi1.health).toBeGreaterThan(health);
+  health = yi1.health;
+
+  // 1600
+  await sim.waitFor(500);
+  expect(yi1.health).toBeGreaterThan(health);
+  health = yi1.health;
+
+  // 2100
+  await sim.waitFor(500);
+  expect(yi1.health).toBeGreaterThan(health);
+  health = yi1.health;
+
+  // 2600
+  await sim.waitFor(500);
+  expect(yi1.health).toBeGreaterThan(health);
+  health = yi1.health;
+
+  // 3100
+  await sim.waitFor(500);
+  expect(yi1.health).toBeGreaterThan(health);
+  health = yi1.health;
+
+  // 3600
+  await sim.waitFor(500);
+  expect(yi1.health).toBeGreaterThan(health);
+  health = yi1.health;
+
+  // 4100
+  await sim.waitFor(500);
+  expect(yi1.health).toBeGreaterThan(health);
+  health = yi1.health;
 });

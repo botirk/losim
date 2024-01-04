@@ -241,3 +241,41 @@ test("MasterYi W just cast", async () => {
   expect(yi1.action.w.remainingCooldown).toBe(9000);
   expect(yi1.action.current).toBeFalsy();
 });
+
+test("MasterYi W Damage Reduction", async () => {
+  const sim = new Simulation().start(500000);
+  const yi1 = new MasterYi().init(sim);
+  
+  yi1.action.w.setLevel(1);
+  yi1.action.w.cast();
+  let amt = yi1.interaction.calcPercentDamageReduction({ value: 100, src: yi1, type: DamageType.PHYSIC }).value;
+  expect(amt).toBeGreaterThan(1);
+  expect(amt).toBeLessThan(10);
+  
+  await sim.waitFor(400);
+  amt = yi1.interaction.calcPercentDamageReduction({ value: 100, src: yi1, type: DamageType.PHYSIC }).value;
+  expect(amt).toBeGreaterThan(1);
+  expect(amt).toBeLessThan(10);
+
+  await sim.waitFor(600);
+  amt = yi1.interaction.calcPercentDamageReduction({ value: 100, src: yi1, type: DamageType.PHYSIC }).value;
+  expect(amt).toBeGreaterThan(20);
+  expect(amt).toBeLessThan(50);
+
+  await sim.waitFor(3100);
+  amt = yi1.interaction.calcPercentDamageReduction({ value: 100, src: yi1, type: DamageType.PHYSIC }).value;
+  expect(amt).toBeGreaterThan(65);
+  expect(amt).toBeLessThan(100);
+});
+
+test("MasterYi W AA reset", async () => {
+  const sim = new Simulation().start(500000);
+  const yi1 = new MasterYi().init(sim);
+  const yi2 = new MasterYi().init(sim);
+  
+  await yi1.action.attack.cast(yi2);
+  expect(yi1.action.attack.isCooldown).toBe(true);
+
+  yi2.action.w.cast();
+  expect(yi1.action.attack.isCooldown).toBe(false);
+});

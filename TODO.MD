@@ -1,1 +1,1 @@
-+ Implement Yi W spell
++ Write tests for Q

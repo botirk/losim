@@ -48,27 +48,6 @@ test("UnitInteraction.onTakeDamage", async () => {
   remove3();
 });
 
-test("UnitInteraction.onDeath", async () => {
-  const sim = new Simulation().start(30000);
-  const yi1 = new MasterYi().init(sim);
-  const yi2 = new MasterYi().init(sim);
-
-  let proc = 0;
-  yi2.interaction.onDeath(() => {
-    proc += 1;
-  });
-
-  while (!sim.isStopped && !yi2.dead) {
-    await yi1.action.attack.cast(yi2);
-  }
-  expect(sim.isStopped).toBeFalsy();
-  expect(sim.time).toBeLessThan(20000);
-  expect(sim.time).toBeGreaterThan(5000);
-  expect(yi2.dead).toBe(true);
-  expect(yi2.health).toBe(0);
-  expect(proc).toBe(1);
-});
-
 test('UnitInteraction.onTakedown', async () => {
   const sim = new Simulation().start(15000);
   const yi1 = new MasterYi().init(sim);

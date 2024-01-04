@@ -43,8 +43,6 @@ export class UnitInteraction {
     this._takedownTimes.set(e.src, this.unit.sim.time);
     if (this.unit.health === 0) {
       this.unit.dead = true;
-      this.unit.action.current?.cancel();
-      for (const listener of this._deathListeners) listener();
       e.src.interaction.kill(this.unit);
       for (const takedownTime of this._takedownTimes) {
         takedownTime[0].interaction.takedown(this.unit, takedownTime[1]);
@@ -77,23 +75,6 @@ export class UnitInteraction {
   calcArmorDamageReduction(e: DamageEvent) {
     if (e.type === DamageType.PHYSIC) e.value = (1 - this.unit.armor/(100 + this.unit.armor)) * e.value;
     return e;
-  }
-
-  private readonly _deathListeners: (() => void)[] = [];
-  onDeath(cb: typeof this._deathListeners[0]) {
-    this._deathListeners.push(cb);
-    return () => {
-      const i = this._deathListeners.indexOf(cb);
-      if (i !== -1) this._deathListeners.splice(i, 1);
-    }
-  }
-  onDeathPromise() {
-    return new Promise<void>((resolve) => {
-      const cancel = this.onDeath(() => {
-        cancel();
-        resolve();
-      });
-    });
   }
 
   private readonly _onKill: ((unit: Unit) => void)[] = [];

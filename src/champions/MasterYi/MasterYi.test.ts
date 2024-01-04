@@ -328,3 +328,20 @@ test("MasterYi W Healing", async () => {
   expect(yi1.health).toBeGreaterThan(health);
   health = yi1.health;
 });
+
+test("MasterYi W Cancel", async () => {
+  const sim = new Simulation().start(500000);
+  const yi1 = new MasterYi().init(sim);
+  yi1.action.w.setLevel(1);
+
+  yi1.action.w.cast();
+  expect(yi1.action.w.isCasting).toBe(true);
+  yi1.action.w.cancelByUser();
+  expect(yi1.action.w.isCasting).toBe(false);
+
+  await sim.waitFor(1);
+  expect(yi1.action.w.remainingCooldown).toBe(8999);
+  const dmg = yi1.interaction.calcPercentDamageReduction({ src: yi1, value: 100, type: DamageType.PHYSIC }).value;
+  expect(dmg).toBeGreaterThan(70);
+  expect(dmg).toBeLessThan(90);
+});

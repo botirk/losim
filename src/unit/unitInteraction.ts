@@ -12,8 +12,22 @@ export interface DamageEvent {
   type: DamageType,
 }
 
+export interface HealEvent {
+  src: Unit,
+  value: number,
+}
+
 export class UnitInteraction {
   constructor(readonly unit: Unit) {}
+
+  takeHeal(e: HealEvent) {
+    // prevent beating the dead
+    if (this.unit.dead === true) return;
+    // fix
+    e.value = Math.max(0, Math.min(this.unit.maxHealth, e.value));
+    // increase health
+    this.unit.health += e.value;
+  }
 
   takeDamage(e: DamageEvent) {
     // prevent beating the dead

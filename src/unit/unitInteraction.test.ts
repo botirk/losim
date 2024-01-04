@@ -174,3 +174,17 @@ test("UnitInteraction armor calculation", async () => {
   const yi = new MasterYi().init(sim);
   expect(yi.action.attack.calc(yi)).toBeLessThan(yi.ad);
 });
+
+test("UnitInteraction.heal", async () => {
+  const sim = new Simulation().start(5000);
+  const yi = new MasterYi().init(sim);
+  yi.health = 1;
+  
+  yi.interaction.takeHeal({ src: yi, value: 50 });
+  expect(yi.health).toBe(51);
+
+  yi.dead = true;
+  yi.health = 0;
+  yi.interaction.takeHeal({ src: yi, value: 50 });
+  expect(yi.health).toBe(0);
+});

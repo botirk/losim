@@ -157,11 +157,39 @@ export class MasterYiW extends TimedSingletonAction {
   }
 }
 
+export class MasterYiQ extends TimedSingletonAction {
+  static readonly qname = "Alpha Strike";
+  protected maxLevel: number = 5;
+  protected _isCancelableByUser: boolean = false;
+
+  constructor(unit: Unit) {
+    super(MasterYiQ.qname, unit);
+  }
+
+  async cast(target: Unit) {
+    if (this.level === 0 || this.unit.dead || (this.unit.action.current && this.unit.action.current !== this) || target.targetable === false) return;
+
+    if (this.isCasting) {
+      await this.waitForCast();
+    } else {
+      this.startCast(231 * 4 + 165);
+      this.startCooldown(20500 - this.level * 500);
+      this.unit.targetable = false;
+      for (let time = 0; time < 231 * 4; time += 231) {
+        await this.unit.sim.waitFor(231);
+      }
+      await this.unit.sim.waitFor(165);
+      this.unit.targetable = true;
+    }
+  }
+}
+
 export class MasterYiAction extends UnitAction {
   e: MasterYiE;
   r: MasterYiR;
   w: MasterYiW;
   passive: MasterYiPassiveSkill;
+  q: MasterYiQ;
 
   init(): this {
     super.init();
@@ -169,6 +197,7 @@ export class MasterYiAction extends UnitAction {
     this.r = new MasterYiR(this.unit);
     this.passive = new MasterYiPassiveSkill(this.unit).init();
     this.w = new MasterYiW(this.unit);
+    this.q = new MasterYiQ(this.unit);
     return this;
   }
 }

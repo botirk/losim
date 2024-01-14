@@ -1,7 +1,7 @@
 import { Simulation } from "../../simulation/simulation";
 import { TimedBuff } from "../../unit/buff";
 import { Unit } from "../../unit/unit";
-import { TimedSingletonAction, UnitAction } from "../../unit/unitAction";
+import { SelfAction, TargetAction, TimedSingletonAction, UnitAction } from "../../unit/unitAction";
 import { DamageType } from "../../unit/unitInteraction";
 import { Champion } from "../champion/champion";
 import { MasterYiStats } from "./MasterYiStats";
@@ -78,110 +78,141 @@ export class MasterYiRBuff extends TimedBuff {
   }
 }
 
-export class MasterYiE extends TimedSingletonAction {
+export class MasterYiE extends SelfAction {
   static readonly ename = "Wuju Style";
-  protected maxLevel: number = 5;
-  protected _isCancelableByUser: boolean = false;
+  readonly maxLevel: number = 5;
+  readonly minLevel: number = 1;
+  readonly isCancelableByUser: boolean = false;
+  readonly waitForCooldownInCast: boolean = false;
+  readonly castCanceledWithCooldownReset: boolean = false;
+
+  get castTime(): number {
+    return 0;
+  }
+  get cooldownTime(): number {
+    if (this.level === 0) return 0;
+    return 14000;
+  }
 
   constructor(unit: Unit) {
     super(MasterYiE.ename, unit);
   }
 
-  cast() {
-    if (this.level === 0 || this.isCooldown) return;
-    this.startCooldown(14000);
+  protected onStartCast = undefined;
+  protected onFinishCast = async () => {
     new MasterYiEBuff(this.unit, this.level);
   }
 }
 
-export class MasterYiR extends TimedSingletonAction {
+export class MasterYiR extends SelfAction {
   static readonly rname = "Highlander";
-  protected maxLevel: number = 3;
-  protected _isCancelableByUser: boolean = false;
+  readonly maxLevel: number = 3;
+  readonly minLevel: number = 1;
+  readonly isCancelableByUser: boolean = false;
+  readonly waitForCooldownInCast: boolean = false;
+  readonly castCanceledWithCooldownReset: boolean = false;
+  
+  get castTime(): number {
+    return 0;
+  }
+  get cooldownTime(): number {
+    if (this.level === 0) return 0;
+    return 85000;
+  }
 
   constructor(unit: Unit) {
     super(MasterYiR.rname, unit);
   }
 
-  cast() {
-    if (this.level === 0 || this.isCooldown) return;
-    this.startCooldown(85000);
+  protected onStartCast = undefined;
+  protected onFinishCast = async () => {
     new MasterYiRBuff(this.unit, this.level);
   }
 }
 
-export class MasterYiW extends TimedSingletonAction {
+export class MasterYiW extends SelfAction {
   static readonly wname = "Meditate";
-  protected maxLevel: number = 5;
-  protected _isCancelableByUser: boolean = true;
+  readonly maxLevel: number = 5;
+  readonly minLevel: number = 1;
+  readonly isCancelableByUser: boolean = true;
+  readonly waitForCooldownInCast: boolean = false;
+  readonly castCanceledWithCooldownReset: boolean = false;
 
-  constructor(unit: Unit) {
-    super(MasterYiW.wname, unit);
+  get castTime(): number {
+    if (this.level === 0) return 0;
+    return 4000;
   }
-  
+  get cooldownTime(): number {
+    if (this.level === 0) return 0;
+    return 9000;
+  }
+
   get dr() {
     if (this.level === 0) return 0;
     return 42.5 + this.level * 2.5;
   }
-
   get tickHeal() {
     if (this.level === 0) return 0;
     return (5 + this.level * 10) * (2 - this.unit.health / this.unit.maxHealth);
   }
 
-  async cast() {
-    if (this.level === 0 || this.unit.dead || (this.unit.action.current && this.unit.action.current !== this)) return;
-
-    if (this.isCasting) {
-      await this.waitForCast();
-    } else {
-      this.startCast(4000);
-      this.startCooldown(9000);
-      this.unit.action.attack.finishCooldown();
-      const cancelDR = this.unit.interaction.percentDamageReduction((e) => {
-        if (e.type === DamageType.TRUE) return;
-        else if (time < 500) e.value *= 0.1;
-        else e.value *= (100 - this.dr) / 100;
-      });
-      let time = 0;
-      for (; time <= 4000; time += 500) {
-        const result = await Promise.any([this.waitForCast(), this.unit.sim.waitFor(500), this.unit.onDeathPromise()]);
-        if (result === true) {
-          this.unit.interaction.takeHeal({ src: this.unit, value: this.tickHeal });
-        } else {
-          break;
-        }
-      }
-      cancelDR();
-    }
+  constructor(unit: Unit) {
+    super(MasterYiW.wname, unit);
   }
+
+  protected readonly onStartCast = async () => {
+    this.unit.action.attack.finishCooldown();
+    const cancelDR = this.unit.interaction.percentDamageReduction((e) => {
+      if (e.type === DamageType.TRUE) return;
+      else if (time < 500) e.value *= 0.1;
+      else e.value *= (100 - this.dr) / 100;
+    });
+    let time = 0;
+    for (; time <= this.castTime; time += 500) {
+      const result = await Promise.any([this.waitForCast(), this.unit.sim.waitFor(500), this.castInterruptPromise()]);
+      if (result === true) {
+        this.unit.interaction.takeHeal({ src: this.unit, value: this.tickHeal });
+      } else {
+        break;
+      }
+    }
+    cancelDR();
+  };
+
+  protected onFinishCast?: () => Promise<void> = undefined;
 }
 
-export class MasterYiQ extends TimedSingletonAction {
+export class MasterYiQ extends TargetAction {
   static readonly qname = "Alpha Strike";
-  protected maxLevel: number = 5;
-  protected _isCancelableByUser: boolean = false;
+  readonly maxLevel: number = 5;
+  readonly minLevel: number = 1;
+  readonly isCancelableByUser: boolean = false;
+  readonly waitForCooldownInCast: boolean = false;
+  readonly castCanceledWithCooldownReset: boolean = false;
+
+  get castTime(): number {
+    if (this.level === 0) return 0;
+    return 231 * 4 + 165;
+  }
+  get cooldownTime(): number {
+    if (this.level === 0) return 0;
+    return 20500 - this.level * 500;
+  }
 
   constructor(unit: Unit) {
     super(MasterYiQ.qname, unit);
   }
 
-  async cast(target: Unit) {
-    if (this.level === 0 || this.unit.dead || (this.unit.action.current && this.unit.action.current !== this) || target.targetable === false) return;
-
-    if (this.isCasting) {
-      await this.waitForCast();
-    } else {
-      this.startCast(231 * 4 + 165);
-      this.startCooldown(20500 - this.level * 500);
-      this.unit.targetable = false;
-      for (let time = 0; time < 231 * 4; time += 231) {
-        await this.unit.sim.waitFor(231);
-      }
-      await this.unit.sim.waitFor(165);
-      this.unit.targetable = true;
+  protected onStartCast?: (target: Unit) => Promise<void> = async () => {
+    this.unit.targetable = false;
+    for (let time = 0; time < 231 * 4; time += 231) {
+      await this.unit.sim.waitFor(231);
     }
+    await this.unit.sim.waitFor(165);
+    this.unit.targetable = true;
   }
+  protected onFinishCast?: (target: Unit) => Promise<void> = undefined;
+  
 }
 
 export class MasterYiAction extends UnitAction {

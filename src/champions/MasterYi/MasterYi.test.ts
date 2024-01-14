@@ -31,7 +31,7 @@ test("MasterYi E unleveled", async () => {
 test("MasterYi E leveled 1", async () => {
   const sim = new Simulation().start(5000);
   const yi1 = new MasterYi().init(sim);
-  yi1.action.e.setLevel(1);
+  yi1.action.e.level = 1;
   const yi2 = new MasterYi().init(sim);
 
   let capturedAA = 0;
@@ -58,7 +58,7 @@ test("MasterYi E Buff", async () => {
   const sim = new Simulation().start(10000);
   const yi1 = new MasterYi().init(sim);
   expect(yi1.buffs).toHaveLength(0);
-  yi1.action.e.setLevel(1);
+  yi1.action.e.level = 1;
   expect(yi1.buffs).toHaveLength(0);
   yi1.action.e.cast();
   expect(yi1.buffs[0].name).toBe(MasterYiE.ename);
@@ -71,7 +71,7 @@ test("MasterYi E Buff", async () => {
 test("MasterYi E Cd", async () => {
   const sim = new Simulation().start(20000);
   const yi1 = new MasterYi().init(sim);
-  yi1.action.e.setLevel(1);
+  yi1.action.e.level = 1;
   expect(yi1.action.e.isCooldown).toBe(false);
   expect(yi1.action.e.remainingCooldown).toBe(0);
   yi1.action.e.cast();
@@ -102,28 +102,28 @@ test("MasterYi R levels(as)", async () => {
   const sim = new Simulation().start(500000);
   const yi1 = new MasterYi().init(sim);
 
-  yi1.action.r.setLevel(1);
+  yi1.action.r.level = 1;
   yi1.action.r.cast();
   expect(yi1.buffs).toHaveLength(1);
   expect(yi1.bonusAs).toBe(25);
 
   await yi1.action.r.waitForCooldown();
   expect(yi1.bonusAs).toBe(0);
-  yi1.action.r.setLevel(2);
+  yi1.action.r.level = 2;
   yi1.action.r.cast();
   expect(yi1.buffs).toHaveLength(1);
   expect(yi1.bonusAs).toBe(35);
 
   await yi1.action.r.waitForCooldown();
   expect(yi1.bonusAs).toBe(0);
-  yi1.action.r.setLevel(3);
+  yi1.action.r.level = 3;
   yi1.action.r.cast();
   expect(yi1.buffs).toHaveLength(1);
   expect(yi1.bonusAs).toBe(45);
 
   await yi1.action.r.waitForCooldown();
   expect(yi1.bonusAs).toBe(0);
-  yi1.action.r.setLevel(5);
+  yi1.action.r.level = 5;
   yi1.action.r.cast();
   expect(yi1.buffs).toHaveLength(1);
   expect(yi1.bonusAs).toBe(45);
@@ -136,7 +136,7 @@ test("MasterYi R Buff", async () => {
   const sim = new Simulation().start(10000);
   const yi1 = new MasterYi().init(sim);
   expect(yi1.buffs).toHaveLength(0);
-  yi1.action.r.setLevel(1);
+  yi1.action.r.level = 1;
   expect(yi1.buffs).toHaveLength(0);
   yi1.action.r.cast();
   expect(yi1.buffs[0].name).toBe(MasterYiR.rname);
@@ -149,7 +149,7 @@ test("MasterYi R Buff", async () => {
 test("MasterYi R Cd", async () => {
   const sim = new Simulation().start(500000);
   const yi1 = new MasterYi().init(sim);
-  yi1.action.r.setLevel(1);
+  yi1.action.r.level = 1;
   expect(yi1.action.r.isCooldown).toBe(false);
   expect(yi1.action.r.remainingCooldown).toBe(0);
   yi1.action.r.cast();
@@ -168,7 +168,7 @@ test("MasterYi R Takedown", async () => {
   const yi2 = new MasterYi().init(sim);
   const yi3 = new MasterYi().init(sim);
   
-  yi1.action.r.setLevel(1);
+  yi1.action.r.level = 1;
   
   await yi1.action.attack.cast(yi2);
   await sim.waitFor(10001);
@@ -231,7 +231,7 @@ test("MasterYi W just cast", async () => {
   const sim = new Simulation().start(500000);
   const yi1 = new MasterYi().init(sim);
   
-  yi1.action.w.setLevel(1);
+  yi1.action.w.level = 1;
   const prom = yi1.action.w.cast();
   expect(yi1.action.current).toBe(yi1.action.w);
   expect(yi1.action.w.isCasting).toBe(true);
@@ -247,7 +247,7 @@ test("MasterYi W just cast", async () => {
 test("MasterYi W Damage Reduction", async () => {
   const sim = new Simulation().start(500000);
   const yi1 = new MasterYi().init(sim);
-  yi1.action.w.setLevel(1);
+  yi1.action.w.level = 1;
 
   yi1.action.w.cast();
   let amt = yi1.interaction.calcPercentDamageReduction({ value: 100, src: yi1, type: DamageType.PHYSIC }).value;
@@ -274,7 +274,7 @@ test("MasterYi W AA reset", async () => {
   const sim = new Simulation().start(500000);
   const yi1 = new MasterYi().init(sim);
   const yi2 = new MasterYi().init(sim);
-  yi1.action.w.setLevel(1);
+  yi1.action.w.level = 1;
   
   await yi1.action.attack.cast(yi2);
   expect(yi1.action.attack.isCooldown).toBe(true);
@@ -286,7 +286,7 @@ test("MasterYi W AA reset", async () => {
 test("MasterYi W Healing", async () => {
   const sim = new Simulation().start(500000);
   const yi1 = new MasterYi().init(sim);
-  yi1.action.w.setLevel(1);
+  yi1.action.w.level = 1;
   yi1.health = 1;
 
   let health = yi1.health;
@@ -334,7 +334,7 @@ test("MasterYi W Healing", async () => {
 test("MasterYi W Cancel", async () => {
   const sim = new Simulation().start(500000);
   const yi1 = new MasterYi().init(sim);
-  yi1.action.w.setLevel(1);
+  yi1.action.w.level = 1;
 
   yi1.action.w.cast();
   expect(yi1.action.w.isCasting).toBe(true);
@@ -356,7 +356,7 @@ test("MasterYi Q NoLvL", async () => {
   await yi1.action.q.cast(yi2);
   expect(yi1.action.q.isCooldown).toBe(false);
 
-  yi1.action.q.setLevel(1);
+  yi1.action.q.level = 1;
   const prom = yi1.action.q.cast(yi2);
   expect(yi1.action.q.remainingCooldown).toBe(20000);
   await prom;
@@ -367,7 +367,7 @@ test("MasterYi Q Targetable", async () => {
   const sim = new Simulation().start(500000);
   const yi1 = new MasterYi().init(sim);
   const yi2 = new MasterYi().init(sim);
-  yi1.action.q.setLevel(1);
+  yi1.action.q.level = 1;
 
   yi1.action.q.cast(yi2);
   for (let i = 0; i < 4 * 231; i += 10) {
@@ -382,7 +382,7 @@ test("MasterYi Q 4 Marks", async () => {
   const sim = new Simulation().start(500000);
   const yi1 = new MasterYi().init(sim);
   const yi2 = new MasterYi().init(sim);
-  yi1.action.q.setLevel(1);
+  yi1.action.q.level = 1;
 
   let count = 0;
   yi2.interaction.onTakeDamage((e) => count += 1);
@@ -395,8 +395,8 @@ test("MasterYi Q 4 Marks + 4 True damage", async () => {
   const sim = new Simulation().start(500000);
   const yi1 = new MasterYi().init(sim);
   const yi2 = new MasterYi().init(sim);
-  yi1.action.q.setLevel(1);
-  yi1.action.e.setLevel(1);
+  yi1.action.q.level = 1;
+  yi1.action.e.level = 1;
 
   let countP = 0, countT = 0, onHits = 0;
   yi2.interaction.onTakeDamage((e) => {

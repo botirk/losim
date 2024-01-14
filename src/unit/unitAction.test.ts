@@ -10,7 +10,7 @@ test("UnitAction.attack", async () => {
   expect(yi1.action.attack.name).toBe("Attack");
   expect(yi2.action.attack.name).toBe("Attack");
   
-  await yi1.action.attack.cast(yi2);
+  expect(await yi1.action.attack.cast(yi2)).toBe(true);
   expect(sim.time).toBeGreaterThan(100);
   expect(sim.time).toBeLessThan(600);
   expect(yi2.health).toBeCloseTo(yi1.health - yi1.action.attack.calc(yi2));
@@ -92,7 +92,8 @@ test("UnitAction.attack after target death", async () => {
   yi2.interaction.onTakeDamage(() => hits += 1);
 
   expect(yi2.dead).toBe(true);
-  await aa;
+  const res = await aa;
+  expect(res).toBe(false);
   expect(yi1.action.attack.isCasting).toBe(false);
   expect(hits).toBe(0);
 });
@@ -220,6 +221,7 @@ test("UnitAction.attack cancel", async () => {
   expect(aaCastTime).toBeGreaterThan(100);
   await sim.waitFor(100);
   expect(yi1.action.attack.isCasting).toBe(true);
+  expect(yi1.action.attack.isCooldown).toBe(true);
   await yi1.action.attack.cancelByUser();
   expect(yi1.action.attack.isCasting).toBe(false);
   expect(yi1.action.attack.isCooldown).toBe(false);

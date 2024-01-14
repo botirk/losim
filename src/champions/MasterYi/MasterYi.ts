@@ -170,7 +170,7 @@ export class MasterYiW extends SelfAction {
     let time = 0;
     for (; time <= this.castTime; time += 500) {
       const result = await Promise.any([this.waitForCast(), this.unit.sim.waitFor(500), this.castInterruptPromise()]);
-      if (result === true) {
+      if (result) {
         this.unit.interaction.takeHeal({ src: this.unit, value: this.tickHeal });
       } else {
         break;

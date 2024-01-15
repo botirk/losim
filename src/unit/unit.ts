@@ -1,12 +1,12 @@
 import { Simulation } from "../simulation/simulation";
-import { UnitAction } from "./unitAction";
+import { UnitActions } from "./unitAction3";
 import { UnitInteraction } from "./unitInteraction";
 import { Buff } from "./buff";
 
 export abstract class Unit {
   sim: Simulation;
 
-  abstract action: UnitAction;
+  abstract action: UnitActions;
   interaction: UnitInteraction;
 
   health = 0;

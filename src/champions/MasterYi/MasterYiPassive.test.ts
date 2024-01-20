@@ -1,6 +1,7 @@
 import { MasterYi } from "./MasterYi";
 import { Simulation } from "../../simulation/simulation";
 import { DamageType } from "../../unit/unitInteraction";
+import { MasterYiPassiveBuff } from "./MasterYiPassive";
 
 
 test("MasterYi Passive", async () => {
@@ -22,16 +23,16 @@ test("MasterYi Passive", async () => {
   expect(onHits).toBe(1);
   expect(passiveApplied).toBe(0);
   expect(yi1.action.passive.buff).toBeInstanceOf(MasterYiPassiveBuff);
-  expect(yi1.action.passive.buff.stacks).toBe(1);
+  expect(yi1.action.passive.buff?.stacks).toBe(1);
   await yi1.action.attack.cast(yi2);
   expect(passiveApplied).toBe(0);
   expect(onHits).toBe(2);
-  expect(yi1.action.passive.buff.stacks).toBe(2);
+  expect(yi1.action.passive.buff?.stacks).toBe(2);
   await yi1.action.attack.cast(yi2);
   expect(passiveApplied).toBe(1);
   expect(onHits).toBe(4);
   expect(yi1.action.passive.buff).toBeInstanceOf(MasterYiPassiveBuff);
-  expect(yi1.action.passive.buff.stacks).toBe(1);
+  expect(yi1.action.passive.buff?.stacks).toBe(1);
   await yi1.action.attack.cast(yi2);
   await yi1.action.attack.cast(yi2);
   expect(passiveApplied).toBe(2);

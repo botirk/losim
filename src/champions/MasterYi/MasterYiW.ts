@@ -1,24 +1,25 @@
 import { Unit } from "../../unit/unit";
 import { Action, SelfCast } from "../../unit/action";
+import { DamageType } from "../../unit/unitInteraction";
 
 export class MasterYiWCast extends SelfCast {
   protected async onStartCast() {
-    /*this.unit.action.attack.finishCooldown();
-    const cancelDR = this.unit.interaction.percentDamageReduction((e) => {
+    this.action.owner.action.attack.finishCooldown();
+    const cancelDR = this.action.owner.interaction.percentDamageReduction((e) => {
       if (e.type === DamageType.TRUE) return;
       else if (time < 500) e.value *= 0.1;
-      else e.value *= (100 - this.dr) / 100;
+      else e.value *= (100 - MasterYiW.dr(this.action.level)) / 100;
     });
     let time = 0;
-    for (; time <= this.castTime; time += 500) {
-      const result = await Promise.any([this.waitForCast(), this.unit.sim.waitFor(500), this.castInterruptPromise()]);
+    for (; time <= this.action.castTime; time += 500) {
+      const result = await Promise.any([ this.wait(), this.action.owner.sim.waitFor(500) ]);
       if (result) {
-        this.unit.interaction.takeHeal({ src: this.unit, value: this.tickHeal });
+        this.action.owner.interaction.takeHeal({ src: this.action.owner, value: MasterYiW.tickHeal(this.action.level, this.action.owner) });
       } else {
         break;
       }
     }
-    cancelDR();*/
+    cancelDR();
   }
 }
 
@@ -42,13 +43,13 @@ export class MasterYiW extends Action<void> {
     return 9000;
   }
 
-  get dr() {
-    if (this.level === 0) return 0;
-    return 42.5 + this.level * 2.5;
+  static dr(level: number) {
+    if (level <= 0) return 0;
+    return 42.5 + level * 2.5;
   }
-  get tickHeal() {
-    if (this.level === 0) return 0;
-    return (5 + this.level * 10) * (2 - this.owner.health / this.owner.maxHealth);
+  static tickHeal(level: number, owner: Unit) {
+    if (level <= 0) return 0;
+    return (5 + level * 10) * (2 - owner.health / owner.maxHealth);
   }
 
   async cast() {

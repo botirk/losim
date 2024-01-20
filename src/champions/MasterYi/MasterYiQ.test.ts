@@ -155,16 +155,20 @@ test("MasterYi Q crit", async () => {
   yi1.crit = 100;
 
   let captured2 = 0;
-  const cancel2 = yi2.interaction.onTakeDamage(({ value, src, type }) => {
+  let crit = 0;
+  const cancel2 = yi2.interaction.onTakeDamage(({ value, src, type, isCrit }) => {
     if (src !== yi1 || type !== DamageType.PHYSIC) return;
     captured2 += value;
+    if (isCrit) crit += 1;
   });
+
   yi1.action.q.finishCooldown();
   expect(await yi1.action.q.cast(yi2)).toBe(true);
   expect(captured2).toBeGreaterThan(50);
   cancel2();
 
   expect(captured2).toBeGreaterThan(captured1);
+  expect(crit).toBe(4);
 });
 
 test("MasterYi Q aa cooldown reduction", async () => {

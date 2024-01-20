@@ -5,10 +5,12 @@ import { DamageType } from "../../unit/unitInteraction";
 export class MasterYiPassive {
   static readonly pname = "Double Strike";
 
+  disabled = false;
   constructor(private readonly owner: Unit) { }
 
   init(): this {
     this.owner.action.attack.onCast((target) => {
+      if (this.disabled) return;
       const buff = this.buff;
       if (buff) {
         buff.stacks += 1;
@@ -27,7 +29,7 @@ export class MasterYiPassive {
   }
 
   get buff() {
-    return this.owner.buffsNamed(MasterYiPassive.pname)[0] as (MasterYiPassiveBuff | undefined);
+    return this.owner.buffNamed(MasterYiPassive.pname) as (MasterYiPassiveBuff | undefined);
   }
 }
 

@@ -10,6 +10,7 @@ export interface DamageEvent {
   src: Unit,
   value: number,
   type: DamageType,
+  isCrit?: boolean,
 }
 
 export interface HealEvent {

@@ -1,6 +1,7 @@
 import { Unit } from "./unit";
-import { EnemyTargetAction, TargetCast } from "./action";
+import { Action, EnemyTargetAction, TargetCast } from "./action";
 import { DamageType } from "./unitInteraction";
+import seedrandom from "seedrandom";
 
 export class AttackAction extends EnemyTargetAction {
   constructor(owner: Unit) {
@@ -28,15 +29,22 @@ export class AttackAction extends EnemyTargetAction {
   calc(target: Unit) {
     return target.interaction.calcPercentDamageReduction({ value: this.owner.ad, src: this.owner, type: DamageType.PHYSIC }).value;
   }
+  random = seedrandom();
   async cast(option: Unit) {
-    return await new AttackCast(this, option).init();
+    return await new AttackCast(this, option, this.random).init();
   }
 }
 
 export class AttackCast extends TargetCast {
+  constructor(action: Action<Unit>, option: Unit, private readonly random: seedrandom.PRNG) {
+    super(action, option);
+  }
+
   action: AttackAction;
   protected async onFinishCast() {
-    this.option.interaction.takeDamage({ value: this.action.owner.ad, src: this.action.owner, type: DamageType.PHYSIC });
+    const isCrit = (this.action.owner.crit >= this.random() * 100);
+    const value = isCrit ? this.action.owner.ad * (1.75 + this.action.owner.bonusCritDamage / 100) : this.action.owner.ad;
+    this.option.interaction.takeDamage({ value, src: this.action.owner, type: DamageType.PHYSIC, isCrit });
     this.action.procOnHitUnit(this.option);
   }
 

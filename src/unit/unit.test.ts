@@ -44,3 +44,11 @@ test("Unit.onDeath", async () => {
   expect(yi2.health).toBe(0);
   expect(proc).toBe(1);
 });
+
+test("Unit.ad", () => {
+  const yi = new MasterYi().init();
+  expect(yi.ad).toBeGreaterThan(40);
+  const ad = yi.ad;
+  yi.bonusAd += 10;
+  expect(yi.ad).toBe(ad + 10);
+});

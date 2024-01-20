@@ -14,7 +14,8 @@ export abstract class Champion extends Unit {
     super.init(simIN);
     this.maxHealth = this.stats.baseHealth + this.calcStatGrowth(this.stats.healthGrowth);
     this.health = this.maxHealth;
-    this.ad = this.stats.baseAd + this.calcStatGrowth(this.stats.adGrowth);
+    this.baseAd = this.stats.baseAd;
+    this.bonusAd = this.calcStatGrowth(this.stats.adGrowth);
     this.armor = this.stats.baseArmor + this.calcStatGrowth(this.stats.armorGrowth);
     this.baseAs = this.stats.baseAs;
     this.bonusAs = this.calcStatGrowth(this.stats.asGrowth);

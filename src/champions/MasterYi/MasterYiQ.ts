@@ -1,12 +1,15 @@
+import seedrandom from "seedrandom";
 import { Unit } from "../../unit/unit";
 import { Action, TargetCast } from "../../unit/action";
 import { Buff } from "../../unit/buff";
 import { DamageType } from "../../unit/unitInteraction";
 
+
 export class MasterYiQMark extends Buff {
   damage = MasterYiQ.markDamage(this.src, this.level);
+  critDamage = MasterYiQ.markCritDamage(this.src, this.level);
 
-  constructor(owner: Unit, src: Unit, readonly level: number) {
+  constructor(owner: Unit, src: Unit, readonly level: number, private readonly random:seedrandom.PRNG) {
     level = Math.max(0, Math.min(5, level));
     super(MasterYiQ.qname, owner, false, src);
   }
@@ -14,19 +17,21 @@ export class MasterYiQMark extends Buff {
   fade(): void {
     if (!this.isActive) return;
     if (this.owner.targetable) {
-      if (this.owner.buffsNamed(MasterYiQ.qname).length === 1) {
-        this.owner.interaction.takeDamage({ src: this.src, type: DamageType.PHYSIC, value: this.damage });
-        this.src.action.attack.procOnHitUnit(this.owner, 0.75);
-      } else {
-        this.owner.interaction.takeDamage({ src: this.src, type: DamageType.PHYSIC, value: this.damage * 0.25 });
-        this.src.action.attack.procOnHitUnit(this.owner, 0.1875);
-      }
+      const isCrit = (this.src.crit >= (this.random() * 100));
+      const damage = (isCrit) ? this.damage + this.critDamage : this.damage;
+      const modifier = (this.owner.buffsNamed(MasterYiQ.qname).length > 1) ? 0.25 : 1;
+      
+      this.owner.interaction.takeDamage({ src: this.src, type: DamageType.PHYSIC, value: damage * modifier });
+      this.src.action.attack.procOnHitUnit(this.owner, 0.75 * modifier);
     }
     super.fade();
   }
 }
 
 export class MasterYiQCast extends TargetCast {
+  constructor(action: Action<Unit>, option: Unit, private readonly random: seedrandom.PRNG) {
+    super(action, option)
+  }
   protected async onStartCast() {
     this.action.owner.targetable = false;
 
@@ -34,7 +39,7 @@ export class MasterYiQCast extends TargetCast {
     for (let time = 0; time < MasterYiQ.markTime * 4; time += MasterYiQ.markTime) {
       const result = await Promise.any([ this.wait(), this.action.owner.sim.waitFor(MasterYiQ.markTime) ]);
       if (result) {
-        marks.push(new MasterYiQMark(this.option, this.action.owner, this.action.level));
+        marks.push(new MasterYiQMark(this.option, this.action.owner, this.action.level, this.random));
       } else {
         break;
       }
@@ -51,6 +56,7 @@ export class MasterYiQCast extends TargetCast {
 export class MasterYiQ extends Action<Unit> {
   constructor(unit: Unit) {
     super(MasterYiQ.qname, unit);
+    unit.action.attack.onCast(() => this.remainingCooldown -= 1000);
   }
 
   static readonly qname = "Alpha Strike";
@@ -71,10 +77,14 @@ export class MasterYiQ extends Action<Unit> {
   static markDamage(owner: Unit, level: number) {
     return level * 30 + owner.ad * 0.5;
   }
+  static markCritDamage(owner: Unit, level: number) {
+    return (10.5 * level + owner.ad * 0.175) * (1 + owner.bonusCritDamage / 100);
+  }
   static markTime = 231;
   static markProcTime = 164;
 
+  random: seedrandom.PRNG = seedrandom();
   async cast(option: Unit) {
-    return await new MasterYiQCast(this, option).init();
+    return await new MasterYiQCast(this, option, this.random).init();
   }
 }

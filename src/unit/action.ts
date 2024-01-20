@@ -38,6 +38,9 @@ export abstract class Action<TOption extends any> {
   get remainingCooldown() {
     return this.cooldown?.remainingTime || 0;
   }
+  set remainingCooldown(value: number) {
+    if (this.cooldown) this.cooldown.remainingTime = value;
+  }
   protected setCooldown(waitFor: number) {
     if (this.cooldown) this.cooldown.waitFor = waitFor;
   }

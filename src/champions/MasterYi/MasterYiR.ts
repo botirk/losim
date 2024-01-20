@@ -1,6 +1,6 @@
 import { TimedBuff } from "../../unit/buff";
 import { Unit } from "../../unit/unit";
-import { SelfCast, Action } from "../../unit/unitAction";
+import { SelfCast, Action } from "../../unit/action";
 
 export class MasterYiRBuff extends TimedBuff {
   private removeTakedown?: () => void;
@@ -35,6 +35,7 @@ export class MasterYiR extends Action<void> {
   readonly maxLevel: number = 3;
   readonly minLevel: number = 1;
   readonly isCancelableByUser: boolean = false;
+  readonly isCooldownFinishedOnInterrupt: boolean = false;
   
   get castTime(): number {
     return 0;

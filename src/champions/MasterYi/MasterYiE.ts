@@ -19,13 +19,13 @@ export class MasterYiEBuff extends TimedBuff {
   }
 }
 
-export class MasterYiECast extends SelfCast {
+export class MasterYiECast extends SelfCast<MasterYiE> {
   protected async onFinishCast() {
     new MasterYiEBuff(this.action.owner, this.action.level);
   }
 }
 
-export class MasterYiE extends Action<void> {
+export class MasterYiE extends Action<void, MasterYiECast> {
   constructor(unit: Unit) {
     super(MasterYiE.ename, unit);
   }

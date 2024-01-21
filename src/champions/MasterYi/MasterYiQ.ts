@@ -28,8 +28,8 @@ export class MasterYiQMark extends Buff {
   }
 }
 
-export class MasterYiQCast extends TargetCast {
-  constructor(action: Action<Unit>, option: Unit, private readonly random: seedrandom.PRNG) {
+export class MasterYiQCast extends TargetCast<MasterYiQ> {
+  constructor(action: MasterYiQ, option: Unit, private readonly random: seedrandom.PRNG) {
     super(action, option)
   }
   protected async onStartCast() {
@@ -53,7 +53,7 @@ export class MasterYiQCast extends TargetCast {
   }
 }
 
-export class MasterYiQ extends Action<Unit> {
+export class MasterYiQ extends Action<Unit, MasterYiQCast> {
   constructor(unit: Unit) {
     super(MasterYiQ.qname, unit);
     unit.action.attack.onCast(() => this.remainingCooldown -= 1000);

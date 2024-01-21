@@ -2,15 +2,18 @@ import { Simulation } from "../simulation/simulation";
 import { UnitInteraction } from "./unitInteraction";
 import { Buff } from "./buff";
 import { AttackAction } from "./attack";
-import { Cast } from "./action";
+import { MoveAction } from "./move";
+import { Action, AnyCast, Cast } from "./action";
 
 export class UnitActions {
   constructor(protected readonly owner: Unit) {}
 
   attack: AttackAction;
+  move: MoveAction;
 
   init(): this { 
     this.attack = new AttackAction(this.owner);
+    this.move = new MoveAction(this.owner);
     return this;
   }
 }
@@ -27,6 +30,13 @@ export abstract class Unit {
   armor = 0;
   crit = 0;
   bonusCritDamage = 0;
+
+  // move
+  pos = 0;
+  baseMs = 0;
+  get ms() {
+    return this.baseMs;
+  }
 
   // ad
   baseAd = 0;
@@ -127,11 +137,11 @@ export abstract class Unit {
     return this.buffs.find((buff) => buff.name === name);
   }
 
-  private _currentCast?: Cast;
+  private _currentCast?: AnyCast;
   get currentCast() {
     if (this._currentCast?.isCasting) return this._currentCast;
   }
-  set currentCast(cast: Cast | undefined) {
+  set currentCast(cast: AnyCast | undefined) {
     if (this._currentCast === cast) return;
     if (this._currentCast?.isCasting) this._currentCast.cancel();
     this._currentCast = cast;
@@ -145,7 +155,7 @@ export abstract class Unit {
       if (i !== -1) this._onCurrentCast.splice(i, 1);
     }
   }
-  onCurrentCastPromise(exception?: Cast): Promise<void> {
+  onCurrentCastPromise(exception?: AnyCast): Promise<void> {
     return new Promise<void>((res) => {
       const cancel = this.onCurrentCast(() => {
         if (exception === undefined || this._currentCast !== exception) {

@@ -2,6 +2,8 @@ import { ChampionStats } from "../champion/championStats";
 
 
 export const MasterYiStats: ChampionStats = {
+  baseMs: 355,
+
   baseAs: 0.679,
   asGrowth: 2,
 

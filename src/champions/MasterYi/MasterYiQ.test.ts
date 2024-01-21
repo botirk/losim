@@ -183,3 +183,18 @@ test("MasterYi Q aa cooldown reduction", async () => {
 
   expect(yi1.action.q.remainingCooldown).toBe(cd - yi1.action.attack.castTime - 1000);
 });
+
+test("MasterYi Q range", async () => {
+  const sim = new Simulation().start(20000);
+  const yi1 = new MasterYi().init(sim);
+  const yi2 = new MasterYi().init(sim);
+  yi1.action.q.level = 1;
+  yi2.pos = yi1.pos + 1000;
+  
+  expect(await yi1.action.q.cast(yi2)).toBe(false);
+  expect(sim.time).toBe(0);
+
+  yi2.pos = 600;
+  expect(await yi1.action.q.cast(yi2)).toBe(true);
+  expect(yi1.distance(yi2)).toBe(75);
+});

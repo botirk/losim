@@ -16,6 +16,9 @@ export class AttackAction extends EnemyTargetAction<AttackCast> {
   readonly maxLevel: number = 0;
   readonly isCancelableByUser: boolean = true;
   readonly isCooldownFinishedOnInterrupt: boolean = true;
+  get maxRange(): number {
+    return this.owner.attackRange;
+  }
 
   get castTime() {
     return (1 / this.owner.as) * this.owner.attackAnimation * 1000;
@@ -24,7 +27,7 @@ export class AttackAction extends EnemyTargetAction<AttackCast> {
     return (1 / this.owner.as) * 1000;
   }
   castable(option: Unit): boolean {
-    return !this.owner.dead && option.targetable;
+    return !this.owner.dead && option.targetable && Math.abs(this.owner.pos - option.pos) < this.maxRange;
   }
   calc(target: Unit) {
     return target.interaction.calcPercentDamageReduction({ value: this.owner.ad, src: this.owner, type: DamageType.PHYSIC }).value;

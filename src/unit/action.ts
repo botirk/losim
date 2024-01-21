@@ -76,6 +76,8 @@ export abstract class Action<TOption extends any, TCast> {
 }
 
 export abstract class EnemyTargetAction<TCast> extends Action<Unit, TCast> {
+  abstract get maxRange(): number;
+
   protected _onHitUnit: ((target: Unit, multiplier: number) => void)[] = [];
   onHitUnit(cb: typeof this._onHitUnit[0]) {
     this._onHitUnit.push(cb);
@@ -88,7 +90,7 @@ export abstract class EnemyTargetAction<TCast> extends Action<Unit, TCast> {
     for (const listener of this._onHitUnit) listener(target, multiplier);
   }
   castable(option: Unit): boolean {
-    return super.castable && option.targetable;
+    return super.castable(option) && option.targetable && Math.abs(option.pos - this.owner.pos) <= this.maxRange;
   }
 }
 

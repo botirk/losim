@@ -301,7 +301,7 @@ test("attack targetable further", async () => {
   expect(yi1.action.attack.isCooldown).toBe(true);
 });
 
-test("attack crits", async () => {
+test("attack move", async () => {
   const sim = new Simulation().start(15000000);
   const yi1 = new MasterYi().init(sim);
   const yi2 = new MasterYi().init(sim);
@@ -323,4 +323,18 @@ test("attack crits", async () => {
 
   expect(crits).toBeGreaterThan(400);
   expect(crits).toBeLessThan(600);
+});
+
+test("attack crits", async () => {
+  const sim = new Simulation().start(15000000);
+  const yi1 = new MasterYi().init(sim);
+  const yi2 = new MasterYi().init(sim);
+  
+  yi2.pos = yi1.pos + 500;
+
+  expect(await yi1.action.attack.cast(yi2)).toBe(false);
+  expect(sim.time).toBe(0);
+
+  yi2.pos = yi1.pos;
+  expect(await yi1.action.attack.cast(yi2)).toBe(true);
 });

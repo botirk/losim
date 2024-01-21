@@ -10,6 +10,7 @@ export const MasterYiStats: ChampionStats = {
   baseHealth: 669,
   healthGrowth: 100,
 
+  attackRange: 175,
   baseAd: 65,
   adGrowth: 2.2,
 

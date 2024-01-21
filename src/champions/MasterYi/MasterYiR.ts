@@ -36,6 +36,10 @@ export class MasterYiR extends Action<void, MasterYiRCast> {
   readonly minLevel: number = 1;
   readonly isCancelableByUser: boolean = false;
   readonly isCooldownFinishedOnInterrupt: boolean = false;
+  get manaCost(): number {
+    if (this.level <= 0) return 0;
+    return 100;
+  }
   
   get castTime(): number {
     return 0;

@@ -1,7 +1,12 @@
 import { MasterYi } from "./MasterYi";
 import { Simulation } from "../../simulation/simulation";
 import { DamageType } from "../../unit/unitInteraction";
-import { MasterYiWCast } from "./MasterYiW";
+import { MasterYiW, MasterYiWCast } from "./MasterYiW";
+import { selfActionLevelTest, selfActionManaTest } from "../../unit/action/actionTest";
+
+selfActionLevelTest(MasterYiW.wname, (sim) => new MasterYi().init(sim).action.w);
+
+selfActionManaTest(MasterYiW.wname, (sim) => new MasterYi().init(sim).action.w);
 
 test("MasterYi W NoLevel", async () => {
   const sim = new Simulation().start(500000);
@@ -130,4 +135,15 @@ test("MasterYi W Cancel", async () => {
   const dmg = yi1.interaction.calcPercentDamageReduction({ src: yi1, value: 100, type: DamageType.PHYSIC }).value;
   expect(dmg).toBeGreaterThan(70);
   expect(dmg).toBeLessThan(90);
+});
+
+test("MasterYi W Mana continuation", async () => {
+  const sim = new Simulation().start(500000);
+  const yi1 = new MasterYi().init(sim);
+  yi1.action.w.level = 1;
+
+  yi1.mana = yi1.action.w.manaCost;
+  expect(await yi1.action.w.cast()).toBe(false);
+
+  expect(sim.time).toBe(500);
 });

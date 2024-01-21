@@ -2,6 +2,11 @@ import { MasterYi } from "./MasterYi";
 import { Simulation } from "../../simulation/simulation";
 import { MasterYiR, MasterYiRBuff } from "./MasterYiR";
 import { DamageType } from "../../unit/unitInteraction";
+import { selfActionLevelTest, selfActionManaTest } from "../../unit/action/actionTest";
+
+selfActionLevelTest(MasterYiR.rname, (sim) => new MasterYi().init(sim).action.r);
+
+selfActionManaTest(MasterYiR.rname, (sim) => new MasterYi().init(sim).action.r);
 
 test("MasterYi R unleveled", async () => {
   const sim = new Simulation().start(5000);
@@ -22,28 +27,31 @@ test("MasterYi R levels(as)", async () => {
   const yi1 = new MasterYi().init(sim);
 
   yi1.action.r.level = 1;
-  await yi1.action.r.cast();
+  expect(await yi1.action.r.cast()).toBe(true);
   expect(yi1.buffs).toHaveLength(1);
   expect(yi1.bonusAs).toBe(25);
 
+  yi1.mana = yi1.maxMana;
   await yi1.action.r.waitCooldown();
   expect(yi1.bonusAs).toBe(0);
   yi1.action.r.level = 2;
-  await yi1.action.r.cast();
+  expect(await yi1.action.r.cast()).toBe(true);
   expect(yi1.buffs).toHaveLength(1);
   expect(yi1.bonusAs).toBe(35);
 
+  yi1.mana = yi1.maxMana;
   await yi1.action.r.waitCooldown();
   expect(yi1.bonusAs).toBe(0);
   yi1.action.r.level = 3;
-  await yi1.action.r.cast();
+  expect(await yi1.action.r.cast()).toBe(true);
   expect(yi1.buffs).toHaveLength(1);
   expect(yi1.bonusAs).toBe(45);
 
+  yi1.mana = yi1.maxMana;
   await yi1.action.r.waitCooldown();
   expect(yi1.bonusAs).toBe(0);
   yi1.action.r.level = 5;
-  await yi1.action.r.cast();
+  expect(await yi1.action.r.cast()).toBe(true);
   expect(yi1.buffs).toHaveLength(1);
   expect(yi1.bonusAs).toBe(45);
 

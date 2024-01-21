@@ -1,5 +1,5 @@
-import { WheelItem } from "../simulation/defered";
-import { Unit } from "./unit";
+import { WheelItem } from "../../simulation/defered";
+import { Unit } from "../unit";
 
 
 export type AnyAction = Action<any, AnyCast>;
@@ -15,6 +15,11 @@ export abstract class Action<TOption extends any, TCast> {
   abstract readonly maxLevel: number;
   abstract readonly isCancelableByUser: boolean;
   abstract readonly isCooldownFinishedOnInterrupt: boolean;
+
+  // costs
+  get manaCost(): number {
+    return 0;
+  }
 
   // level
   private _level = 0;
@@ -55,7 +60,7 @@ export abstract class Action<TOption extends any, TCast> {
   }
   // cast
   castable(option: TOption): boolean {
-    return this.level >= this.minLevel && (!this.owner.currentCast || this.castTime === 0) && !this.isCooldown && !this.owner.dead;
+    return this.level >= this.minLevel && (!this.owner.currentCast || this.castTime === 0) && !this.isCooldown && !this.owner.dead && this.owner.mana >= this.manaCost;
   }
   get currentCast(): TCast | undefined {
     if (this.owner.currentCast?.action === this) return this.owner.currentCast as TCast;
@@ -127,6 +132,7 @@ export abstract class Cast<TOption extends any, TAction extends Action<TOption, 
   async init() {
     if (this.action.currentCast) return this.action.currentCast.wait();
     if (!this.action.castable(this.option)) return false;
+    this.action.owner.mana -= this.action.manaCost;
     if (this.action.castTime <= 0) {
       this.action.startCooldown();
       this.onStartCast();

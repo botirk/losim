@@ -1,5 +1,5 @@
 import { Unit } from "../../unit/unit";
-import { Action, SelfCast } from "../../unit/action";
+import { Action, SelfCast } from "../../unit/action/action";
 import { DamageType } from "../../unit/unitInteraction";
 
 export class MasterYiWCast extends SelfCast<MasterYiW> {

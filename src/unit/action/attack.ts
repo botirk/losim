@@ -1,6 +1,6 @@
-import { Unit } from "./unit";
+import { Unit } from "../unit";
 import { EnemyTargetAction, TargetCast } from "./action";
-import { DamageType } from "./unitInteraction";
+import { DamageType } from "../unitInteraction";
 import seedrandom from "seedrandom";
 
 export class AttackAction extends EnemyTargetAction<AttackCast> {

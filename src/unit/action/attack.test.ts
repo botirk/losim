@@ -1,6 +1,6 @@
-import { MasterYi } from "../champions/MasterYi/MasterYi";
-import { Simulation } from "../simulation/simulation";
-import { DamageType } from "./unitInteraction";
+import { MasterYi } from "../../champions/MasterYi/MasterYi";
+import { Simulation } from "../../simulation/simulation";
+import { DamageType } from "../unitInteraction";
 
 test("attack", async () => {
   const sim = new Simulation().start(5000) as any;

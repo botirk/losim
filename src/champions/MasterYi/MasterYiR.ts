@@ -1,6 +1,6 @@
 import { TimedBuff } from "../../unit/buff";
 import { Unit } from "../../unit/unit";
-import { SelfCast, Action } from "../../unit/action";
+import { SelfCast, Action } from "../../unit/action/action";
 
 export class MasterYiRBuff extends TimedBuff {
   private removeTakedown?: () => void;

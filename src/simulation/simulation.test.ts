@@ -1,4 +1,4 @@
-import { Rejection, WheelItem } from "./defered";
+import { WheelItem } from "./defered";
 import { Simulation } from "./simulation";
 
 test("Simulation.time", () => {
@@ -85,4 +85,13 @@ test("Simulation.start", async () => {
 
   expect(sim.waitFor(25001)).resolves.toBe(false);
 });
+
+test("Simulation.start", async () => {
+  const sim = new Simulation().start(25000) as any;
+  expect(sim.wheel).toHaveLength(1);
+  expect(sim.wheel[0].time).toBe(25000);
+
+  expect(sim.waitFor(25001)).resolves.toBe(false);
+});
+
 

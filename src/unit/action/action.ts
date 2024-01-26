@@ -60,10 +60,10 @@ export abstract class Action<TOption extends any, TCast> {
   }
   // cast
   castable(option: TOption): boolean {
-    return this.level >= this.minLevel && (!this.owner.currentCast || this.castTime === 0) && !this.isCooldown && !this.owner.dead && this.owner.mana >= this.manaCost;
+    return this.level >= this.minLevel && (!this.owner.currentCast.value || this.castTime === 0) && !this.isCooldown && !this.owner.dead.value && this.owner.mana >= this.manaCost;
   }
   get currentCast(): TCast | undefined {
-    if (this.owner.currentCast?.action === this) return this.owner.currentCast as TCast;
+    if (this.owner.currentCast.value?.action === this) return this.owner.currentCast.value as TCast;
   }
   abstract cast(option: TOption): Promise<boolean>;
   // event
@@ -95,7 +95,7 @@ export abstract class EnemyTargetAction<TCast> extends Action<Unit, TCast> {
     for (const listener of this._onHitUnit) listener(target, multiplier);
   }
   castable(option: Unit): boolean {
-    return super.castable(option) && option.targetable && Math.abs(option.pos - this.owner.pos) <= this.maxRange;
+    return super.castable(option) && option.targetable.value && Math.abs(option.pos - this.owner.pos) <= this.maxRange;
   }
 }
 
@@ -140,7 +140,7 @@ export abstract class Cast<TOption extends any, TAction extends Action<TOption, 
       return true;
     } else {
       this.wheel = this.action.owner.sim.waitFor(this.action.castTime);
-      this.action.owner.currentCast = this;
+      this.action.owner.currentCast.value = this;
       this.action.startCooldown();
       this.watchInterrupt();
       this.onStartCast();
@@ -158,21 +158,21 @@ export abstract class Cast<TOption extends any, TAction extends Action<TOption, 
 
 export abstract class SelfCast<TAction extends Action<void, Cast<void, TAction>>> extends Cast<void, TAction> {
   watchInterrupt: () => Promise<void> = async () => {
-    const result = await Promise.any([ this.action.owner.onDeathPromise().then(() => false), this.wait() ]);
+    const result = await Promise.any([ this.action.owner.dead.promise(this.wait()).then(() => false), this.wait() ]);
     if (result === false) this.interrupt();
   };
 }
 
 export abstract class TargetCast<TAction extends Action<Unit, Cast<Unit, TAction>>> extends Cast<Unit, TAction> {
   watchInterrupt: () => Promise<void> = async () => {
-    const result = await Promise.any([ this.option.onTargetablePromise().then(() => false), this.action.owner.onDeathPromise().then(() => false), this.wait() ]);
+    const result = await Promise.any([ this.option.targetable.promise(this.wait(), false).then(() => false), this.action.owner.dead.promise(this.wait(), true).then(() => false), this.wait() ]);
     if (result === false) this.interrupt();
   };
 }
 
 export abstract class PosCast<TAction extends Action<number, Cast<number, TAction>>> extends Cast<number, TAction> {
   watchInterrupt: () => Promise<void> = async () => {
-    const result = await Promise.any([ this.action.owner.onDeathPromise().then(() => false), this.wait() ]);
+    const result = await Promise.any([ this.action.owner.dead.promise(this.wait(), true).then(() => false), this.wait() ]);
     if (result === false) this.interrupt();
   };
 }

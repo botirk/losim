@@ -78,7 +78,7 @@ test('UnitInteraction.onKill', async () => {
   yi1.interaction.onKill((unit) => {
     if (unit === yi2) counted += 1;
   });
-  while (!yi2.dead) await yi1.action.attack.cast(yi2);
+  while (!yi2.dead.value) await yi1.action.attack.cast(yi2);
 
   expect(counted).toBe(1);
 });
@@ -162,7 +162,7 @@ test("UnitInteraction.heal", async () => {
   yi.interaction.takeHeal({ src: yi, value: 50 });
   expect(yi.health).toBe(51);
 
-  yi.dead = true;
+  yi.dead.value = true;
   yi.health = 0;
   yi.interaction.takeHeal({ src: yi, value: 50 });
   expect(yi.health).toBe(0);

@@ -16,7 +16,7 @@ export class MasterYiQMark extends Buff {
 
   fade(): void {
     if (!this.isActive) return;
-    if (this.owner.targetable) {
+    if (this.owner.targetable.value) {
       const isCrit = (this.src.crit >= (this.random() * 100));
       const damage = (isCrit) ? this.damage + this.critDamage : this.damage;
       const modifier = (this.owner.buffsNamed(MasterYiQ.qname).length > 1) ? 0.25 : 1;
@@ -33,7 +33,7 @@ export class MasterYiQCast extends TargetCast<MasterYiQ> {
     super(action, option)
   }
   protected async onStartCast() {
-    this.action.owner.targetable = false;
+    this.action.owner.targetable.value = false;
 
     const marks: MasterYiQMark[] = [];
     for (let time = 0; time < MasterYiQ.markTime * 4; time += MasterYiQ.markTime) {
@@ -47,9 +47,9 @@ export class MasterYiQCast extends TargetCast<MasterYiQ> {
     // appear near target
     if (this.action.owner.pos <= this.option.pos) this.action.owner.pos = this.option.pos - 75; else this.action.owner.pos = this.option.pos + 75;
     // final wait become targetable
-    this.action.owner.targetable = true;
+    this.action.owner.targetable.value = true;
     // proc wait - when alive
-    if (!this.action.owner.dead && this.option.targetable) await this.action.owner.sim.waitFor(MasterYiQ.markProcTime);
+    if (!this.action.owner.dead.value && this.option.targetable.value) await this.action.owner.sim.waitFor(MasterYiQ.markProcTime);
     // proc
     for (const mark of marks) mark.fade();
   }

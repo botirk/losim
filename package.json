@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "description": "rpg/moba simulator",
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "testCurrent": "jest src/unit/action/attack.test.ts"
   },
   "author": "botirk",
   "license": "ISC",

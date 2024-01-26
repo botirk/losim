@@ -84,8 +84,8 @@ test("MasterYi Q target death", async () => {
   yi2.interaction.onTakeDamage(() => hits += 1);
 
   const res = yi1.action.q.cast(yi2);
-  yi2.dead = true;
-  yi2.dead = false;
+  yi2.dead.value = true;
+  yi2.dead.value = false;
   expect(await res).toBe(false);
   expect(hits).toBe(0);
   expect(sim.time).toBe(0);
@@ -104,8 +104,8 @@ test("MasterYi src death", async () => {
   yi2.interaction.onTakeDamage(() => hits += 1);
 
   const res = yi1.action.q.cast(yi2);
-  yi1.dead = true;
-  yi1.dead = false;
+  yi1.dead.value = true;
+  yi1.dead.value = false;
   expect(await res).toBe(false);
   expect(hits).toBe(0);
   expect(sim.time).toBe(0);

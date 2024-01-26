@@ -19,7 +19,7 @@ export abstract class Champion extends Unit {
     this.attackRange = this.stats.attackRange;
     this.armor = this.stats.baseArmor + this.calcStatGrowth(this.stats.armorGrowth);
     this.baseAs = this.stats.baseAs;
-    this.bonusAs = this.calcStatGrowth(this.stats.asGrowth);
+    this.bonusAs.value = this.calcStatGrowth(this.stats.asGrowth);
     this.baseMs = this.stats.baseMs;
     this.mana = this.stats.baseMana + this.calcStatGrowth(this.stats.manaGrowth);
     this.maxMana = this.mana;

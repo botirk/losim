@@ -72,11 +72,11 @@ export const enemyActionTargetableTest = (name: string, getAction: (sim: Simulat
     const action = getAction(sim);
     action.level = action.minLevel;
 
-    enemy.targetable = false;
+    enemy.targetable.value = false;
     expect(await action.cast(enemy)).toBe(false);
     expect(action.isCooldown).toBe(false);
 
-    enemy.targetable = true;
+    enemy.targetable.value = true;
     const cast = action.cast(enemy);
     expect(action.isCooldown).toBe(true);
     expect(await cast).toBe(true);

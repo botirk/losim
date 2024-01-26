@@ -19,7 +19,7 @@ test("MasterYi R unleveled", async () => {
   expect(yi1.action.r.currentCast).toBeUndefined();
   expect(yi1.action.r.isCooldown).toBe(false);
   expect(yi1.buffs).toHaveLength(0);
-  expect(yi1.bonusAs).toBe(0);
+  expect(yi1.bonusAs.value).toBe(0);
 });
 
 test("MasterYi R levels(as)", async () => {
@@ -29,34 +29,34 @@ test("MasterYi R levels(as)", async () => {
   yi1.action.r.level = 1;
   expect(await yi1.action.r.cast()).toBe(true);
   expect(yi1.buffs).toHaveLength(1);
-  expect(yi1.bonusAs).toBe(25);
+  expect(yi1.bonusAs.value).toBe(25);
 
   yi1.mana = yi1.maxMana;
   await yi1.action.r.waitCooldown();
-  expect(yi1.bonusAs).toBe(0);
+  expect(yi1.bonusAs.value).toBe(0);
   yi1.action.r.level = 2;
   expect(await yi1.action.r.cast()).toBe(true);
   expect(yi1.buffs).toHaveLength(1);
-  expect(yi1.bonusAs).toBe(35);
+  expect(yi1.bonusAs.value).toBe(35);
 
   yi1.mana = yi1.maxMana;
   await yi1.action.r.waitCooldown();
-  expect(yi1.bonusAs).toBe(0);
+  expect(yi1.bonusAs.value).toBe(0);
   yi1.action.r.level = 3;
   expect(await yi1.action.r.cast()).toBe(true);
   expect(yi1.buffs).toHaveLength(1);
-  expect(yi1.bonusAs).toBe(45);
+  expect(yi1.bonusAs.value).toBe(45);
 
   yi1.mana = yi1.maxMana;
   await yi1.action.r.waitCooldown();
-  expect(yi1.bonusAs).toBe(0);
+  expect(yi1.bonusAs.value).toBe(0);
   yi1.action.r.level = 5;
   expect(await yi1.action.r.cast()).toBe(true);
   expect(yi1.buffs).toHaveLength(1);
-  expect(yi1.bonusAs).toBe(45);
+  expect(yi1.bonusAs.value).toBe(45);
 
   await yi1.action.r.waitCooldown();
-  expect(yi1.bonusAs).toBe(0);
+  expect(yi1.bonusAs.value).toBe(0);
 });
 
 test("MasterYi R Buff", async () => {

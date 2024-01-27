@@ -30,7 +30,7 @@ export class UnitInteraction {
     this.unit.health += e.value;
   }
 
-  takeDamage(e: DamageEvent) {
+  takeDamage(e: DamageEvent): DamageEvent {
     // prevent beating the dead
     if (this.unit.dead.value === true) return;
     // percent damage reduction
@@ -50,6 +50,7 @@ export class UnitInteraction {
         this._takedownTimes.delete(takedownTime[0]);
       }
     }
+    return e;
   }
 
   private readonly _onTakeDamage: ((e: Readonly<DamageEvent>) => void)[] = [];

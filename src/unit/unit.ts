@@ -64,10 +64,8 @@ export abstract class Unit {
   maxHealth = 0;
   mana = 0;
   maxMana = 0;
-  attackAnimation = 0.4;
   armor = 0;
-  crit = 0;
-  bonusCritDamage = 0;
+  abstract isMelee: boolean;
 
   // move
   distance(unit: Unit) {
@@ -82,8 +80,12 @@ export abstract class Unit {
 
   // ad
   attackRange = 175;
+  attackAnimation = 0.4;
   baseAd = 0;
   bonusAd = 0;
+  lifesteal = 0;
+  crit = 0;
+  bonusCritDamage = 0;
   get ad() {
     return this.baseAd + this.bonusAd;
   }
@@ -130,6 +132,7 @@ export abstract class Unit {
     if (equip.bonusAd) this.bonusAd += equip.bonusAd;
     if (equip.crit) this.crit = Math.max(0, Math.min(100, this.crit + equip.crit));
     if (equip.bonusCritDamage) this.bonusCritDamage += equip.bonusCritDamage;
+    if (equip.lifesteal) this.lifesteal += equip.lifesteal;
 
     if (equip.armor) this.armor += equip.armor;
 

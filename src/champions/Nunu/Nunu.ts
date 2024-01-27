@@ -7,6 +7,7 @@ export class Nunu extends Champion {
   constructor() {
     super("Nunu");
   }
+  isMelee: boolean = true;
 
   stats = NunuStats;
   action: Actions;

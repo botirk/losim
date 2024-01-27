@@ -30,7 +30,8 @@ export class MasterYi extends Champion {
   constructor() {
     super("Master Yi");
   }
-
+  isMelee: boolean = true;
+  
   action: MasterYiAction; 
   stats = MasterYiStats;
 

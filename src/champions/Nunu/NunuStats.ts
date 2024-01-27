@@ -12,6 +12,7 @@ export const NunuStats: ChampionStats = {
   baseMana: 280,
   manaGrowth: 42,
 
+  attackAnimation: 0.19359,
   attackRange: 125,
   baseAd: 61,
   adGrowth: 3,

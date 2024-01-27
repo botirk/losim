@@ -11,5 +11,6 @@ test("simulateDummy", async () => {
 test("simulateDummy nunu runs away", async () => {
   const result = await simulateDummy((sim) => new MasterYi().init(sim), true, 180*1000);
   
-  expect(result.isDummyDead).toBe(false);
+  expect(result.dps).toBeLessThan(25);
+  expect(result.isDummyDead).toBe(true);
 });

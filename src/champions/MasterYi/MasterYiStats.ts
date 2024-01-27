@@ -13,6 +13,7 @@ export const MasterYiStats: ChampionStats = {
   baseMana: 251,
   manaGrowth: 42,
 
+  attackAnimation: 0.24375,
   attackRange: 175,
   baseAd: 65,
   adGrowth: 2.2,

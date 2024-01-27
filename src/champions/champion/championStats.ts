@@ -15,6 +15,7 @@ export interface ChampionStats {
   baseArmor: number,
   armorGrowth: number,
 
+  attackAnimation: number,
   baseAs: number,
   asGrowth: number;
 }

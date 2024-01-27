@@ -1,4 +1,4 @@
-import { Unit } from "../unit/unit"
+import { Unit } from "./unit"
 
 export type EquipType = "item" | "finishedItem";
 
@@ -21,4 +21,5 @@ export interface Equip {
   bonusMs?: number,
 
   apply?: (unit: Unit) => boolean | void,
+  test?: () => void,
 }

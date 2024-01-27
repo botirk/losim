@@ -5,7 +5,7 @@ import { Buff } from "./buff";
 import { AttackAction } from "./action/attack";
 import { MoveAction } from "./action/move";
 import { AnyCast } from "./action/action";
-import { Equip } from "../items/equip";
+import { Equip } from "./equip";
 
 export class Actions {
   constructor(protected readonly owner: Unit) {}

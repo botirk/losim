@@ -47,9 +47,9 @@ export class AttackCast extends TargetCast<AttackAction> {
   protected async onFinishCast() {
     const isCrit = (Math.max(0, Math.min(100, this.action.owner.crit)) >= this.random() * 100);
     const value = isCrit ? this.action.owner.ad * (1.75 + this.action.owner.bonusCritDamage / 100) : this.action.owner.ad;
+    this.action.procOnHitUnit(this.option);
     const result = this.option.interaction.takeDamage({ value, src: this.action.owner, type: DamageType.PHYSIC, isCrit });
     if (this.action.owner.lifesteal > 0) this.action.owner.interaction.takeHeal({ src: this.action.owner, value: result.value * (this.action.owner.lifesteal / 100) });
-    this.action.procOnHitUnit(this.option);
   }
 
   async init() {

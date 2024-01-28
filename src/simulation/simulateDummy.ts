@@ -1,5 +1,6 @@
 import { Nunu } from "../champions/Nunu/Nunu";
 import { Champion } from "../champions/champion/champion";
+import { boot, bootSymbol } from "../items/boots";
 import { Simulate1v1Result, Simulation, simulate1v1 } from "./simulation";
 
 export type SimulateDummyResult<TChampion extends Champion> = Simulate1v1Result<TChampion, Nunu>;
@@ -11,6 +12,7 @@ export const simulateDummy = <TChampion extends Champion>(getChampion: (sim: Sim
     const championLogic = (champion: TChampion, nunu: Nunu) => champion.killDummy(nunu);
 
     const nunu = new Nunu();
+    if (champion.appliedEquips.some((e) => e.uniqueGroup === bootSymbol)) nunu.applyEquip(boot);
     nunu.level = champion.level;
     nunu.init(sim);
     const nunuLogic = (nunu: Nunu, champion: TChampion) => { if (dummyRunsAway) return nunu.runAwayFromEnemyAsDummy(champion); }

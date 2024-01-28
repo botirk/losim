@@ -11,6 +11,7 @@ export const botrkDamage = (src: Unit, target: Unit) => {
 }
 
 export const botrk: Equip = {
+  unique: true,
   type: "finishedItem",
   name: "Blade of the Ruined King",
   bonusAd: 40,
@@ -72,6 +73,7 @@ export const witsendDamage = (src: Unit) => {
 }
 
 export const witsend: Equip = {
+  unique: true,
   type: "finishedItem",
   name: "Wit's End",
   bonusAs: 55,

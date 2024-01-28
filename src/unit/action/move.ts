@@ -10,6 +10,7 @@ export class MoveAction extends Action<number, MoveCast> {
   readonly maxLevel: number = 0;
   readonly isCancelableByUser: boolean = true;
   readonly isCooldownFinishedOnInterrupt: boolean = true;
+  readonly isUltimate: boolean = false;
 
   get castTime() {
     return this.owner.sim.tickTime;

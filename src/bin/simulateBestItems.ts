@@ -10,7 +10,7 @@ const rli = readline.createInterface(stdin, stdout);
 (async () => {
   for (const i in champions) rli.write(`${i} ${new champions[i]().name}\n`);
   const champName = await rli.question("Pick a champion (number or string) Master Yi default\n");
-  const Champion = champions[champName] || champions.find((champ) => new champ().name.toLowerCase() === champName.toLowerCase()) || MasterYi;
+  const Champion: new() => Champion = champions[champName] || champions.find((champ) => new champ().name.toLowerCase() === champName.toLowerCase()) || MasterYi;
 
   const countItemsStr = await rli.question("Count of items (1-6) 1 default\n");
   let parsedCountItemsStr = Number(countItemsStr);
@@ -18,8 +18,8 @@ const rli = readline.createInterface(stdin, stdout);
   const countItems = Math.max(1, Math.min(6, Math.floor(parsedCountItemsStr)));
 
   const levelStr = await rli.question("Select champion level (1-18) 9 default\n");
-  let parsedLevelStr = Number(levelStr);
-  if (isNaN(parsedLevelStr)) parsedLevelStr = 10;
+  let parsedLevelStr = parseInt(levelStr);
+  if (isNaN(parsedLevelStr)) parsedLevelStr = 9;
   const level = Math.max(1, Math.min(18, Math.floor(parsedLevelStr)));
 
   const shouldRunAway = (await rli.question("Should dummy run away (y/n) n default\n"))[0] === "y" ? true : false;
@@ -30,6 +30,7 @@ const rli = readline.createInterface(stdin, stdout);
     const champ = new Champion();
     champ.level = level;
     champ.init(sim);
+    champ.levelUp();
     return champ;
   }, countItems, shouldRunAway);
 

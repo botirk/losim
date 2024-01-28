@@ -39,6 +39,7 @@ export class MasterYiW extends Action<void, MasterYiWCast> {
   readonly minLevel: number = 1;
   readonly isCancelableByUser: boolean = true;
   readonly isCooldownFinishedOnInterrupt: boolean = false;
+  readonly isUltimate: boolean = true;
 
   get manaCost(): number {
     if (this.level <= 0) return 0;

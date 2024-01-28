@@ -106,3 +106,14 @@ test('Champion runAway', async () => {
   await yi1.runAwayFromEnemyAsDummy(yi2);
   expect(yi1.pos).toBe(0);
 });
+
+test('Champion levelUp', async () => {
+  const yi1 = new MasterYi().init();
+  yi1.level = 9;
+  yi1.levelUp();
+
+  expect(yi1.action.q.level).toBe(5);
+  expect(yi1.action.r.level).toBe(1);
+  expect(yi1.action.e.level).toBe(2);
+  expect(yi1.action.w.level).toBe(1);
+});

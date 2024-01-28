@@ -66,6 +66,8 @@ export class MasterYiQ extends EnemyTargetAction<MasterYiQCast> {
   readonly minLevel: number = 1;
   readonly isCancelableByUser: boolean = false;
   readonly isCooldownFinishedOnInterrupt: boolean = false;
+  readonly isUltimate: boolean = false;
+
   get maxRange(): number {
     return 600;
   }

@@ -1,6 +1,6 @@
 import { Simulation } from "../../simulation/simulation";
-import { Actions } from "../../unit/unit";
-import { Champion } from "../champion/champion";
+import { Actions, Unit } from "../../unit/unit";
+import { Champion, spellShort } from "../champion/champion";
 import { MasterYiStats } from "./MasterYiStats";
 import { MasterYiE } from "./MasterYiE";
 import { MasterYiR } from "./MasterYiR";
@@ -34,6 +34,21 @@ export class MasterYi extends Champion {
   
   action: MasterYiAction; 
   stats = MasterYiStats;
+
+  levelUpPriority: [spellShort, spellShort, spellShort, spellShort] = ["R", "Q", "E", "W"];
+  levelUp(): void {
+    this.levelUpAnyChampion(this.action.q, this.action.w, this.action.e, this.action.r);
+  }
+
+  async killDummy(enemy: Unit) {
+    if (this.distance(enemy) > this.action.attack.maxRange && await this.action.q.cast(enemy)) return;
+    else if (await this.action.r.cast()) return;
+    else if (this.action.attack.currentCast && await this.action.attack.currentCast.wait()) return;
+    else if (this.action.attack.isCooldown && await this.action.move.closeTo(enemy)) return;
+    else if (this.action.attack.castable(enemy) && await this.action.e.cast()) return;
+    else if (await this.action.attack.cast(enemy)) return;
+    else await this.action.move.closeTo(enemy);
+  }
 
   init(simIN?: Simulation): this {
     super.init(simIN);

@@ -1,6 +1,6 @@
 import { Equip } from "../unit/equip";
 
-const bootSymbol = Symbol("boots");
+export const bootSymbol = Symbol("boots");
 
 export const boot: Equip = { 
   unique: true,
@@ -10,6 +10,16 @@ export const boot: Equip = {
   uniqueGroup: bootSymbol,
 };
 
+export const berserkers: Equip = {
+  unique: true,
+  type: "finishedItem",
+  name: "Berserker's Greaves",
+  bonusMs: 45,
+  bonusAs: 35,
+  uniqueGroup: bootSymbol,
+};
+
 export const boots: Equip[] = [
   boot,
+  berserkers,
 ];

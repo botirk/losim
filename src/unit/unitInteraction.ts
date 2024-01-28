@@ -32,7 +32,7 @@ export class UnitInteraction {
 
   takeDamage(e: DamageEvent): DamageEvent {
     // prevent beating the dead
-    if (this.unit.dead.value === true) return;
+    if (this.unit.dead.value === true) return { ...e, value: 0 };
     // percent damage reduction
     for (const listener of this._percentDamageReduction) listener(e);
     // fix

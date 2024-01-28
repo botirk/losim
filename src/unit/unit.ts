@@ -60,11 +60,13 @@ export abstract class Unit {
   abstract action: Actions;
   interaction: UnitInteraction;
 
+  level = 1;
   health = 0;
   maxHealth = 0;
   mana = 0;
   maxMana = 0;
   armor = 0;
+  mr = 0;
   abstract isMelee: boolean;
 
   // move
@@ -138,6 +140,7 @@ export abstract class Unit {
     if (equip.lifesteal) this.lifesteal += equip.lifesteal;
 
     if (equip.armor) this.armor += equip.armor;
+    if (equip.mr) this.mr += equip.mr;
 
     if (equip.maxHealth) this.maxHealth += equip.maxHealth;
     if (equip.maxMana) this.maxMana += equip.maxMana;

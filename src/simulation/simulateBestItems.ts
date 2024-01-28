@@ -71,12 +71,11 @@ export const simulateBestNextItems = async <TChampion extends Champion>(getChamp
       }
       if (same) {
         result.splice(subresult2, 1);
-        subresult1 = Math.max(0, subresult1 - 1);
         subresult2 = Math.max(0, subresult2 - 1);
       }
     }
   }
 
-  result.sort((a, b) => a.result.ttk - b.result.ttk).splice(10);
+  result.sort((a, b) => a.result.ttk - b.result.ttk).splice(maxResults);
   return result;
 }

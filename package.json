@@ -5,7 +5,7 @@
   "scripts": {
     "test": "jest",
     "testCurrent": "jest src/unit/action/attack.test.ts",
-    "simulateBestItems": "tsx src/bin/simulateBestItems.ts"
+    "bestItems": "tsx src/bin/simulateBestItems.ts"
   },
   "author": "botirk",
   "license": "ISC",

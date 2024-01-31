@@ -2,5 +2,7 @@
   "compilerOptions": {
     "esModuleInterop": true,
     "target": "es6",
+    "lib": ["ES2022"]
   },
+  
 }

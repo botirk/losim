@@ -5,19 +5,23 @@
   "scripts": {
     "test": "jest",
     "testCurrent": "jest src/unit/action/attack.test.ts",
-    "bestItems": "tsx src/bin/simulateBestItems.ts"
+    "bestItems": "tsx src/bin/simulateBestItems.ts",
+    "dev": "parcel src/bin/simulateBestItems.html --dist-dir build",
+    "build": "parcel build src/bin/simulateBestItems.html --dist-dir build"
   },
   "author": "botirk",
   "license": "ISC",
   "dependencies": {
     "seedrandom": "^3.0.5",
+    "setimmediate": "^1.0.5",
     "tsx": "^4.7.0"
   },
   "devDependencies": {
     "@types/jest": "^29.5.11",
     "@types/seedrandom": "^3.0.8",
     "jest": "^29.7.0",
+    "parcel": "^2.11.0",
+    "process": "^0.11.10",
     "ts-jest": "^29.1.1"
-  },
-  "type": "module"
+  }
 }

@@ -11,6 +11,9 @@
 3. Written in typescript
 4. Tested with jest
 
-## Try it
+## Try it in browser
+https://botirk.github.io/losim/build/simulateBestItems.html
+
+## Try it on pc with node
 npm i \
 npm run bestItems

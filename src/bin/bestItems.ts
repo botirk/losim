@@ -26,9 +26,9 @@ const askQuestion = async <T>(question: string, converter: (answer: string) => T
       if (input) {
         const cb = (e) => {
           if (e.key === 'Enter') {
-            input.value = "";
             input.removeEventListener("keydown", cb);
             res(converter(input.value));
+            input.value = "";
           }
         }
         input.addEventListener("keydown", cb);

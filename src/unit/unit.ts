@@ -85,7 +85,14 @@ export abstract class Unit {
   baseMs = 0;
   bonusMs = 0;
   get ms() {
-    return Math.max(110, (this.baseMs + this.bonusMs) * ((100 - this.slow) / 100));
+    let result = (this.baseMs + this.bonusMs) * ((100 - this.slow) / 100);
+
+    if (result <= 0) result = 110;
+    else if (result < 220) result = 110 + result * 0.5
+    else if (result > 415 && result < 490) result = result * 0.8 + 83;
+    else if (result > 490) result = result * 0.5 + 230;
+
+    return result;
   }
   get slow(): number {
     return this.buffs.reduce((prev, cur) => cur.slow > prev ? cur.slow : prev, 0);

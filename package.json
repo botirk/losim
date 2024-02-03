@@ -7,7 +7,7 @@
     "testCurrent": "jest src/unit/action/attack.test.ts",
     "bestItems": "tsx src/bin/bestItems.ts",
     "dev": "parcel src/bin/bestItems.html",
-    "build": "parcel build src/bin/bestItems.html --dist-dir build"
+    "build": "parcel build src/bin/bestItems.html"
   },
   "author": "botirk",
   "license": "ISC",

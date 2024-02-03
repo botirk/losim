@@ -1,5 +1,4 @@
 import { MasterYi } from "../champions/MasterYi/MasterYi";
-import { Champion } from "../champions/champion/champion";
 import { Simulation } from "../simulation/simulation";
 import { TimedBuff, TimedSlow } from "../unit/buff";
 import { Equip } from "../unit/equip";

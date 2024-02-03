@@ -29,7 +29,7 @@ export class AttackAction extends EnemyTargetAction<AttackCast> {
     return (1 / this.owner.as) * 1000;
   }
   castable(option: Unit): boolean {
-    return !this.owner.dead.value && option.targetable.value && Math.abs(this.owner.pos - option.pos) < this.maxRange;
+    return !this.owner.dead.value && option.targetable.value && Math.abs(this.owner.pos - option.pos) < this.maxRange && this.owner.isEnemy(option);
   }
   calc(target: Unit) {
     return target.interaction.calcPercentDamageReduction({ value: this.owner.ad, src: this.owner, type: DamageType.PHYSIC }).value;

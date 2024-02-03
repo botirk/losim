@@ -2,13 +2,15 @@ import { MasterYi } from "./MasterYi";
 import { Simulation } from "../../simulation/simulation";
 import { DamageType } from "../../unit/unitInteraction";
 import { MasterYiQ, MasterYiQMark } from "./MasterYiQ";
-import { enemyActionLevelTest, enemyActionManaTest, enemyActionTargetableTest } from "../../unit/action/actionTest";
+import { enemyActionLevelTest, enemyActionManaTest, enemyActionTargetableTest, enemyActionTeamTest } from "../../unit/action/actionTest";
 
 enemyActionManaTest(MasterYiQ.qname, (sim) => new MasterYi().init(sim).action.q);
 
 enemyActionLevelTest(MasterYiQ.qname, (sim) => new MasterYi().init(sim).action.q);
 
 enemyActionTargetableTest(MasterYiQ.qname, (sim) => new MasterYi().init(sim).action.q);
+
+enemyActionTeamTest(MasterYiQ.qname, (sim) => new MasterYi().init(sim).action.q);
 
 test("MasterYi Q 4 Marks", async () => {
   const sim = new Simulation().start(500000);
@@ -174,4 +176,19 @@ test("MasterYi Q range", async () => {
   yi2.pos = 600;
   expect(await yi1.action.q.cast(yi2)).toBe(true);
   expect(yi1.distance(yi2)).toBe(75);
+});
+
+test("MasterYi Q Aoe", async () => {
+  const sim = new Simulation().start(20000);
+  const yi1 = new MasterYi().init(sim);
+  const yi2 = new MasterYi().init(sim);
+  const yi3 = new MasterYi().init(sim);
+  const yi4 = new MasterYi().init(sim);
+  yi1.action.q.level = 1;
+  
+  expect(await yi1.action.q.cast(yi2)).toBe(true);
+  expect(yi1.health).toBe(yi1.maxHealth);
+  expect(yi2.health).toBeLessThan(yi2.maxHealth);
+  expect(yi3.health).toBeLessThan(yi3.maxHealth);
+  expect(yi4.health).toBeLessThan(yi4.maxHealth);
 });

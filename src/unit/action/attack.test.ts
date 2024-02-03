@@ -1,6 +1,11 @@
 import { MasterYi } from "../../champions/MasterYi/MasterYi";
 import { Simulation } from "../../simulation/simulation";
 import { DamageType } from "../unitInteraction";
+import { enemyActionTargetableTest, enemyActionTeamTest } from "./actionTest";
+
+enemyActionTargetableTest("Attack", (sim) => new MasterYi().init(sim).action.attack);
+
+enemyActionTeamTest("Attack", (sim) => new MasterYi().init(sim).action.attack);
 
 test("attack", async () => {
   const sim = new Simulation().start(5000) as any;

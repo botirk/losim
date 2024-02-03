@@ -1,6 +1,6 @@
 import { Simulation } from "../../simulation/simulation";
 import { Action, AnyAction } from "../../unit/action/action";
-import { Unit } from "../../unit/unit";
+import { Unit, UnitTeam } from "../../unit/unit";
 import { ChampionStats } from "./championStats";
 
 export type spellShort = "Q" | "W" | "E" | "R";
@@ -94,8 +94,8 @@ export abstract class Champion extends Unit {
     return growth * (this.level - 1) * (0.7025 + 0.0175 * (this.level - 1));
   }
 
-  init(simIN?: Simulation): this {
-    super.init(simIN);
+  init(simIN?: Simulation, team: UnitTeam = this.team, level = this.level): this {
+    super.init(simIN, team, level);
     this.maxHealth = this.stats.baseHealth + this.calcStatGrowth(this.stats.healthGrowth);
     this.health = this.maxHealth;
     this.baseAd = this.stats.baseAd;

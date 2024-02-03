@@ -108,8 +108,11 @@ export abstract class EnemyTargetAction<TCast> extends Action<Unit, TCast> {
   procOnHitUnit(target: Unit, multiplier = 1) {
     for (const listener of this._onHitUnit) listener(target, multiplier);
   }
+  targetable(option: Unit): boolean {
+    return option.targetable.value && Math.abs(option.pos - this.owner.pos) <= this.maxRange && this.owner.isEnemy(option);
+  }
   castable(option: Unit): boolean {
-    return super.castable(option) && option.targetable.value && Math.abs(option.pos - this.owner.pos) <= this.maxRange;
+    return super.castable(option) && this.targetable(option);
   }
 }
 

@@ -7,6 +7,8 @@ import { MoveAction } from "./action/move";
 import { AnyCast } from "./action/action";
 import { Equip } from "./equip";
 
+export type UnitTeam = "RED" | "BLUE" | "DEATHMATCH" | "NEUTRAL";
+
 export class Actions {
   constructor(protected readonly owner: Unit) {}
 
@@ -68,6 +70,12 @@ export abstract class Unit {
   armor = 0;
   mr = 0;
   abstract isMelee: boolean;
+
+  // team 
+  team: UnitTeam = "DEATHMATCH";
+  isEnemy(unit: Unit) {
+    return unit !== this && this.team === "DEATHMATCH" || unit.team === "DEATHMATCH" || unit.team !== this.team;
+  }
 
   // move
   distance(unit: Unit) {
@@ -166,7 +174,7 @@ export abstract class Unit {
     else await this.action.move.closeTo(enemy);
   }
 
-  init(simIN?: Simulation): this {
+  init(simIN?: Simulation, team: UnitTeam = this.team, level: number = this.level): this {
     if (!this.interaction) this.interaction = new UnitInteraction(this).init();
     if (this.sim) {
       const i = this.sim.units.indexOf(this);
@@ -177,6 +185,8 @@ export abstract class Unit {
       this.sim.units.push(this);
     }
     
+    this.team = team;
+    this.level = level;
     this.dead.value = false;
     return this;
   }

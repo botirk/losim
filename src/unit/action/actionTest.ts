@@ -82,3 +82,16 @@ export const enemyActionTargetableTest = (name: string, getAction: (sim: Simulat
     expect(await cast).toBe(true);
   });
 }
+
+export const enemyActionTeamTest = (name: string, getAction: (sim: Simulation) => EnemyTargetAction<AnyCast>) => {
+  test(`${name} enemyActionTeamTest`, async () => {
+    const sim = new Simulation().start(5000);
+    const enemy = new MasterYi().init(sim, "RED");
+    const action = getAction(sim);
+    action.owner.team = "RED";
+    action.level = action.minLevel;
+
+    expect(await action.cast(enemy)).toBe(false);
+    expect(action.isCooldown).toBe(false);
+  });
+}

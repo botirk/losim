@@ -1,5 +1,5 @@
 import { Simulation } from "../../simulation/simulation";
-import { Actions, Unit } from "../../unit/unit";
+import { Actions, Unit, UnitTeam } from "../../unit/unit";
 import { Champion, spellShort } from "../champion/champion";
 import { MasterYiStats } from "./MasterYiStats";
 import { MasterYiE } from "./MasterYiE";
@@ -50,8 +50,8 @@ export class MasterYi extends Champion {
     else await this.action.move.closeTo(enemy);
   }
 
-  init(simIN?: Simulation): this {
-    super.init(simIN);
+  init(simIN?: Simulation, team: UnitTeam = this.team, level = this.level): this {
+    super.init(simIN, team, level);
     this.action = new MasterYiAction(this);
     this.action.init();
     return this;

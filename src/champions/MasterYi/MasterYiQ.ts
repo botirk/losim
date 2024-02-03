@@ -39,7 +39,12 @@ export class MasterYiQCast extends TargetCast<MasterYiQ> {
     for (let time = 0; time < MasterYiQ.markTime * 4; time += MasterYiQ.markTime) {
       const result = await Promise.any([ this.wait(), this.action.owner.sim.waitFor(MasterYiQ.markTime) ]);
       if (result) {
-        marks.push(new MasterYiQMark(this.option, this.action.owner, this.action.level, this.random));
+        let nextTarget = this.option;
+        if (nextTarget.buffNamed(MasterYiQ.qname)) {
+          const potentialNextTarget = this.action.owner.sim.units.filter((u) => u !== nextTarget && this.action.targetable(u) && !u.buffNamed(MasterYiQ.qname))[0];
+          if (potentialNextTarget) nextTarget = potentialNextTarget;
+        }
+        marks.push(new MasterYiQMark(nextTarget, this.action.owner, this.action.level, this.random));
       } else {
         break;
       }

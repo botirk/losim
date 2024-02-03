@@ -5,9 +5,9 @@
   "scripts": {
     "test": "jest",
     "testCurrent": "jest src/unit/action/attack.test.ts",
-    "bestItems": "tsx src/bin/simulateBestItems.ts",
-    "dev": "parcel src/bin/simulateBestItems.html --dist-dir build",
-    "build": "parcel build src/bin/simulateBestItems.html --dist-dir build"
+    "bestItems": "tsx src/bin/bestItems.ts",
+    "dev": "parcel src/bin/bestItems.html",
+    "build": "parcel build src/bin/bestItems.html --dist-dir build"
   },
   "author": "botirk",
   "license": "ISC",

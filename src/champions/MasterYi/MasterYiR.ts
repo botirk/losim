@@ -3,33 +3,33 @@ import { Unit } from "../../unit/unit";
 import { SelfCast, Action } from "../../unit/action/action";
 
 export class MasterYiRBuff extends TimedBuff {
-  private removeTakedown?: () => void;
-  private level = 0;
-  constructor(unit: Unit, action: MasterYiR) {
-    super(MasterYiR.rname, unit, action.level ? MasterYiR.duration : 0);
+  constructor(action: MasterYiR) {
+    super(MasterYiR.rname, action.owner, action.level ? MasterYiR.duration : 0, true, action);
     if (!action.level) return;
-    this.level = action.level;
-    this.removeTakedown = unit.interaction.onTakedown((_, damagedTime) => {
-      if (damagedTime + MasterYiR.assistDuration >= unit.sim.time) this.duration += MasterYiR.duration;
+    this.removeTakedown = action.owner.interaction.onTakedown((_, damagedTime) => {
+      if (damagedTime + MasterYiR.assistDuration >= action.owner.sim.time) this.duration += MasterYiR.duration;
     });
-    unit.mMs *= MasterYiR.bonusMMs(this.level);
-    unit.bonusAs.value += MasterYiR.bonusAs(this.level);
+    action.owner.mMs *= MasterYiR.bonusMMs(this.action.level);
+    action.owner.bonusAs.value += MasterYiR.bonusAs(this.action.level);
   }
+  private removeTakedown?: () => void;
   fade(): void {
+    if (!this.isActive) return;
     super.fade();
     this.removeTakedown?.();
-    this.owner.mMs /= MasterYiR.bonusMMs(this.level);
-    this.owner.bonusAs.value -= MasterYiR.bonusAs(this.level);
+    this.owner.mMs /= MasterYiR.bonusMMs(this.action.level);
+    this.owner.bonusAs.value -= MasterYiR.bonusAs(this.action.level);
   }
 }
 
 export class MasterYiRCast extends SelfCast<MasterYiR> {
   protected async onFinishCast() {
-    new MasterYiRBuff(this.action.owner, this.action);
+    new MasterYiRBuff(this.action);
   }
 }
 
 export class MasterYiR extends Action<void, MasterYiRCast> {
+  static readonly rname = "Highlander";
   static readonly duration = 7000;
   static readonly assistDuration = 10000;
   static bonusAs(level: number) {
@@ -42,8 +42,7 @@ export class MasterYiR extends Action<void, MasterYiRCast> {
   constructor(unit: Unit) {
     super(MasterYiR.rname, unit);
   }
-
-  static readonly rname = "Highlander";
+  
   readonly maxLevel: number = 3;
   readonly minLevel: number = 1;
   readonly isCancelableByUser: boolean = false;

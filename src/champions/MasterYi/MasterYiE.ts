@@ -4,15 +4,14 @@ import { Unit } from "../../unit/unit";
 import { DamageType } from "../../unit/unitInteraction";
 
 export class MasterYiEBuff extends TimedBuff {
-  private removeOnHit?: () => void;
-  constructor(unit: Unit, readonly level: number) {
-    level = Math.max(0, Math.min(5, level));
-    super(MasterYiE.ename, unit, level ? 5000 : 0);
-    if (!level) return;
-    this.removeOnHit = unit.action.attack.onHitUnit((target, m) => {
-      target.interaction.takeDamage({ value: MasterYiE.damage(unit, level) * m, src: unit, type: DamageType.TRUE });
+  constructor(action: MasterYiE) {
+    super(MasterYiE.ename, action.owner, action.level ? 5000 : 0, true, action);
+    if (!this.action.level) return;
+    this.removeOnHit = action.owner.action.attack.onHitUnit((target, m) => {
+      target.interaction.takeDamage({ value: MasterYiE.damage(action.owner, this.action.level) * m, src: this.owner, type: DamageType.TRUE });
     });
   }
+  private removeOnHit?: () => void;
   fade(): void {
     super.fade();
     this.removeOnHit?.();
@@ -21,7 +20,7 @@ export class MasterYiEBuff extends TimedBuff {
 
 export class MasterYiECast extends SelfCast<MasterYiE> {
   protected async onFinishCast() {
-    new MasterYiEBuff(this.action.owner, this.action.level);
+    new MasterYiEBuff(this.action);
   }
 }
 

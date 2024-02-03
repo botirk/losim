@@ -1,14 +1,14 @@
 import { champions } from "../champions/champions";
-import { simulateBestNextItems } from "../simulation/simulateBestItems";
+import { BestNextItemConfig, simulateBestNextItems } from "../simulation/simulateBestItems";
 import { Champion } from "../champions/champion/champion";
 import { MasterYi } from "../champions/MasterYi/MasterYi";
 
 interface SimulateBestItemsSetup {
   Champion: new() => Champion,
-  itemsCount: number,
   level: number,
-  shouldRunAway: boolean,
+  itemsCount: number,
   withBoots: boolean,
+  config: BestNextItemConfig,
 }
 
 const askQuestion = async <T>(question: string, converter: (answer: string) => T): Promise<T> => {
@@ -47,20 +47,23 @@ const getSetup = async (): Promise<SimulateBestItemsSetup> => {
     return Math.max(1, Math.min(6, Math.floor(result)));
   });
 
+  const config = new BestNextItemConfig()
+  
+
   const level = await askQuestion<number>("Select champion level (1-18) 9 default", (a) => {
     let result = parseInt(a);
     if (isNaN(result)) result = 9;
     return Math.max(1, Math.min(18, Math.floor(result)));
   });
 
-  const shouldRunAway = await askQuestion<boolean>("Should dummy run away (y/n) n default", (a) => a[0] === "y" ? true : false);
+  config.dummyRunsAway = await askQuestion<boolean>("Should dummy run away (y/n) n default", (a) => a[0] === "y" ? true : false);
 
   return {
     level,
-    shouldRunAway,
     Champion,
     itemsCount,
     withBoots: false,
+    config,
   }
 }
 
@@ -81,7 +84,7 @@ const writeResult = (str: string) => {
     champ.init(sim);
     champ.levelUp();
     return champ;
-  }, setup.itemsCount, setup.shouldRunAway);
+  }, setup.itemsCount, setup.config);
 
   let resultStr = "";
   if (result.length > 0) {

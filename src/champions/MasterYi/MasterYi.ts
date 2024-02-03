@@ -44,9 +44,13 @@ export class MasterYi extends Champion {
     if (this.distance(enemy) > this.action.attack.maxRange && await this.action.q.cast(enemy)) return;
     else if (await this.action.r.cast()) return;
     else if (this.action.attack.currentCast && await this.action.attack.currentCast.wait()) return;
-    else if (this.action.attack.isCooldown && await this.action.move.closeTo(enemy)) return;
-    else if (this.action.attack.castable(enemy) && await this.action.e.cast()) return;
-    else if (await this.action.attack.cast(enemy)) return;
+    else if (this.action.attack.castable(enemy) && await this.action.e.cast() && await this.action.attack.cast(enemy)) return;
+    else if (!this.action.attack.currentCast && this.action.attack.isCooldown && this.action.attack.targetable(enemy) && this.action.w.castable()) {
+      this.action.w.cast();
+      if (this.currentCast.value?.action === this.action.w) await this.currentCast.value.cancel();
+      await this.action.attack.cast(enemy);
+    } else if (this.action.attack.isCooldown && await this.action.move.closeTo(enemy)) return; 
+    else if (this.action.attack.castable(enemy) && await this.action.attack.cast(enemy)) return;
     else await this.action.move.closeTo(enemy);
   }
 

@@ -2,6 +2,9 @@ import { MasterYi } from "./MasterYi";
 import { Simulation } from "../../simulation/simulation";
 import { MasterYiE } from "./MasterYiE";
 import { DamageType } from "../../unit/unitInteraction";
+import { actionCdrTest } from "../../unit/action/actionTest";
+
+actionCdrTest("MasterYi E", (sim) => new MasterYi().init(sim).action.e);
 
 test("MasterYi E unleveled", async () => {
   const sim = new Simulation().start(5000);

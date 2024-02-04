@@ -65,7 +65,7 @@ export class MasterYiW extends Action<void, MasterYiWCast> {
   }
   get cooldownTime(): number {
     if (this.level === 0) return 0;
-    return 9000;
+    return 9000 * this.owner.abilityHasteModifier;
   }
 
   async cast() {

@@ -1,6 +1,18 @@
 import { MasterYi } from "../../champions/MasterYi/MasterYi";
 import { Simulation } from "../../simulation/simulation";
-import { Action, AnyCast, EnemyTargetAction } from "./action";
+import { Action, AnyAction, AnyCast, EnemyTargetAction } from "./action";
+
+export const actionCdrTest = (name: string, getAction: (sim: Simulation) => AnyAction) => {
+  test(`${name} actionCdrTest`, async () => {
+    const sim = new Simulation().start(5000);
+    const action = getAction(sim);
+    action.level = action.minLevel;
+
+    const cd = action.cooldownTime;
+    action.owner.abilityHaste += 10;
+    expect(action.cooldownTime).toBeLessThan(cd);
+  });
+}
 
 export const selfActionManaTest = (name: string, getAction: (sim: Simulation) => Action<void, AnyCast>) => {
   test(`${name} selfActionManaTest`, async () => {

@@ -22,6 +22,8 @@ export interface Equip {
 
   bonusMs?: number,
 
+  abilityHaste?: number;
+
   apply?: (unit: Unit) => boolean | void,
   test?: () => void,
 }

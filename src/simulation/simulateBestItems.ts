@@ -19,16 +19,19 @@ export class BestNextItemConfig {
     return equip.concat().sort((a,b) => a.name.localeCompare(b.name)).reduce((result, cur) => result + " " + cur.name, "");
   }
   equipAddToSimulated(equip: Equip[]) {
-    this[this.equipToString(equip)] = true;
+    this.simulatedItems[this.equipToString(equip)] = true;
   }
   equipExists(equip: Equip[]): Boolean {
-    return !!this[this.equipToString(equip)];
+    return !!this.simulatedItems[this.equipToString(equip)];
   }
   championExists(champion: Champion) {
     return this.equipExists(champion.appliedEquips.filter((e) => e.type === "finishedItem" || e.type === "item"));
   }
   addChampion(champion: Champion) {
     return this.equipAddToSimulated(champion.appliedEquips.filter((e) => e.type === "finishedItem" || e.type === "item"));
+  }
+  resetSimulatedItems() {
+    this.simulatedItems = {};
   }
 }
 

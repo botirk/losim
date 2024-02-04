@@ -77,7 +77,7 @@ export class MasterYiQ extends EnemyTargetAction<MasterYiQCast> {
 
   constructor(unit: Unit) {
     super(MasterYiQ.qname, unit);
-    unit.action.attack.onCast(() => this.remainingCooldown -= 1000);
+    unit.action.attack.onCast(() => this.remainingCooldown -= 1000 * unit.abilityHasteModifier);
   }
 
   
@@ -101,7 +101,7 @@ export class MasterYiQ extends EnemyTargetAction<MasterYiQCast> {
   }
   get cooldownTime(): number {
     if (this.level === 0) return 0;
-    return 20500 - this.level * 500;
+    return (20500 - this.level * 500) * this.owner.abilityHasteModifier;
   }
 
   random: seedrandom.PRNG = seedrandom();

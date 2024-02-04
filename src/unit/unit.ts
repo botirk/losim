@@ -100,6 +100,13 @@ export abstract class Unit {
     return this.buffs.reduce((prev, cur) => cur.slow > prev ? cur.slow : prev, 0);
   }
 
+  // cdr
+  /** 10% cdr is 10 here */
+  abilityHaste = 0;
+  get abilityHasteModifier() {
+    return 100 / (100 + this.abilityHaste);
+  }
+
   // ad
   attackRange = 175;
   attackAnimation = 0.4;
@@ -163,6 +170,8 @@ export abstract class Unit {
     if (equip.maxMana) this.maxMana += equip.maxMana;
 
     if (equip.bonusMs) this.bonusMs += equip.bonusMs;
+
+    if (equip.abilityHaste) this.abilityHaste += equip.abilityHaste;
 
     this.appliedEquips.push(equip);
 

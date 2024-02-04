@@ -2,7 +2,9 @@ import { MasterYi } from "./MasterYi";
 import { Simulation } from "../../simulation/simulation";
 import { DamageType } from "../../unit/unitInteraction";
 import { MasterYiQ, MasterYiQMark } from "./MasterYiQ";
-import { enemyActionLevelTest, enemyActionManaTest, enemyActionTargetableTest, enemyActionTeamTest } from "../../unit/action/actionTest";
+import { actionCdrTest, enemyActionLevelTest, enemyActionManaTest, enemyActionTargetableTest, enemyActionTeamTest } from "../../unit/action/actionTest";
+
+actionCdrTest("MasterYi Q", (sim) => new MasterYi().init(sim).action.q);
 
 enemyActionManaTest(MasterYiQ.qname, (sim) => new MasterYi().init(sim).action.q);
 
@@ -157,10 +159,20 @@ test("MasterYi Q aa cooldown reduction", async () => {
   yi1.action.q.level = 1;
   
   await yi1.action.q.cast(yi2);
-  const cd = yi1.action.q.remainingCooldown;
+  let cd = yi1.action.q.remainingCooldown;
   await yi1.action.attack.cast(yi2);
 
   expect(yi1.action.q.remainingCooldown).toBe(cd - yi1.action.attack.castTime - 1000);
+
+  yi1.action.q.finishCooldown();
+  yi1.action.attack.finishCooldown();
+  yi1.abilityHaste = 100;
+
+  await yi1.action.q.cast(yi2);
+  cd = yi1.action.q.remainingCooldown;
+  await yi1.action.attack.cast(yi2);
+
+  expect(yi1.action.q.remainingCooldown).toBe(cd - yi1.action.attack.castTime - 1000 * yi1.abilityHasteModifier);
 });
 
 test("MasterYi Q range", async () => {

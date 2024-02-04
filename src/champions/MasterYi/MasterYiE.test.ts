@@ -2,7 +2,11 @@ import { MasterYi } from "./MasterYi";
 import { Simulation } from "../../simulation/simulation";
 import { MasterYiE } from "./MasterYiE";
 import { DamageType } from "../../unit/unitInteraction";
-import { actionCdrTest } from "../../unit/action/actionTest";
+import { actionAbilityHasteTest, actionCdrTest, selfActionOnCast } from "../../unit/action/actionTest";
+
+selfActionOnCast("MasterYi E", (sim) => new MasterYi().init(sim).action.e);
+
+actionAbilityHasteTest("MasterYi W", (sim) => new MasterYi().init(sim).action.w);
 
 actionCdrTest("MasterYi E", (sim) => new MasterYi().init(sim).action.e);
 

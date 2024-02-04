@@ -21,6 +21,8 @@ export interface Equip {
   maxMana?: number,
 
   bonusMs?: number,
+  /** 1 to 2, for example 30% movespeed is 1.3 */
+  mMs?: number;
 
   abilityHaste?: number;
 

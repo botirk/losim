@@ -101,7 +101,7 @@ export class MasterYiQ extends EnemyTargetAction<MasterYiQCast> {
   }
   get cooldownTime(): number {
     if (this.level === 0) return 0;
-    return (20500 - this.level * 500) * this.owner.abilityHasteModifier;
+    return (20500 - this.level * 500) * this.owner.abilityHasteModifier * this.abilityHasteModifier;
   }
 
   random: seedrandom.PRNG = seedrandom();

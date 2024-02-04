@@ -4,7 +4,7 @@ import { UnitInteraction } from "./unitInteraction";
 import { Buff } from "./buff";
 import { AttackAction } from "./action/attack";
 import { MoveAction } from "./action/move";
-import { AnyCast } from "./action/action";
+import { AnyAction, AnyCast } from "./action/action";
 import { Equip } from "./equip";
 
 export type UnitTeam = "RED" | "BLUE" | "DEATHMATCH" | "NEUTRAL";
@@ -14,6 +14,10 @@ export class Actions {
 
   attack: AttackAction;
   move: MoveAction;
+  q?: AnyAction;
+  w?: AnyAction;
+  e?: AnyAction;
+  r?: AnyAction;
 
   init(): this { 
     this.attack = new AttackAction(this.owner);
@@ -170,6 +174,7 @@ export abstract class Unit {
     if (equip.maxMana) this.maxMana += equip.maxMana;
 
     if (equip.bonusMs) this.bonusMs += equip.bonusMs;
+    if (equip.mMs) this.mMs *= equip.mMs;
 
     if (equip.abilityHaste) this.abilityHaste += equip.abilityHaste;
 

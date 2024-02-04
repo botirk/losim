@@ -24,7 +24,13 @@ export class MasterYiRBuff extends TimedBuff {
 
 export class MasterYiRCast extends SelfCast<MasterYiR> {
   protected async onFinishCast() {
-    new MasterYiRBuff(this.action);
+    const buff = this.action.owner.buffNamed(MasterYiR.rname) as MasterYiRBuff;
+    if (buff) {
+      buff.remainingTime = Math.max(buff.remainingTime, 7000);
+    } else {
+      new MasterYiRBuff(this.action);
+    }
+    
   }
 }
 
@@ -59,7 +65,7 @@ export class MasterYiR extends Action<void, MasterYiRCast> {
   }
   get cooldownTime(): number {
     if (this.level === 0) return 0;
-    return 85000 * this.owner.abilityHasteModifier;
+    return 85000 * this.owner.abilityHasteModifier * this.abilityHasteModifier;
   }
   async cast() {
     return await new MasterYiRCast(this).init();

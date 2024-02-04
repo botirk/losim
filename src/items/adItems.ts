@@ -21,6 +21,7 @@ export class EHexplateBuff extends TimedBuff {
 }
 
 export const ehexplate: Equip = {
+  unique: true,
   name: "Experimental Hexplate",
   type: "finishedItem",
   bonusAd: 55,

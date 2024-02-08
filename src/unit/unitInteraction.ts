@@ -33,8 +33,8 @@ export class UnitInteraction {
   takeDamage(e: DamageEvent): DamageEvent {
     // prevent beating the dead
     if (this.unit.dead.value === true) return { ...e, value: 0 };
-    // percent damage reduction
-    for (const listener of this._percentDamageReduction) listener(e);
+    // damage reduction
+    this.calcDamageReduction(e);
     // fix
     e.value = Math.max(0, Math.min(this.unit.health, e.value));
     // reduce health
@@ -70,16 +70,37 @@ export class UnitInteraction {
       if (i !== -1) this._percentDamageReduction.splice(i, 1);
     }
   }
-  calcPercentDamageReduction(e: DamageEvent) {
-    for (const listener of this._percentDamageReduction) listener(e);
-    return e;
-  }
   calcArmorDamageReduction(e: DamageEvent) {
     if (e.type === DamageType.PHYSIC) e.value = (1 - this.unit.armor/(100 + this.unit.armor)) * e.value;
     return e;
   }
   calcMrDamageReduction(e: DamageEvent) {
     if (e.type === DamageType.MAGIC) e.value = (1 - this.unit.mr/(100 + this.unit.mr)) * e.value;
+    return e;
+  }
+
+  private readonly _flatDamageReduction: ((e: DamageEvent) => void)[] = [];
+  flatDamageReduction(cb: typeof this._flatDamageReduction[0]) {
+    this._flatDamageReduction.push(cb);
+    return () => {
+      const i = this._flatDamageReduction.indexOf(cb);
+      if (i !== -1) this._flatDamageReduction.splice(i, 1);
+    }
+  }
+
+  private readonly _finalDamageReduction: ((e: DamageEvent) => void)[] = [];
+  finalDamageReduction(cb: typeof this._finalDamageReduction[0]) {
+    this._finalDamageReduction.push(cb);
+    return () => {
+      const i = this._finalDamageReduction.indexOf(cb);
+      if (i !== -1) this._finalDamageReduction.splice(i, 1);
+    }
+  }
+
+  calcDamageReduction(e: DamageEvent) {
+    for (const listener of this._flatDamageReduction) listener(e);
+    for (const listener of this._percentDamageReduction) listener(e);
+    for (const listener of this._finalDamageReduction) listener(e);
     return e;
   }
 

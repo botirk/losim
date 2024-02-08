@@ -12,7 +12,7 @@ test("MasterYi Passive", async () => {
   let passiveApplied = 0;
   let onHits = 0;
   yi2.interaction.onTakeDamage(({ value, src }) => {
-    if (src === yi1 && value === yi2.interaction.calcPercentDamageReduction({ value: yi1.ad / 2, src: yi1, type: DamageType.PHYSIC }).value) passiveApplied += 1;
+    if (src === yi1 && value === yi2.interaction.calcDamageReduction({ value: yi1.ad / 2, src: yi1, type: DamageType.PHYSIC }).value) passiveApplied += 1;
   });
   yi1.action.attack.onHitUnit((t) => {
     if (t === yi2) onHits += 1;

@@ -1,6 +1,6 @@
 import { Simulation } from "../simulation/simulation";
 import { MasterYi } from "../champions/MasterYi/MasterYi";
-import { Buff, TimedBuff } from "./buff";
+import { Buff, StackBuff, TimedBuff } from "./buff";
 
 test("Buff creation / deletion", () => {
   const sim = new Simulation().start(5000);
@@ -97,4 +97,60 @@ test("Buff isActive", () => {
 
   buff.fade();
   expect(buff.isActive).toBe(false);
+});
+
+test("StackBuff", async () => {
+  const sim = new Simulation().start(5000);
+  const yi = new MasterYi().init(sim);
+  const buff = new StackBuff("test", yi, 10000) as any;
+  
+  buff.maxStacks = 5;
+  expect(buff.stacks).toBe(1);
+  expect(buff.remainingTime).toBe(10000);
+
+  let lose = 0;
+  buff.onLoseStats = () => {
+    lose += 1;
+  }
+
+  let gain = 0;
+  buff.onGainStats = () => {
+    gain += 1;
+  }
+
+  await sim.waitFor(1000);
+
+  buff.stack();
+  expect(buff.stacks).toBe(2);
+  expect(buff.remainingTime).toBe(10000);
+
+  expect(lose).toBe(1);
+  expect(gain).toBe(1);
+
+  await sim.waitFor(1000);
+
+  buff.stack();
+  expect(buff.stacks).toBe(3);
+  expect(buff.remainingTime).toBe(10000);
+  
+  buff.stack();
+  expect(buff.stacks).toBe(4);
+
+  buff.stack();
+  expect(buff.stacks).toBe(5);
+
+  buff.stack();
+  expect(buff.stacks).toBe(5);
+
+  await sim.waitFor(1000);
+
+  buff.stack();
+  expect(buff.stacks).toBe(5);
+  expect(buff.remainingTime).toBe(10000);
+
+  expect(lose).toBe(4);
+  expect(gain).toBe(4);
+
+  buff.fade();
+  expect(lose).toBe(5);
 });

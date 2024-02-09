@@ -4,7 +4,7 @@
   "description": "rpg/moba simulator",
   "scripts": {
     "test": "jest",
-    "testCurrent": "jest src/unit/action/attack.test.ts",
+    "testCurrent": "jest src/unit/buff.test.ts",
     "bestItems": "tsx src/bin/bestItems.ts",
     "dev": "parcel src/bin/bestItems.html",
     "build": "parcel build src/bin/bestItems.html"

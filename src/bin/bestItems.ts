@@ -56,6 +56,9 @@ const getSetup = async (): Promise<SimulateBestItemsSetup> => {
     return Math.max(1, Math.min(18, Math.floor(result)));
   });
 
+  config.sustain1 = await askQuestion<boolean>("Should test sustain (y/n) y default", (a) => a[0] === "n" ? false : true);
+  if (config.sustain1) config.undying2 = true;
+
   config.dummyRunsAway = await askQuestion<boolean>("Should dummy run away (y/n) n default", (a) => a[0] === "y" ? true : false);
 
   return {
@@ -88,12 +91,14 @@ const writeResult = (str: string) => {
 
   let resultStr = "";
   if (result.length > 0) {
-    for (const subresult of result) {
-      for (const itemn in subresult.items) {
-        resultStr += `item${Number(itemn) + 1}: '${subresult.items[itemn].name}' `;;
+    for (let i = 0; i < 10 && i < result.length; i += 1) {
+      for (const itemn in result[i].items) {
+        resultStr += `item${Number(itemn) + 1}: '${result[i].items[itemn].name}' `;;
       }
-      resultStr += `timetokill: ${(subresult.result.ttk / 1000).toFixed(2)} dps: ${subresult.result.dps1.toFixed(2)}\r\n`;
+      if (setup.config.sustain1) resultStr += `damage: ${result[i].result.damage1.toFixed(2)} sustained: ${(result[i].result.ttk / 1000).toFixed(2)}\r\n`;
+      else resultStr += `timetokill: ${(result[i].result.ttk / 1000).toFixed(2)} dps: ${result[i].result.dps1.toFixed(2)}\r\n`;
     }
+    
   } else {
     resultStr += `Simulation failed, no items simulated\r\n`;
   }

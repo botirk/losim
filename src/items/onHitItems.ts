@@ -1,6 +1,6 @@
 import { MasterYi } from "../champions/MasterYi/MasterYi";
 import { Simulation } from "../simulation/simulation";
-import { TimedBuff, TimedSlow } from "../unit/buff";
+import { StackBuff, TimedBuff, TimedSlow } from "../unit/buff";
 import { Equip } from "../unit/equip";
 import { Unit } from "../unit/unit";
 import { DamageType } from "../unit/unitInteraction";
@@ -110,73 +110,35 @@ export const witsend: Equip = {
   }
 }
 
-export class GuinsoBuff extends TimedBuff {
+export class GuinsoBuff extends StackBuff {
   static duration = 3000;
   static phantomDuration = 3000;
   static maxStacks = 4;
   static bonusAsPerStack = 8;
 
+  protected readonly maxStacks: number = GuinsoBuff.maxStacks;
+
   constructor(owner: Unit) {
     super(guinso.name, owner, GuinsoBuff.duration, true);
-    this.stacks = 1;
   }
 
-  private _stacks = 0;
-  set stacks(stacks: number) {
-    this._stacks = Math.max(0, Math.min(GuinsoBuff.maxStacks, stacks));
-    this.currentAs = GuinsoBuff.bonusAsPerStack * this._stacks;
+  protected onLoseStats(): void {
+    this.owner.bonusAs.value -= this.stacks * GuinsoBuff.bonusAsPerStack;
   }
-  get stacks() {
-    return this._stacks;
-  }
-
-  private _currentAs = 0;
-  private set currentAs(currentAs: number) {
-    if (this._currentAs === currentAs) return;
-    this.owner.bonusAs.value += (-this._currentAs + currentAs);
-    this._currentAs = currentAs;
-  }
-  get currentAs() {
-    return this._currentAs;
-  }
-
-  onAttack(target: Unit) {
-    if (this.stacks >= GuinsoBuff.maxStacks) {
-      const phantom = this.owner.buffNamed(GuinsoPhantomBuff.pname) as GuinsoPhantomBuff;
-      if (phantom) phantom.onAttack(target);
-      else new GuinsoPhantomBuff(this.owner);
-    } else {
-      this.stacks += 1;
-    }
-    this.remainingTime = GuinsoBuff.duration;
-  }
-
-  fade(): void {
-    if (!this.isActive) return;
-    this.stacks = 0;
-    super.fade();
+  protected onGainStats(): void {
+    this.owner.bonusAs.value += this.stacks * GuinsoBuff.bonusAsPerStack;
   }
 }
 
-export class GuinsoPhantomBuff extends TimedBuff {
+export class GuinsoPhantomBuff extends StackBuff {
   static pname = GuinsoBuff.name + "Phantom";
   static duration = 6000;
   static pause = 150;
+
+  protected readonly maxStacks: number = 2;
+
   constructor(owner: Unit) {
     super(GuinsoPhantomBuff.pname, owner, GuinsoPhantomBuff.duration, true);
-  }
-
-  stacks = 1;
-  onAttack(target: Unit) {
-    if (this.stacks >= 2) {
-      this.owner.sim.waitFor(GuinsoPhantomBuff.pause).then(() => {
-        if (target.targetable.value) this.owner.action.attack.procOnHitUnit(target, 1);
-      });
-      this.fade();
-    } else {
-      this.stacks += 1;
-      this.remainingTime = GuinsoPhantomBuff.duration;
-    }
   }
 }
 
@@ -190,12 +152,27 @@ export const guinso: Equip = {
   apply: (unit) => {
     unit.action.attack.onHitUnit((t, m) => t.interaction.takeDamage({ src: unit, type: DamageType.MAGIC, value: 30 * m }));
     unit.action.attack.onCast((t) => {
-      const buff = unit.buffNamed(guinso.name) as GuinsoBuff;
-      if (buff) {
-        buff.onAttack(t);
-      } else {
+      const buff = unit.buffNamed(guinso.name);
+      if (!(buff instanceof GuinsoBuff)) {
         new GuinsoBuff(unit);
-      } 
+      } else {
+        if (buff.isMaxStacks) {
+          const pbuff = unit.buffNamed(GuinsoPhantomBuff.pname);
+          if (!(pbuff instanceof GuinsoPhantomBuff)) {
+            new GuinsoPhantomBuff(unit);
+          } else {
+            if (pbuff.isMaxStacks) {
+              unit.sim.waitFor(GuinsoPhantomBuff.pause).then(() => {
+                if (!unit.dead.value && t.targetable.value) unit.action.attack.procOnHitUnit(t, 1);
+              });
+              pbuff.fade();
+            } else {
+              pbuff.stack();
+            }
+          }
+        }
+        buff.stack();
+      }
     });
   },
   test: () => {
@@ -280,11 +257,12 @@ export const guinso: Equip = {
   }
 }
 
-export class KrakenDebuff extends TimedBuff {
+export class KrakenDebuff extends StackBuff {
   static kname() {
     return kraken.name + " debuff";
   }
   static duration = 6000;
+  static maxStacks = 2;
   static damage(src: Unit, target: Unit) {
     let damage = 35;
     if (src.level >= 9) for (let level = 9; level <= 18; level += 1) damage += 5;
@@ -300,35 +278,20 @@ export class KrakenDebuff extends TimedBuff {
   constructor(owner: Unit, src: Unit) {
     super(KrakenDebuff.kname(), owner, KrakenDebuff.duration, true, src);
   }
-  private _stacks = 1;
-  set stacks(stacks: number) {
-    this._stacks = Math.max(0, Math.min(2, stacks));
-    this.remainingTime = KrakenDebuff.duration;
-  }
-  get stacks() {
-    return this._stacks;
-  }
+
+  protected readonly maxStacks: number = KrakenDebuff.maxStacks;
 }
 
-export class KrakenBuff extends TimedBuff {
+export class KrakenBuff extends StackBuff {
   static duration = 3000;
+  /** this is actually right so it procs every third attack */
+  static maxStacks = 3;
     
   constructor(owner: Unit) {
     super(kraken.name, owner, KrakenBuff.duration, true);
   }
 
-  stacks = 1;
-  onHit() {
-    this.stacks += 1;
-    this.remainingTime = KrakenBuff.duration;
-  }
-  onAttack(t: Unit) {
-    if (this.stacks <= 2) return;
-    t.interaction.takeDamage({ src: this.owner, type: DamageType.PHYSIC, value: KrakenDebuff.damage(this.owner, t) });
-    const debuff = t.buffNamed(KrakenDebuff.kname());
-    if (debuff instanceof KrakenDebuff) debuff.stacks += 1; else new KrakenDebuff(t, this.owner);
-    this.fade();
-  }
+  protected readonly maxStacks: number = KrakenBuff.maxStacks;
 }
 
 export const kraken: Equip = {
@@ -342,7 +305,7 @@ export const kraken: Equip = {
     unit.action.attack.onHitUnit((t) => {
       const buff = unit.buffNamed(kraken.name);
       if (buff instanceof KrakenBuff) {
-        buff.onHit();
+        buff.stack();
       } else {
         new KrakenBuff(unit);
       }
@@ -350,7 +313,11 @@ export const kraken: Equip = {
     unit.action.attack.onCast((t) => {
       const buff = unit.buffNamed(kraken.name);
       if (buff instanceof KrakenBuff) {
-        buff.onAttack(t);
+        if (!buff.isMaxStacks) return;
+        t.interaction.takeDamage({ src: unit, type: DamageType.PHYSIC, value: KrakenDebuff.damage(unit, t) });
+        const debuff = t.buffNamed(KrakenDebuff.kname());
+        if (debuff instanceof KrakenDebuff) debuff.stack(); else new KrakenDebuff(t, unit);
+        buff.fade();
       }
     });
   },

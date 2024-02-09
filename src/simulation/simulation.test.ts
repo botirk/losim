@@ -1,7 +1,7 @@
 import { MasterYi, MasterYiAction } from "../champions/MasterYi/MasterYi";
 import { Nunu } from "../champions/Nunu/Nunu";
 import { WheelItem } from "./defered";
-import { Simulation, simulate1v1 } from "./simulation";
+import { Simulate1v1Config, Simulation, simulate1v1 } from "./simulation";
 
 test("Simulation.time", () => {
   const sim = new Simulation();
@@ -125,4 +125,67 @@ test("Simulate1v1 break", async () => {
   expect(result).toBe(undefined);
 });
 
+test("Simulate1v1 undying nunu", async () => {
+  const config = new Simulate1v1Config();
+  config.undying2 = true;
+  const result = await simulate1v1((sim) => {
+    const yi = new MasterYi().init(sim);
+    const nunu = new Nunu().init(sim);
+    const logic = (champ, enemy) => champ.killDummy(enemy);
+    return [yi, logic, nunu, logic];
+  }, config);
+  if (!result) {
+    expect(result).toBeTruthy();
+    return;
+  }
+  expect(result.winner === result.champion2).toBe(true);
+});
+
+test("Simulate1v1 undying nunu 2", async () => {
+  const config = new Simulate1v1Config();
+  config.undying1 = true;
+  const result = await simulate1v1((sim) => {
+    const yi = new MasterYi().init(sim);
+    const nunu = new Nunu().init(sim);
+    const logic = (champ, enemy) => champ.killDummy(enemy);
+    return [nunu, logic, yi, logic];
+  }, config);
+  if (!result) {
+    expect(result).toBeTruthy();
+    return;
+  }
+  expect(result.winner === result.champion1).toBe(true);
+});
+
+test("Simulate1v1 sustain 1", async () => {
+  const config = new Simulate1v1Config();
+  config.sustain1 = true;
+  const result = await simulate1v1((sim) => {
+    const yi = new MasterYi().init(sim);
+    const nunu = new Nunu().init(sim);
+    const logic = (champ, enemy) => champ.killDummy(enemy);
+    return [yi, logic, nunu, logic];
+  }, config);
+  if (!result) {
+    expect(result).toBeTruthy();
+    return;
+  }
+  expect(result.winner === result.champion2).toBe(true);
+});
+
+test("Simulate1v1 sustain 2", async () => {
+  const config = new Simulate1v1Config();
+  config.sustain2 = true;
+  const result = await simulate1v1((sim) => {
+    const yi = new MasterYi().init(sim);
+    const nunu = new Nunu().init(sim);
+    const logic = (champ, enemy) => champ.killDummy(enemy);
+    return [nunu, logic, yi, logic];
+  }, config);
+  if (!result) {
+    expect(result).toBeTruthy();
+    return;
+  }
+  expect(result.winner === result.champion1).toBe(true);
+});
 

@@ -172,3 +172,10 @@ test("Unit.ms cap", () => {
   expect(yi1.ms).toBeGreaterThan(500);
 });
 
+test("Unit.applyEquip maxHealth", () => {
+  const yi = new MasterYi().init();
+  const item: Equip = { type: "item", name: "test", maxHealth: 50 };
+  expect(yi.applyEquip(item)).toBe(true);
+  expect(yi.health).toBe(yi.maxHealth);
+});
+

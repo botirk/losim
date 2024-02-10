@@ -32,7 +32,7 @@ export const botrk: Equip = {
       const sim = new Simulation().start(500000);
       const yi1 = new MasterYi().init(sim);
       const yi2 = new MasterYi().init(sim);
-      yi2.armor = 0;
+      yi2.bonusArmor = 0;
       yi2.health = 1000;
       expect(yi1.applyEquip(botrk)).toBe(true);
 
@@ -181,7 +181,7 @@ export const guinso: Equip = {
       const yi1 = new MasterYi().init(sim);
       expect(yi1.applyEquip(guinso)).toBe(true);
       const yi2 = new MasterYi().init(sim);
-      yi2.mr = 0;
+      yi2.bonusMr = 0;
 
       let magic = 0;
       yi2.interaction.onTakeDamage((e) => {
@@ -328,7 +328,7 @@ export const kraken: Equip = {
       yi1.action.passive.disabled = true;
       expect(yi1.applyEquip(kraken)).toBe(true);
       const yi2 = new MasterYi().init(sim);
-      yi2.armor = 0;
+      yi2.bonusArmor = 0;
       yi2.health = 10000;
 
       let count = 0;
@@ -351,7 +351,7 @@ export const kraken: Equip = {
       expect(yi1.applyEquip(kraken)).toBe(true);
       yi1.crit = 0;
       const yi2 = new MasterYi().init(sim);
-      yi2.armor = 0;
+      yi2.bonusArmor = 0;
       yi2.health = 10000;
 
       const damage = {};

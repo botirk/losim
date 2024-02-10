@@ -50,23 +50,23 @@ test('Champion ad init', () => {
 
 test('Champion armor init', () => {
   const yi = new MasterYi().init();
-  expect(yi.armor).toBeCloseTo(33);
+  expect(yi.bonusArmor).toBeCloseTo(33);
 
   yi.level = 10;
   yi.init();
-  expect(yi.armor).toBeCloseTo(65.51);
+  expect(yi.bonusArmor).toBeCloseTo(65.51);
 
   yi.level = 5;
   yi.init();
-  expect(yi.armor).toBeCloseTo(45.98);
+  expect(yi.bonusArmor).toBeCloseTo(45.98);
 
   yi.level = 14;
   yi.init();
-  expect(yi.armor).toBeCloseTo(83.78);
+  expect(yi.bonusArmor).toBeCloseTo(83.78);
 
   yi.level = 18;
   yi.init();
-  expect(yi.armor).toBeCloseTo(104.4);
+  expect(yi.bonusArmor).toBeCloseTo(104.4);
 });
 
 test('Champion as init', () => {

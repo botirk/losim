@@ -1,7 +1,7 @@
 import { Champion } from "../champions/champion/champion";
 import { Simulate1v1Config, Simulation } from "./simulation";
 import { SimulateDummyConfig, SimulateDummyResult, simulateDummy } from "./simulateDummy";
-import { items } from "../items/items"
+import { items } from "../items/index"
 import { bootSymbol } from "../items/boots";
 import { Equip } from "../unit/equip";
 

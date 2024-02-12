@@ -1,12 +1,12 @@
 import { MasterYi } from "../champions/MasterYi/MasterYi";
 import { bootSymbol, boots } from "../items/boots";
-import { onHitItems } from "../items/onHitItems";
+import { onHit } from "../items/onHit";
 import { simulateBestNextItem, simulateBestBoot, simulateBestNextItems, BestNextItemConfig } from "./simulateBestItems";
 
 
 test("simulateBestNextItem", async () => {
   const config = new BestNextItemConfig();
-  config.itemsToLook = onHitItems;
+  config.itemsToLook = onHit;
 
   const result = await simulateBestNextItem((sim) => { 
     const yi = new MasterYi();
@@ -22,7 +22,7 @@ test("simulateBestNextItem", async () => {
 
 test("simulateBestNextItem sustain", async () => {
   const config = new BestNextItemConfig();
-  config.itemsToLook = onHitItems;
+  config.itemsToLook = onHit;
   config.sustain1 = true;
 
   const result = await simulateBestNextItem((sim) => { 
@@ -53,7 +53,7 @@ test("simulateBestBoot", async () => {
 
 test("simulateBestNextItems", async () => {
   const config = new BestNextItemConfig();
-  config.itemsToLook = onHitItems;
+  config.itemsToLook = onHit;
 
   const result1 = await simulateBestNextItems((sim) => { 
     const yi = new MasterYi();

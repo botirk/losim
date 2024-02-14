@@ -9,12 +9,12 @@ import { MasterYiQ } from "./MasterYiQ";
 import { MasterYiPassive } from "./MasterYiPassive";
 
 export class MasterYiAction extends Actions {
-  e: MasterYiE;
-  r: MasterYiR;
-  w: MasterYiW;
   passive: MasterYiPassive;
   q: MasterYiQ;
-
+  w: MasterYiW;
+  e: MasterYiE;
+  r: MasterYiR;
+  
   init(): this {
     super.init();
     this.e = new MasterYiE(this.owner);

@@ -45,7 +45,8 @@ export class AttackCast extends TargetCast<AttackAction> {
     super(action, option);
   }
 
-  action: AttackAction;
+  declare action: AttackAction;
+
   protected async onFinishCast() {
     const isCrit = (Math.max(0, Math.min(100, this.action.owner.crit)) >= this.random() * 100);
     const value = isCrit ? this.action.owner.ad * (1.75 + this.action.owner.bonusCritDamage / 100) : this.action.owner.ad;

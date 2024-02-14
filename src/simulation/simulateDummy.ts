@@ -1,6 +1,6 @@
 import { Nunu } from "../champions/Nunu/Nunu";
 import { Champion } from "../champions/champion/champion";
-import { boot, bootSymbol } from "../items/boots";
+import { boot, bootSymbol } from "../items/boots/index";
 import { Simulate1v1Config, Simulate1v1Result, Simulation, simulate1v1WithCrits } from "./simulation";
 
 export type SimulateDummyResult<TChampion extends Champion> = Simulate1v1Result<TChampion, Nunu>;

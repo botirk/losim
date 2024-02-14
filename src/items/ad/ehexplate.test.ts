@@ -1,5 +1,5 @@
 import { Simulation } from "../../simulation/simulation";
-import { MasterYi } from "../../champions/MasterYi";
+import { MasterYi } from "../../champions/MasterYi/index";
 import { ehexplate } from "./ehexplate";
 import { MasterYiR } from "../../champions/MasterYi/MasterYiR";
 

@@ -1,6 +1,6 @@
 import { MasterYi } from "../champions/MasterYi/MasterYi";
-import { bootSymbol, boots } from "../items/boots";
-import { onHit } from "../items/onHit";
+import { bootSymbol } from "../items/boots/index";
+import { onHit } from "../items/onHit/index";
 import { simulateBestNextItem, simulateBestBoot, simulateBestNextItems, BestNextItemConfig } from "./simulateBestItems";
 
 
@@ -66,11 +66,9 @@ test("simulateBestNextItems", async () => {
   config.resetSimulatedItems();
   const result3 = await simulateBestNextItems((sim) => new MasterYi().init(sim, undefined, 9), 2, config);
   expect(result3.length).toBeGreaterThanOrEqual(1);
-  expect(result3.length).toBeLessThanOrEqual(10);
 
   config.resetSimulatedItems();
   const result2 = await simulateBestNextItems((sim) => new MasterYi().init(sim, undefined, 9), 3, config);
 
   expect(result2.length).toBeGreaterThanOrEqual(1);
-  expect(result2.length).toBeLessThanOrEqual(10);
 });

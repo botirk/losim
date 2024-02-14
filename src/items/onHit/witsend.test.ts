@@ -1,6 +1,6 @@
 import { Simulation } from "../../simulation/simulation";
 import { witsend, witsendDamage } from "./witsend";
-import { MasterYi } from "../../champions/MasterYi"
+import { MasterYi } from "../../champions/MasterYi/index"
 import { DamageType } from "../../unit/unitInteraction";
 
 test("Witsend", async () => {

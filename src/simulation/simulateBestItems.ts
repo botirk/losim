@@ -1,8 +1,8 @@
 import { Champion } from "../champions/champion/champion";
-import { Simulate1v1Config, Simulation } from "./simulation";
+import { Simulation } from "./simulation";
 import { SimulateDummyConfig, SimulateDummyResult, simulateDummy } from "./simulateDummy";
 import { items } from "../items/index"
-import { bootSymbol } from "../items/boots";
+import { bootSymbol } from "../items/boots/index";
 import { Equip } from "../unit/equip";
 
 export interface BestNextItem<TChampion extends Champion> {
@@ -11,6 +11,7 @@ export interface BestNextItem<TChampion extends Champion> {
 }
 
 export class BestNextItemConfig extends SimulateDummyConfig {
+  width = 10;
   itemsToLook = items;
   simulatedItems: { [key: string]: boolean } = {};
   equipToString(equip: Equip[]) {
@@ -68,13 +69,13 @@ export interface BestNextItems<TChampion extends Champion> {
 export const simulateBestNextItems = async <TChampion extends Champion>(getChampion: (sim: Simulation) => TChampion | void, count: number, config = new BestNextItemConfig()): Promise<BestNextItems<TChampion>[]> => {
   const results: BestNextItems<TChampion>[] = [];
   
-  for (const preresult of await simulateBestNextItem(getChampion, config)) {
+  for (const preresult of (await simulateBestNextItem(getChampion, config)).slice(0, config.width)) {
     // needs recursion
     if (count > 1) {
-      const nextresults = await simulateBestNextItems((sim) => {
+      const nextresults = (await simulateBestNextItems((sim) => {
         const champ = getChampion(sim);
         if (champ && champ.applyEquip(preresult.item)) return champ;
-      }, count - 1, config);
+      }, count - 1, config));
 
       if (nextresults.length === 0) {
         results.push({ items: [ preresult.item ], result: preresult.result });

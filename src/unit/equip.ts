@@ -1,12 +1,10 @@
 import { Unit } from "./unit"
 
-export type EquipType = "item" | "finishedItem";
+export type EquipType = "item" | "rune";
 
 export interface Equip {
   type: EquipType,
   name: string,
-  unique?: boolean,
-  uniqueGroup?: symbol,
 
   bonusAs?: number,
   bonusAd?: number,
@@ -27,4 +25,38 @@ export interface Equip {
   abilityHaste?: number;
 
   apply?: (unit: Unit) => boolean | void,
+}
+
+export const isItem = (equip: Equip): equip is Item => {
+  return equip.type === "item";
+}
+
+export interface Item extends Equip {
+  type: "item",
+  unique?: boolean,
+  uniqueGroup?: symbol,
+  isFinished: boolean,
+}
+
+export const isRune = (equip: Equip): equip is Rune => {
+  return equip.type === "rune";
+}
+
+export type RuneSubtype = "Keystone";
+
+export interface Rune extends Equip {
+  type: "rune",
+  subtype: RuneSubtype,
+}
+
+export type RunePath = "Precision" | "Domination" | "Sorcery" | "Resolve" | "Inspiration";
+
+export interface Pathrune extends Rune {
+  path: RunePath,
+}
+
+export const isKeystone = (equip: Equip): equip is Keystone => isRune(equip) && equip.subtype === "Keystone";
+
+export interface Keystone extends Pathrune {
+  subtype: "Keystone",
 }

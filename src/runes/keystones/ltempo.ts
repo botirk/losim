@@ -1,3 +1,4 @@
+import { Champion } from "../../champions/champion/champion";
 import { StackBuff } from "../../unit/buff";
 import { Keystone } from "../../unit/equip";
 import { Unit } from "../../unit/unit";
@@ -47,6 +48,7 @@ export const ltempo: Keystone = {
   type: "rune",
   apply: (unit) => {
     unit.action.attack.onHitUnit((t) => {
+      if (!(t instanceof Champion)) return;
       const buff = unit.buffNamed(ltempo.name);
       if (!(buff instanceof LTempoBuff)) {
         new LTempoBuff(unit);

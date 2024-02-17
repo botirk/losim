@@ -179,7 +179,7 @@ test("Unit.applyEquip maxHealth", () => {
   expect(yi.health).toBe(yi.maxHealth);
 });
 
-test("Unit.applyEquip run", () => {
+test("Unit.applyEquip rune", () => {
   const yi = new MasterYi().init();
   const mh = yi.maxHealth;
   const key: Keystone = { path: "Domination", subtype: "Keystone", name: "test", type: "rune", maxHealth: 50 };

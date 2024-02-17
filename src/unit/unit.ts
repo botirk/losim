@@ -144,6 +144,7 @@ export abstract class Unit {
   // attack speed related
   baseAs = 0;
   bonusAs = new Watchable(0);
+  asCap = 2.5;
   get as() {
     return this.baseAs * (1 + this.bonusAs.value / 100);
   }

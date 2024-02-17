@@ -7,7 +7,7 @@ import { Simulate1v1Config, Simulate1v1Result, Simulation, simulate1v1WithCrits 
 export type SimulateDummyResult<TChampion extends Champion> = Simulate1v1Result<TChampion, Nunu>;
 
 export class SimulateDummyConfig extends Simulate1v1Config {
-  dummyRunsAway = false;
+  dummyRunsAway = true;
 }
 
 export const simulateDummy = <TChampion extends Champion>(getChampion: (sim: Simulation) => TChampion | void, config = new SimulateDummyConfig()): Promise<SimulateDummyResult<TChampion> | void> => {

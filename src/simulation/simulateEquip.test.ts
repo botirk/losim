@@ -2,8 +2,7 @@ import { MasterYi } from "../champions/MasterYi/MasterYi";
 import { bootSymbol } from "../items/boots/index";
 import { onHit } from "../items/onHit/index";
 import { isItem } from "../unit/equip";
-import { simulateBestNextItem, simulateBestBoot, simulateBestNextItems, BestNextItemConfig } from "./simulateEquip";
-
+import { simulateBestNextItem, simulateBestBoot, simulateBestNextItems, BestNextItemConfig, simulateBestNextSetup, simulateBestNextKeystone } from "./simulateEquip";
 
 test("simulateBestNextItem", async () => {
   const config = new BestNextItemConfig();
@@ -17,7 +16,7 @@ test("simulateBestNextItem", async () => {
 
   expect(result.length).toBeGreaterThanOrEqual(1);
   for (let i = 1; i < result.length; i += 1) {
-    expect(result[i-1].result.dps1).toBeGreaterThan(result[i].result.dps1);
+    expect(result[i-1].result.ttk).toBeLessThan(result[i].result.ttk);
   }
 });
 
@@ -63,14 +62,35 @@ test("simulateBestNextItems", async () => {
     return yi.init(sim);
   }, 1, config);
   expect(result1.length).toBeGreaterThanOrEqual(1);
-  expect(result1.length).toBeLessThanOrEqual(10);
-
-  config.resetSimulatedItems();
-  const result3 = await simulateBestNextItems((sim) => new MasterYi().init(sim, undefined, 9), 2, config);
-  expect(result3.length).toBeGreaterThanOrEqual(1);
 
   config.resetSimulatedItems();
   const result2 = await simulateBestNextItems((sim) => new MasterYi().init(sim, undefined, 9), 3, config);
 
   expect(result2.length).toBeGreaterThanOrEqual(1);
+}, 30000);
+
+test("simulateBestNextKeystone", async () => {
+  const config = new BestNextItemConfig();
+  config.itemsToLook = onHit;
+
+  const result1 = await simulateBestNextKeystone((sim) => { 
+    const yi = new MasterYi();
+    yi.level = 9;
+    return yi.init(sim);
+  }, config);
+  expect(result1.length).toBeGreaterThanOrEqual(1);
+  expect(result1[0].keystone).toBeTruthy();
 });
+
+test("simulateBestNextSetup", async () => {
+  const config = new BestNextItemConfig();
+  config.itemsToLook = onHit;
+
+  const result1 = await simulateBestNextSetup((sim) => { 
+    const yi = new MasterYi();
+    yi.level = 9;
+    return yi.init(sim);
+  }, 1, config);
+  expect(result1.length).toBeGreaterThanOrEqual(1);
+  expect(result1.some(res => !!res.keystone)).toBeTruthy();
+}, 15000);

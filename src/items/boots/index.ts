@@ -2,6 +2,8 @@ import { Equip, Item } from "../../unit/equip";
 
 export const bootSymbol = Symbol("boots");
 
+export const isBoot = (equip: Item): boolean => equip.uniqueGroup === bootSymbol;
+
 export const boot: Item = {
   unique: true,
   type: "item",

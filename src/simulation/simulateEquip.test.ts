@@ -2,12 +2,12 @@ import { MasterYi } from "../champions/MasterYi/MasterYi";
 import { bootSymbol } from "../items/boots/index";
 import { onHit } from "../items/onHit/index";
 import { isItem } from "../unit/equip";
-import { simulateBestNextItem, simulateBestBoot, simulateBestNextItems, BestNextItemConfig } from "./simulateBestItems";
+import { simulateBestNextItem, simulateBestBoot, simulateBestNextItems, BestNextItemConfig } from "./simulateEquip";
 
 
 test("simulateBestNextItem", async () => {
   const config = new BestNextItemConfig();
-  config.equipToLook = onHit;
+  config.itemsToLook = onHit;
 
   const result = await simulateBestNextItem((sim) => { 
     const yi = new MasterYi();
@@ -23,7 +23,7 @@ test("simulateBestNextItem", async () => {
 
 test("simulateBestNextItem sustain", async () => {
   const config = new BestNextItemConfig();
-  config.equipToLook = onHit;
+  config.itemsToLook = onHit;
   config.sustain1 = true;
 
   const result = await simulateBestNextItem((sim) => { 
@@ -46,16 +46,16 @@ test("simulateBestBoot", async () => {
   });
 
   expect(result).toBeTruthy();
-  expect(result && isItem(result.equip)).toBe(true);
-  if (result && isItem(result.equip)) {
-    expect(result.equip.uniqueGroup).toBe(bootSymbol);
-    expect(result.equip.isFinished).toBe(true);
+  expect(result && isItem(result[0].items[0])).toBe(true);
+  if (result && isItem(result[0].items[0])) {
+    expect(result[0].items[0].uniqueGroup).toBe(bootSymbol);
+    expect(result[0].items[0].isFinished).toBe(true);
   }
 });
 
 test("simulateBestNextItems", async () => {
   const config = new BestNextItemConfig();
-  config.equipToLook = onHit;
+  config.itemsToLook = onHit;
 
   const result1 = await simulateBestNextItems((sim) => { 
     const yi = new MasterYi();

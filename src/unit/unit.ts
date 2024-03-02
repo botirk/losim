@@ -135,7 +135,9 @@ export abstract class Unit {
   baseAd = 0;
   bonusAd = 0;
   lifesteal = 0;
+  /** from 0 to 100 */
   crit = 0;
+  /** from 0 to 100 */
   bonusCritDamage = 0;
   get ad() {
     return this.baseAd + this.bonusAd;

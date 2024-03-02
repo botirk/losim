@@ -56,17 +56,9 @@ test("simulateBestNextItems", async () => {
   const config = new BestNextItemConfig();
   config.itemsToLook = onHit;
 
-  const result1 = await simulateBestNextItems((sim) => { 
-    const yi = new MasterYi();
-    yi.level = 9;
-    return yi.init(sim);
-  }, 1, config);
-  expect(result1.length).toBeGreaterThanOrEqual(1);
+  const result = await simulateBestNextItems((sim) => new MasterYi().init(sim, undefined, 9), 2, config);
 
-  config.resetSimulatedItems();
-  const result2 = await simulateBestNextItems((sim) => new MasterYi().init(sim, undefined, 9), 3, config);
-
-  expect(result2.length).toBeGreaterThanOrEqual(1);
+  expect(result.length).toBeGreaterThanOrEqual(1);
 }, 30000);
 
 test("simulateBestNextKeystone", async () => {

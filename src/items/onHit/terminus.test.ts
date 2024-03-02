@@ -69,42 +69,42 @@ test("Terminus", async () => {
   expect(magic).toBe(180);
 
   expect(await yi1.action.attack.cast(yi2)).toBe(true);
-  expect(yi1.armor).toBe(armor + TerminusLightBuff.defense(yi1.level, 4));
-  expect(yi1.mr).toBe(mr + TerminusLightBuff.defense(yi1.level, 4));
+  expect(yi1.armor).toBe(armor + TerminusLightBuff.defense(yi1.level, 3));
+  expect(yi1.mr).toBe(mr + TerminusLightBuff.defense(yi1.level, 3));
   expect(yi1.armorPenPercent).toBe(TerminusDarkBuff.pen(3));
   expect(yi1.mrPenPercent).toBe(TerminusDarkBuff.pen(3));
 
   expect(await yi1.action.attack.cast(yi2)).toBe(true);
-  expect(yi1.armor).toBe(armor + TerminusLightBuff.defense(yi1.level, 4));
-  expect(yi1.mr).toBe(mr + TerminusLightBuff.defense(yi1.level, 4));
-  expect(yi1.armorPenPercent).toBe(TerminusDarkBuff.pen(4));
-  expect(yi1.mrPenPercent).toBe(TerminusDarkBuff.pen(4));
+  expect(yi1.armor).toBe(armor + TerminusLightBuff.defense(yi1.level, 3));
+  expect(yi1.mr).toBe(mr + TerminusLightBuff.defense(yi1.level, 3));
+  expect(yi1.armorPenPercent).toBe(TerminusDarkBuff.pen(3));
+  expect(yi1.mrPenPercent).toBe(TerminusDarkBuff.pen(3));
 
   expect(await yi1.action.attack.cast(yi2)).toBe(true);
-  expect(yi1.armor).toBe(armor + TerminusLightBuff.defense(yi1.level, 5));
-  expect(yi1.mr).toBe(mr + TerminusLightBuff.defense(yi1.level, 5));
-  expect(yi1.armorPenPercent).toBe(TerminusDarkBuff.pen(4));
-  expect(yi1.mrPenPercent).toBe(TerminusDarkBuff.pen(4));
+  expect(yi1.armor).toBe(armor + TerminusLightBuff.defense(yi1.level, 3));
+  expect(yi1.mr).toBe(mr + TerminusLightBuff.defense(yi1.level, 3));
+  expect(yi1.armorPenPercent).toBe(TerminusDarkBuff.pen(3));
+  expect(yi1.mrPenPercent).toBe(TerminusDarkBuff.pen(3));
 
   yi2.health = yi2.maxHealth;
 
   expect(await yi1.action.attack.cast(yi2)).toBe(true);
-  expect(yi1.armor).toBe(armor + TerminusLightBuff.defense(yi1.level, 5));
-  expect(yi1.mr).toBe(mr + TerminusLightBuff.defense(yi1.level, 5));
-  expect(yi1.armorPenPercent).toBe(TerminusDarkBuff.pen(5));
-  expect(yi1.mrPenPercent).toBe(TerminusDarkBuff.pen(5));
+  expect(yi1.armor).toBe(armor + TerminusLightBuff.defense(yi1.level, 3));
+  expect(yi1.mr).toBe(mr + TerminusLightBuff.defense(yi1.level, 3));
+  expect(yi1.armorPenPercent).toBe(TerminusDarkBuff.pen(3));
+  expect(yi1.mrPenPercent).toBe(TerminusDarkBuff.pen(3));
   
   expect(await yi1.action.attack.cast(yi2)).toBe(true);
-  expect(yi1.armor).toBe(armor + TerminusLightBuff.defense(yi1.level, 5));
-  expect(yi1.mr).toBe(mr + TerminusLightBuff.defense(yi1.level, 5));
-  expect(yi1.armorPenPercent).toBe(TerminusDarkBuff.pen(5));
-  expect(yi1.mrPenPercent).toBe(TerminusDarkBuff.pen(5));
+  expect(yi1.armor).toBe(armor + TerminusLightBuff.defense(yi1.level, 3));
+  expect(yi1.mr).toBe(mr + TerminusLightBuff.defense(yi1.level, 3));
+  expect(yi1.armorPenPercent).toBe(TerminusDarkBuff.pen(3));
+  expect(yi1.mrPenPercent).toBe(TerminusDarkBuff.pen(3));
 
   expect(await yi1.action.attack.cast(yi2)).toBe(true);
-  expect(yi1.armor).toBe(armor + TerminusLightBuff.defense(yi1.level, 5));
-  expect(yi1.mr).toBe(mr + TerminusLightBuff.defense(yi1.level, 5));
-  expect(yi1.armorPenPercent).toBe(TerminusDarkBuff.pen(5));
-  expect(yi1.mrPenPercent).toBe(TerminusDarkBuff.pen(5));
+  expect(yi1.armor).toBe(armor + TerminusLightBuff.defense(yi1.level, 3));
+  expect(yi1.mr).toBe(mr + TerminusLightBuff.defense(yi1.level, 3));
+  expect(yi1.armorPenPercent).toBe(TerminusDarkBuff.pen(3));
+  expect(yi1.mrPenPercent).toBe(TerminusDarkBuff.pen(3));
 
   await sim.waitFor(5001);
   expect(yi1.armor).toBe(armor);

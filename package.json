@@ -4,7 +4,7 @@
   "description": "rpg/moba simulator",
   "scripts": {
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
-    "testCurrent": "node --experimental-vm-modules node_modules/jest/bin/jest.js src/items/onHit/terminus.test.ts",
+    "testCurrent": "node --experimental-vm-modules node_modules/jest/bin/jest.js src/items/ad/pdancer.test.ts",
     "bestItems": "tsx src/bin/bestItems.ts",
     "dev": "parcel src/bin/bestItems.html",
     "build": "parcel build src/bin/bestItems.html"

@@ -46,6 +46,25 @@ class Targetable extends Watchable<boolean> {
   }
 }
 
+class Stunned extends Watchable<boolean> {
+  constructor(value: boolean, private readonly unit: Unit) {
+    super(value);
+  }
+
+  private _stacks = 0;
+  get value() {
+    return (this._stacks > 0);
+  }
+  set value(value: boolean) {
+    if (value) {
+      this._stacks += 1;
+    } else {
+      this._stacks = Math.max(0, this._stacks - 1);
+    }
+    super.value = this.value;
+  }
+}
+
 class CurrentCast extends Watchable<undefined | AnyCast> {
   constructor(value: undefined | AnyCast) {
     super(value);
@@ -121,6 +140,7 @@ export abstract class Unit {
   get slow(): number {
     return this.buffs.reduce((prev, cur) => cur.slow > prev ? cur.slow : prev, 0);
   }
+  isStunned = new Stunned(false, this);
 
   // cdr
   /** 10% cdr is 10 here */

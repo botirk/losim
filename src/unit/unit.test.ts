@@ -190,3 +190,28 @@ test("Unit.applyEquip rune", () => {
   expect(yi.maxHealth).toBe(mh + 50);
 });
 
+test("Unit isStunned", async () => {
+  const sim = new Simulation().start(5000);
+  const yi1 = new MasterYi().init(sim);
+  const yi2 = new MasterYi().init(sim);
+  
+  const prom = yi1.action.attack.cast(yi2);
+
+  yi1.isStunned.value = true;
+  expect(yi1.isStunned.value).toBe(true);
+  expect(await prom).toBe(false);
+  expect(await yi1.action.attack.cast(yi2)).toBe(false);
+  expect(await yi1.action.move.cast(yi2.pos)).toBe(false);
+  expect(yi1.isStunned.value).toBe(true);
+  yi1.isStunned.value = false;
+  expect(yi1.isStunned.value).toBe(false);
+
+  expect(await yi1.action.attack.cast(yi2)).toBe(true);
+
+  expect(yi1.action.move.castable(0)).toBe(true);
+  expect(yi1.action.attack.castable(yi2)).toBe(true);
+  yi1.isStunned.value = true;
+  expect(yi1.action.move.castable(0)).toBe(false);
+  expect(yi1.action.attack.castable(yi2)).toBe(false);
+});
+

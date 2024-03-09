@@ -29,7 +29,7 @@ export class AttackAction extends EnemyTargetAction<AttackCast> {
     return (1 / this.owner.as) * 1000;
   }
   castable(option: Unit): boolean {
-    return !this.owner.dead.value && option.targetable.value && Math.abs(this.owner.pos - option.pos) < this.maxRange && this.owner.isEnemy(option);
+    return !this.owner.dead.value && !this.owner.isStunned.value && option.targetable.value && Math.abs(this.owner.pos - option.pos) < this.maxRange && this.owner.isEnemy(option);
   }
   calc(target: Unit) {
     return target.interaction.calcDamageReduction({ value: this.owner.ad, src: this.owner, type: DamageType.PHYSIC }).value;
@@ -63,7 +63,8 @@ export class AttackCast extends TargetCast<AttackAction> {
       const result = await Promise.any([ 
         this.action.waitCooldown(), 
         this.option.targetable.promise(this.action.waitCooldown(), false).then(() => false), 
-        this.action.owner.dead.promise(this.action.waitCooldown(), true).then(() => false), 
+        this.action.owner.dead.promise(this.action.waitCooldown(), true).then(() => false),
+        this.action.owner.isStunned.promise(this.wait(), true).then(() => false),
         this.action.owner.currentCast.promise(this.action.waitCooldown(), (cast) => cast !== this).then(() => false) 
       ]);
       if (result === false) return false;

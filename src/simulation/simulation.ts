@@ -1,3 +1,5 @@
+import { MasterYi } from "../champions/MasterYi/MasterYi";
+import { Nunu } from "../champions/Nunu/Nunu";
 import { Champion } from "../champions/champion/champion";
 import { Unit, god } from "../unit/unit";
 import { DamageType } from "../unit/unitInteraction";
@@ -90,22 +92,23 @@ export interface Simulate1v1Result<TChampion1 extends Champion, TChampion2 exten
   crits: number,
 }
 
-export class Simulate1v1Config {
+export class Simulate1v1Config<TChampion1 extends Champion, TChampion2 extends Champion> {
   maxTime = 180 * 1000;
   undying1 = false;
   undying2 = false;
   sustain1 = false;
   sustain2 = false;
+  champ1: (sim: Simulation) => TChampion1 | void = (sim) => new MasterYi().init(sim) as unknown as TChampion1;
+  logic1: (c1: TChampion1, c2: TChampion2) => Promise<void> = (champ, enemy) => champ.killDummy(enemy);
+  champ2: (sim: Simulation) => TChampion2 | void = (sim) => new Nunu().init(sim) as unknown as TChampion2;
+  logic2: (c1: TChampion2, c2: TChampion1) => Promise<void> = (champ, enemy) => champ.killDummy(enemy);
 }
 
-export const simulate1v1 = async <TChampion1 extends Champion, TChampion2 extends Champion>(
-  getChampionsAndLogic: (sim: Simulation) => [TChampion1, (c1: TChampion1, c2: TChampion2) => Promise<void>, TChampion2, (c2: TChampion2, c1: TChampion1) => Promise<void>] | void, 
-  config = new Simulate1v1Config()
-): Promise<Simulate1v1Result<TChampion1, TChampion2> | void> => {
+export const simulate1v1 = async <TChampion1 extends Champion, TChampion2 extends Champion>(config = new Simulate1v1Config<TChampion1, TChampion2>()): Promise<Simulate1v1Result<TChampion1, TChampion2> | void> => {
   const sim = new Simulation();
-  const get = getChampionsAndLogic(sim);
-  if (!get) return;
-  const [champ1, logic1, champ2, logic2] = get;
+  const champ1 = config.champ1(sim);
+  const champ2 = config.champ2(sim);
+  if (!champ1 || !champ2) return;
 
   sim.start(config.maxTime);
   // count damage
@@ -165,14 +168,14 @@ export const simulate1v1 = async <TChampion1 extends Champion, TChampion2 extend
   const champ1Logic = async () => {
     while (!champ1.dead.value && !champ2.dead.value && !sim.isStopped) {
       const time = sim.time;
-      await logic1(champ1, champ2);
+      await config.logic1(champ1, champ2);
       if (sim.time === time) await sim.waitFor(sim.tickTime * 2);
     }
   }
   const champ2Logic = async () => {
     while (!champ1.dead.value && !champ2.dead.value && !sim.isStopped) {
       const time = sim.time;
-      await logic2(champ2, champ1);
+      await config.logic2(champ2, champ1);
       if (sim.time === time) await sim.waitFor(sim.tickTime * 2);
     }
   }
@@ -198,18 +201,14 @@ export const simulate1v1 = async <TChampion1 extends Champion, TChampion2 extend
   };
 }
 
-export const simulate1v1WithCrits = async <TChampion1 extends Champion, TChampion2 extends Champion>(
-  getChampionsAndLogic: (sim: Simulation) => [TChampion1, (c1: TChampion1, c2: TChampion2) => Promise<void>, TChampion2, (c2: TChampion2, c1: TChampion1) => Promise<void>] | void, 
-  config = new Simulate1v1Config()
-): Promise<Simulate1v1Result<TChampion1, TChampion2> | void> => {
-  
+export const simulate1v1WithCrits = async <TChampion1 extends Champion, TChampion2 extends Champion>(config = new Simulate1v1Config<TChampion1, TChampion2>()): Promise<Simulate1v1Result<TChampion1, TChampion2> | void> => {
   const results: Simulate1v1Result<TChampion1, TChampion2>[] = [];
-  const firstResult = await simulate1v1(getChampionsAndLogic, config);
+  const firstResult = await simulate1v1(config);
   if (firstResult) {
     results.push(firstResult);
     if (firstResult.crits >= 0.01) {
       for (let i = 0; i < 10; i += 1) {
-        const nextResult = await simulate1v1(getChampionsAndLogic, config);
+        const nextResult = await simulate1v1(config);
         if (nextResult) results.push(nextResult);
       }
     }

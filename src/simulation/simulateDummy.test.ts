@@ -4,7 +4,7 @@ import { MasterYi } from "../champions/MasterYi/MasterYi";
 test("simulateDummy", async () => {
   const conf = new SimulateDummyConfig();
   conf.dummyRunsAway = false;
-  const result = await simulateDummy((sim) => new MasterYi().init(sim), conf);
+  const result = await simulateDummy(conf);
   if (!result) {
     expect(result).toBeTruthy();
     return;
@@ -17,7 +17,7 @@ test("simulateDummy", async () => {
 test("simulateDummy nunu runs away", async () => {
   const conf = new SimulateDummyConfig();
   conf.dummyRunsAway = true;
-  const result = await simulateDummy((sim) => new MasterYi().init(sim), conf);
+  const result = await simulateDummy(conf);
   if (!result) {
     expect(result).toBeTruthy();
     return;

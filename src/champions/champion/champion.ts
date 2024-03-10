@@ -96,8 +96,7 @@ export abstract class Champion extends Unit {
 
   init(simIN?: Simulation, team: UnitTeam = this.team, level = this.level): this {
     super.init(simIN, team, level);
-    this.maxHealth = this.stats.baseHealth + this.calcStatGrowth(this.stats.healthGrowth);
-    this.health = this.maxHealth;
+    this.health = this.maxHealth = this.baseMaxHealth = this.stats.baseHealth + this.calcStatGrowth(this.stats.healthGrowth);
     this.baseAd = this.stats.baseAd;
     this.bonusAd = this.calcStatGrowth(this.stats.adGrowth);
     this.attackRange = this.stats.attackRange;
@@ -106,8 +105,7 @@ export abstract class Champion extends Unit {
     this.baseAs = this.stats.baseAs;
     this.bonusAs.value = this.calcStatGrowth(this.stats.asGrowth);
     this.baseMs = this.stats.baseMs;
-    this.mana = this.stats.baseMana + this.calcStatGrowth(this.stats.manaGrowth);
-    this.maxMana = this.mana;
+    this.mana = this.maxMana = this.stats.baseMana + this.calcStatGrowth(this.stats.manaGrowth);
     return this;
   }
 }

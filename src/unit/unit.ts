@@ -88,6 +88,7 @@ export abstract class Unit {
   level = 1;
   health = 0;
   maxHealth = 0;
+  baseMaxHealth = 0;
   mana = 0;
   maxMana = 0;
   /** 1 to 100 */

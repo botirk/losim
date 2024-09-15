@@ -1,5 +1,5 @@
 import { Unit } from "../../unit/unit";
-import { Action, SelfCast } from "../../unit/unitAction";
+import { Action, SelfCast } from "../../unit/action";
 
 export class MasterYiWCast extends SelfCast {
   protected async onStartCast() {
@@ -31,6 +31,7 @@ export class MasterYiW extends Action<void> {
   readonly maxLevel: number = 5;
   readonly minLevel: number = 1;
   readonly isCancelableByUser: boolean = true;
+  readonly isCooldownFinishedOnInterrupt: boolean = false;
 
   get castTime(): number {
     if (this.level === 0) return 0;

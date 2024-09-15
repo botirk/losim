@@ -1,5 +1,5 @@
 import { Unit } from "../../unit/unit";
-import { Action, TargetCast } from "../../unit/unitAction";
+import { Action, TargetCast } from "../../unit/action";
 
 export class MasterYiQCast extends TargetCast {
   protected async onStartCast() {
@@ -21,6 +21,7 @@ export class MasterYiQ extends Action<Unit> {
   readonly maxLevel: number = 5;
   readonly minLevel: number = 1;
   readonly isCancelableByUser: boolean = false;
+  readonly isCooldownFinishedOnInterrupt: boolean = false;
 
   get castTime(): number {
     if (this.level === 0) return 0;

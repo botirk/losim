@@ -1,4 +1,4 @@
-import { SelfCast, Action } from "../../unit/unitAction";
+import { SelfCast, Action } from "../../unit/action";
 import { TimedBuff } from "../../unit/buff";
 import { Unit } from "../../unit/unit";
 import { DamageType } from "../../unit/unitInteraction";
@@ -34,8 +34,7 @@ export class MasterYiE extends Action<void> {
   readonly maxLevel: number = 5;
   readonly minLevel: number = 1;
   readonly isCancelableByUser: boolean = false;
-  readonly waitForCooldownInCast: boolean = false;
-  readonly castCanceledWithCooldownReset: boolean = false;
+  readonly isCooldownFinishedOnInterrupt: boolean = false;
 
   get castTime(): number {
     return 0;

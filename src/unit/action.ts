@@ -9,6 +9,7 @@ export abstract class Action<TOption extends any> {
   abstract readonly minLevel: number;
   abstract readonly maxLevel: number;
   abstract readonly isCancelableByUser: boolean;
+  abstract readonly isCooldownFinishedOnInterrupt: boolean;
 
   // level
   private _level = 0;
@@ -44,6 +45,10 @@ export abstract class Action<TOption extends any> {
     this.cooldown?.resolve(true);
     this.cooldown = undefined;
   }
+  // cast
+  castable(option: TOption): boolean {
+    return this.level >= this.minLevel && (!this.owner.currentCast || this.castTime === 0) && !this.isCooldown && !this.owner.dead;
+  }
   get currentCast(): Cast | undefined {
     if (this.owner.currentCast?.action === this) return this.owner.currentCast;
   }
@@ -62,6 +67,9 @@ export abstract class EnemyTargetAction extends Action<Unit> {
   procOnHitUnit(target: Unit) {
     for (const listener of this._onHitUnit) listener(target);
   }
+  castable(option: Unit): boolean {
+    return super.castable && option.targetable;
+  }
 }
 
 export abstract class Cast<TOption = any> {
@@ -73,8 +81,8 @@ export abstract class Cast<TOption = any> {
   get remaining() {
     return this.wheel?.remainingTime || 0;
   }
-  set remaining(remaining: number) {
-    if (this.wheel) this.wheel.remainingTime = remaining;
+  set waitFor(waitFor: number) {
+    if (this.wheel) this.wheel.waitFor = waitFor;
   }
   get isCasting() {
     return !!this.wheel && this.wheel.result === undefined;
@@ -82,22 +90,21 @@ export abstract class Cast<TOption = any> {
   async wait() {
     return await this.wheel;
   }
-  protected interrupt() {
+  protected async interrupt() {
     this.wheel?.resolve(false);
+    await this.action.owner.sim.waitFor(0);
   }
-  cancel() {
+  async cancel() {
     if (!this.action.isCancelableByUser) throw new Error(`${this.action.name}'s cast is not cancelable by user`);
-    this.interrupt();
-  }
-  get castable(): boolean {
-    return this.action.level >= this.action.minLevel && (!this.action.owner.currentCast || this.action.castTime === 0) && !this.action.isCooldown && !this.action.owner.dead;
+    await this.interrupt();
   }
 
   protected async watchInterrupt() {};
   protected async onStartCast() {};
   protected async onFinishCast() {};
   async init() {
-    if (!this.castable) return false;
+    if (this.action.currentCast) return this.action.currentCast.wait();
+    if (!this.action.castable(this.option)) return false;
     this.wheel = this.action.owner.sim.waitFor(this.action.castTime);
     this.action.owner.currentCast = this;
     this.action.startCooldown();
@@ -105,6 +112,7 @@ export abstract class Cast<TOption = any> {
     this.onStartCast();
     const result = await this.wheel;
     if (result) this.onFinishCast();
+    else if (this.action.isCooldownFinishedOnInterrupt) this.action.finishCooldown();
     return result;
   }
 }
@@ -117,9 +125,6 @@ export abstract class SelfCast extends Cast<void> {
 }
 
 export abstract class TargetCast extends Cast<Unit> {
-  get castable(): boolean {
-    return super.castable && this.option.targetable;
-  }
   watchInterrupt: () => Promise<void> = async () => {
     const result = await Promise.any([ this.option.onTargetablePromise().then(() => false), this.action.owner.onDeathPromise().then(() => false), this.wait() ]);
     if (result === false) this.interrupt();

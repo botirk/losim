@@ -2,7 +2,7 @@ import { Simulation } from "../simulation/simulation";
 import { UnitInteraction } from "./unitInteraction";
 import { Buff } from "./buff";
 import { AttackAction } from "./attack";
-import { Cast } from "./unitAction";
+import { Cast } from "./action";
 
 export class UnitActions {
   constructor(protected readonly owner: Unit) {}
@@ -36,9 +36,9 @@ export abstract class Unit {
   }
   set bonusAs(bonusAs: number) {
     this._bonusAs = bonusAs;
-    for (const listener of this._onBonusASChange) listener(bonusAs);
+    for (const listener of this._onBonusASChange) listener();
   }
-  private readonly _onBonusASChange: ((newValue: number) => void)[] = [];
+  private readonly _onBonusASChange: (() => void)[] = [];
   onBonusASChange(cb: typeof this._onBonusASChange[0]) {
     this._onBonusASChange.push(cb);
     return () => {
@@ -122,8 +122,28 @@ export abstract class Unit {
     if (this._currentCast?.isCasting) return this._currentCast;
   }
   set currentCast(cast: Cast | undefined) {
+    if (this._currentCast === cast) return;
     if (this._currentCast?.isCasting) this._currentCast.cancel();
     this._currentCast = cast;
+    for (const listener of this._onCurrentCast) listener();
+  }
+  private _onCurrentCast: (() => void)[] = [];
+  onCurrentCast(cb: typeof this._onCurrentCast[0]) {
+    this._onCurrentCast.push(cb);
+    return () => {
+      const i = this._onCurrentCast.indexOf(cb);
+      if (i !== -1) this._onCurrentCast.splice(i, 1);
+    }
+  }
+  onCurrentCastPromise(exception?: Cast): Promise<void> {
+    return new Promise<void>((res) => {
+      const cancel = this.onCurrentCast(() => {
+        if (exception === undefined || this._currentCast !== exception) {
+          res();
+          cancel();
+        }
+      });
+    });
   }
 
   init(simIN?: Simulation): this {

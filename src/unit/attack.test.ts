@@ -34,8 +34,13 @@ test("attack multiple", async () => {
   const yi1 = new MasterYi().init(sim);
   const yi2 = new MasterYi().init(sim);
   expect(yi1.health).toBe(yi2.health);
+
+  let count = 0;
+  yi2.interaction.onTakeDamage(() => count += 1);
   
   await Promise.all([yi1.action.attack.cast(yi2), yi1.action.attack.cast(yi2), yi1.action.attack.cast(yi2), yi1.action.attack.cast(yi2), yi1.action.attack.cast(yi2), yi1.action.attack.cast(yi2), yi1.action.attack.cast(yi2), yi1.action.attack.cast(yi2)]);
+  expect(count).toBe(1);
+  expect(yi1.action.attack.calc(yi2)).toBeGreaterThan(30);
   expect(yi2.health).toBe(yi1.health - yi1.action.attack.calc(yi2));
   expect(sim.time).toBeLessThan(1500);
   expect(sim.time).toBeGreaterThan(0);
@@ -134,7 +139,8 @@ test("attack cooldown compliance", async () => {
 
   const time1 = sim.time;
   expect(yi1.action.attack.isCooldown).toBe(true);
-  await yi1.action.attack.cast(yi2);
+  expect(yi1.action.attack.castable(yi2)).toBe(true);
+  expect(await yi1.action.attack.cast(yi2)).toBe(true);
   expect(sim.time).toBeCloseTo(time1 + (1 / yi1.as) * 1000);
   expect(yi1.action.attack.currentCast).toBeUndefined();
   expect(yi1.action.attack.isCooldown).toBe(true);
@@ -224,7 +230,7 @@ test("attack cancel", async () => {
   expect(yi1.action.attack.currentCast?.isCasting).toBe(true);
   expect(yi1.action.attack.isCooldown).toBe(true);
   await yi1.action.attack.currentCast?.cancel();
-  expect(yi1.action.attack.currentCast).toBe(undefined)
+  expect(yi1.action.attack.currentCast).toBe(undefined);
   expect(yi1.action.attack.isCooldown).toBe(false);
 
   const result = await yi1.action.attack.cast(yi2);
@@ -287,7 +293,7 @@ test("attack targetable further", async () => {
   await aa;
   expect(sim.time).toBe(25);
   expect(yi1.action.attack.isCooldown).toBe(false);
-  expect(yi1.action.attack.cast).toBeUndefined();
+  expect(yi1.currentCast).toBeUndefined();
 
   yi2.targetable = true;
   await yi1.action.attack.cast(yi2);

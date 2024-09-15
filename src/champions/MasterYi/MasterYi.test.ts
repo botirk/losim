@@ -164,3 +164,25 @@ test("MasterYi R Cd", async () => {
   expect(yi1.action.r.isCooldown).toBe(false);
   expect(yi1.action.r.remainingCooldown).toBe(0);
 });
+
+test("MasterYi R Takedown", async () => {
+  const sim = new Simulation().start(500000);
+  const yi1 = new MasterYi().init(sim);
+  const yi2 = new MasterYi().init(sim);
+  const yi3 = new MasterYi().init(sim);
+  
+  yi1.action.r.setLevel(1);
+  
+  await yi1.action.attack.cast(yi2);
+  await sim.waitFor(10001);
+  yi1.action.r.cast();
+  expect(yi1.buffsNamed(MasterYiR.rname)[0].remainingTime).toBe(7000);
+  yi2.interaction.takeDamage(Infinity, yi2);
+  expect(yi1.buffsNamed(MasterYiR.rname)[0].remainingTime).toBe(7000);
+
+  await yi1.action.attack.cast(yi3);
+  expect(yi1.buffsNamed(MasterYiR.rname)[0].isActive).toBe(true);
+  const time = yi1.buffsNamed(MasterYiR.rname)[0].remainingTime;
+  yi3.interaction.takeDamage(Infinity, yi3);
+  expect(yi1.buffsNamed(MasterYiR.rname)[0].remainingTime).toBe(time + 7000);
+});

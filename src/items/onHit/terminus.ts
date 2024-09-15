@@ -42,15 +42,15 @@ export class TerminusLightBuff extends StackBuff {
   static duration = 5000;
   static lname = terminus.name + " Light";
   static defense(level: number, stacks: number) {
-    if (level < 11) return 3 * stacks;
-    else if (level < 14) return 4 * stacks;
-    else return 5 * stacks;
+    if (level < 11) return 6 * stacks;
+    else if (level < 14) return 7 * stacks;
+    else return 8 * stacks;
   }
 
   constructor(owner: Unit) {
     super(TerminusLightBuff.lname, owner, TerminusLightBuff.duration, true);
   }
-  protected readonly maxStacks: number = 5;
+  protected readonly maxStacks: number = 3;
   protected onGainStats(): void {
     const def = TerminusLightBuff.defense(this.owner.level, this.stacks);
     this.owner.bonusArmor += def;
@@ -67,13 +67,13 @@ export class TerminusDarkBuff extends StackBuff {
   static duration = 5000;
   static dname = terminus.name + " Dark";
   static pen(stacks: number) {
-    return 6 * stacks;
+    return 10 * stacks;
   }
 
   constructor(owner: Unit) {
     super(TerminusDarkBuff.dname, owner, TerminusDarkBuff.duration, true);
   }
-  protected readonly maxStacks: number = 5;
+  protected readonly maxStacks: number = 3;
   protected onGainStats(): void {
     const pen = TerminusDarkBuff.pen(this.stacks);
     this.owner.armorPenPercent += pen;

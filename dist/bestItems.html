@@ -610,9 +610,9 @@ const askQuestion = async (question, converter)=>{
         if (input) {
             const cb = (e)=>{
                 if (e.key === "Enter") {
-                    input.value = "";
                     input.removeEventListener("keydown", cb);
                     res(converter(input.value));
+                    input.value = "";
                 }
             };
             input.addEventListener("keydown", cb);
@@ -725,8 +725,8 @@ class MasterYi extends (0, _champion.Champion) {
         else if (await this.action.attack.cast(enemy)) return;
         else await this.action.move.closeTo(enemy);
     }
-    init(simIN) {
-        super.init(simIN);
+    init(simIN, team = this.team, level = this.level) {
+        super.init(simIN, team, level);
         this.action = new MasterYiAction(this);
         this.action.init();
         return this;
@@ -790,6 +790,8 @@ class Unit {
         this.maxMana = 0;
         this.armor = 0;
         this.mr = 0;
+        this.// team 
+        team = "DEATHMATCH";
         this.pos = 0;
         this.baseMs = 0;
         this.bonusMs = 0;
@@ -814,6 +816,9 @@ class Unit {
         this.appliedEquips = [];
         this.// cast
         currentCast = new CurrentCast(undefined);
+    }
+    isEnemy(unit) {
+        return unit !== this && this.team === "DEATHMATCH" || unit.team === "DEATHMATCH" || unit.team !== this.team;
     }
     // move
     distance(unit) {
@@ -871,7 +876,7 @@ class Unit {
         else if (await this.action.attack.cast(enemy)) return;
         else await this.action.move.closeTo(enemy);
     }
-    init(simIN) {
+    init(simIN, team = this.team, level = this.level) {
         if (!this.interaction) this.interaction = new (0, _unitInteraction.UnitInteraction)(this).init();
         if (this.sim) {
             const i = this.sim.units.indexOf(this);
@@ -879,6 +884,8 @@ class Unit {
         }
         this.sim = simIN;
         if (simIN) this.sim.units.push(this);
+        this.team = team;
+        this.level = level;
         this.dead.value = false;
         return this;
     }
@@ -1094,7 +1101,7 @@ class AttackAction extends (0, _action.EnemyTargetAction) {
         return 1 / this.owner.as * 1000;
     }
     castable(option) {
-        return !this.owner.dead.value && option.targetable.value && Math.abs(this.owner.pos - option.pos) < this.maxRange;
+        return !this.owner.dead.value && option.targetable.value && Math.abs(this.owner.pos - option.pos) < this.maxRange && this.owner.isEnemy(option);
     }
     calc(target) {
         return target.interaction.calcPercentDamageReduction({
@@ -1231,8 +1238,11 @@ class EnemyTargetAction extends Action {
     procOnHitUnit(target, multiplier = 1) {
         for (const listener of this._onHitUnit)listener(target, multiplier);
     }
+    targetable(option) {
+        return option.targetable.value && Math.abs(option.pos - this.owner.pos) <= this.maxRange && this.owner.isEnemy(option);
+    }
     castable(option) {
-        return super.castable(option) && option.targetable.value && Math.abs(option.pos - this.owner.pos) <= this.maxRange;
+        return super.castable(option) && this.targetable(option);
     }
     constructor(...args){
         super(...args);
@@ -2259,8 +2269,8 @@ class Champion extends (0, _unit.Unit) {
     calcStatGrowth(growth) {
         return growth * (this.level - 1) * (0.7025 + 0.0175 * (this.level - 1));
     }
-    init(simIN) {
-        super.init(simIN);
+    init(simIN, team = this.team, level = this.level) {
+        super.init(simIN, team, level);
         this.maxHealth = this.stats.baseHealth + this.calcStatGrowth(this.stats.healthGrowth);
         this.health = this.maxHealth;
         this.baseAd = this.stats.baseAd;
@@ -2605,8 +2615,14 @@ class MasterYiQCast extends (0, _action.TargetCast) {
                 this.wait(),
                 this.action.owner.sim.waitFor(MasterYiQ.markTime)
             ]);
-            if (result) marks.push(new MasterYiQMark(this.option, this.action.owner, this.action.level, this.random));
-            else break;
+            if (result) {
+                let nextTarget = this.option;
+                if (nextTarget.buffNamed(MasterYiQ.qname)) {
+                    const potentialNextTarget = this.action.owner.sim.units.filter((u)=>u !== nextTarget && this.action.targetable(u) && !u.buffNamed(MasterYiQ.qname))[0];
+                    if (potentialNextTarget) nextTarget = potentialNextTarget;
+                }
+                marks.push(new MasterYiQMark(nextTarget, this.action.owner, this.action.level, this.random));
+            } else break;
         }
         // appear near target
         if (this.action.owner.pos <= this.option.pos) this.action.owner.pos = this.option.pos - 75;
@@ -3243,6 +3259,8 @@ parcelHelpers.export(exports, "botrkDamage", ()=>botrkDamage);
 parcelHelpers.export(exports, "botrk", ()=>botrk);
 parcelHelpers.export(exports, "witsendDamage", ()=>witsendDamage);
 parcelHelpers.export(exports, "witsend", ()=>witsend);
+parcelHelpers.export(exports, "GuinsoBuff", ()=>GuinsoBuff);
+parcelHelpers.export(exports, "GuinsoPhantomBuff", ()=>GuinsoPhantomBuff);
 parcelHelpers.export(exports, "guinso", ()=>guinso);
 parcelHelpers.export(exports, "onHitItems", ()=>onHitItems);
 var _masterYi = require("../champions/MasterYi/MasterYi");
@@ -3350,6 +3368,74 @@ const witsend = {
         });
     }
 };
+class GuinsoBuff extends (0, _buff.TimedBuff) {
+    static{
+        this.duration = 3000;
+    }
+    static{
+        this.phantomDuration = 3000;
+    }
+    static{
+        this.maxStacks = 4;
+    }
+    static{
+        this.bonusAsPerStack = 8;
+    }
+    constructor(owner){
+        super(guinso.name, owner, GuinsoBuff.duration, true);
+        this._stacks = 0;
+        this._currentAs = 0;
+        this.stacks = 1;
+    }
+    set stacks(stacks) {
+        this._stacks = Math.max(0, Math.min(GuinsoBuff.maxStacks, stacks));
+        this.currentAs = GuinsoBuff.bonusAsPerStack * this._stacks;
+    }
+    get stacks() {
+        return this._stacks;
+    }
+    set currentAs(currentAs) {
+        if (this._currentAs === currentAs) return;
+        this.owner.bonusAs.value += -this._currentAs + currentAs;
+        this._currentAs = currentAs;
+    }
+    get currentAs() {
+        return this._currentAs;
+    }
+    onAttack(target) {
+        if (this.stacks >= GuinsoBuff.maxStacks) {
+            const phantom = this.owner.buffNamed(GuinsoPhantomBuff.pname);
+            if (phantom) phantom.onAttack(target);
+            else new GuinsoPhantomBuff(this.owner);
+        } else this.stacks += 1;
+        this.remainingTime = GuinsoBuff.duration;
+    }
+    fade() {
+        if (!this.isActive) return;
+        this.stacks = 0;
+        super.fade();
+    }
+}
+class GuinsoPhantomBuff extends (0, _buff.TimedBuff) {
+    static{
+        this.pname = GuinsoBuff.name + "Phantom";
+    }
+    static{
+        this.duration = 6000;
+    }
+    static{
+        this.pause = 150;
+    }
+    constructor(owner){
+        super(GuinsoPhantomBuff.pname, owner, GuinsoPhantomBuff.duration, true);
+    }
+    onAttack(target) {
+        this.owner.sim.waitFor(GuinsoPhantomBuff.pause).then(()=>{
+            if (target.targetable.value) this.owner.action.attack.procOnHitUnit(target, 1);
+        });
+        this.fade();
+    }
+}
 const guinso = {
     name: "Guinsoo's Rageblade",
     unique: true,
@@ -3358,12 +3444,15 @@ const guinso = {
     bonusAs: 25,
     // TODO: AP
     apply: (unit)=>{
-        unit.action.attack.onHitUnit((t, m)=>{
-            t.interaction.takeDamage({
+        unit.action.attack.onHitUnit((t, m)=>t.interaction.takeDamage({
                 src: unit,
                 type: (0, _unitInteraction.DamageType).MAGIC,
                 value: 30 * m
-            });
+            }));
+        unit.action.attack.onCast((t)=>{
+            const buff = unit.buffNamed(guinso.name);
+            if (buff) buff.onAttack(t);
+            else new GuinsoBuff(unit);
         });
     },
     test: ()=>{
@@ -3379,6 +3468,48 @@ const guinso = {
             });
             expect(await yi1.action.attack.cast(yi2)).toBe(true);
             expect(magic).toBe(1);
+        });
+        test("guinso", async ()=>{
+            const sim = new (0, _simulation.Simulation)().start(500000);
+            const yi1 = new (0, _masterYi.MasterYi)().init(sim);
+            yi1.action.passive.disabled = true;
+            expect(yi1.applyEquip(guinso)).toBe(true);
+            const yi2 = new (0, _masterYi.MasterYi)().init(sim);
+            yi2.health = 10000;
+            let count = 0;
+            yi1.action.attack.onHitUnit(()=>count += 1);
+            expect(yi1.bonusAs.value).toBe(25);
+            expect(await yi1.action.attack.cast(yi2)).toBe(true);
+            expect(count).toBe(1);
+            expect(yi1.bonusAs.value).toBe(33);
+            expect(await yi1.action.attack.cast(yi2)).toBe(true);
+            expect(count).toBe(2);
+            expect(yi1.bonusAs.value).toBe(41);
+            expect(await yi1.action.attack.cast(yi2)).toBe(true);
+            expect(count).toBe(3);
+            expect(yi1.bonusAs.value).toBe(49);
+            expect(await yi1.action.attack.cast(yi2)).toBe(true);
+            expect(count).toBe(4);
+            expect(yi1.bonusAs.value).toBe(57);
+            expect(await yi1.action.attack.cast(yi2)).toBe(true);
+            expect(count).toBe(5);
+            expect(yi1.bonusAs.value).toBe(57);
+            expect(await yi1.action.attack.cast(yi2)).toBe(true);
+            expect(count).toBe(6);
+            expect(yi1.bonusAs.value).toBe(57);
+            await sim.waitFor(151);
+            expect(count).toBe(7);
+            expect(await yi1.action.attack.cast(yi2)).toBe(true);
+            expect(count).toBe(8);
+            expect(await yi1.action.attack.cast(yi2)).toBe(true);
+            expect(count).toBe(9);
+            await sim.waitFor(151);
+            expect(count).toBe(10);
+            await sim.waitFor(GuinsoPhantomBuff.duration + 1);
+            expect(yi1.buffNamed(GuinsoPhantomBuff.pname)).toBeUndefined();
+            await sim.waitFor(GuinsoBuff.duration - GuinsoPhantomBuff.duration);
+            expect(yi1.bonusAs.value).toBe(25);
+            expect(yi1.buffNamed(guinso.name)).toBeUndefined();
         });
     }
 };

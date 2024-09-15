@@ -1,7 +1,19 @@
 import { Simulation } from "../simulation/simulation";
-import { UnitActions } from "./unitAction3";
 import { UnitInteraction } from "./unitInteraction";
 import { Buff } from "./buff";
+import { AttackAction } from "./attack";
+import { Cast } from "./unitAction";
+
+export class UnitActions {
+  constructor(protected readonly owner: Unit) {}
+
+  attack: AttackAction;
+
+  init(): this { 
+    this.attack = new AttackAction(this.owner);
+    return this;
+  }
+}
 
 export abstract class Unit {
   sim: Simulation;
@@ -45,7 +57,6 @@ export abstract class Unit {
   }
   set dead(state: boolean) {
     if (state === this._dead) return;
-    if (state === true) this.action.current?.cancel();
     const oldT = this.targetable;
     this._dead = state;
     for (const listener of this._deathListeners) listener(state);
@@ -104,6 +115,15 @@ export abstract class Unit {
   buffs: Buff[] = [];
   buffsNamed(name: string) {
     return this.buffs.filter((buff) => buff.name === name);
+  }
+
+  private _currentCast?: Cast;
+  get currentCast() {
+    if (this._currentCast?.isCasting) return this._currentCast;
+  }
+  set currentCast(cast: Cast | undefined) {
+    if (this._currentCast?.isCasting) this._currentCast.cancel();
+    this._currentCast = cast;
   }
 
   init(simIN?: Simulation): this {

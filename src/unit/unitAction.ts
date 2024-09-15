@@ -1,13 +1,14 @@
 import { WheelItem } from "../simulation/defered";
 import { Unit } from "./unit";
 
-export abstract class UnitAction {
-  constructor(readonly name: string, readonly unit: Unit) {
+export abstract class Action<TOption extends any> {
+  constructor(readonly name: string, readonly owner: Unit) {
 
   }
   // settings
   abstract readonly minLevel: number;
   abstract readonly maxLevel: number;
+  abstract readonly isCancelableByUser: boolean;
 
   // level
   private _level = 0;
@@ -24,6 +25,9 @@ export abstract class UnitAction {
 
   // cooldown
   private cooldown?: WheelItem;
+  startCooldown() {
+    if (!this.isCooldown) this.cooldown = this.owner.sim.waitFor(this.cooldownTime);
+  }
   get isCooldown() {
     return !!this.cooldown && this.cooldown.result === undefined;
   }
@@ -34,16 +38,19 @@ export abstract class UnitAction {
     return this.cooldown?.remainingTime || 0;
   }
   protected setCooldown(waitFor: number) {
-    if (!this.cooldown) return;
-    this.cooldown.waitFor = waitFor;
+    if (this.cooldown) this.cooldown.waitFor = waitFor;
   }
   finishCooldown() {
     this.cooldown?.resolve(true);
     this.cooldown = undefined;
   }
+  get currentCast(): Cast | undefined {
+    if (this.owner.currentCast?.action === this) return this.owner.currentCast;
+  }
+  abstract cast(option: TOption): Promise<boolean>;
 }
 
-export abstract class EnemyTargetAction extends UnitAction {
+export abstract class EnemyTargetAction extends Action<Unit> {
   protected _onHitUnit: ((target: Unit) => void)[] = [];
   onHitUnit(cb: typeof this._onHitUnit[0]) {
     this._onHitUnit.push(cb);
@@ -58,10 +65,9 @@ export abstract class EnemyTargetAction extends UnitAction {
 }
 
 export abstract class Cast<TOption = any> {
-  constructor(readonly action: UnitAction, readonly option: TOption) {
+  constructor(readonly action: Action<TOption>, readonly option: TOption) {
     
   }
-  abstract readonly isCancelableByUser: boolean;
 
   private wheel?: WheelItem;
   get remaining() {
@@ -80,11 +86,11 @@ export abstract class Cast<TOption = any> {
     this.wheel?.resolve(false);
   }
   cancel() {
-    if (!this.isCancelableByUser) throw new Error(`${this.action.name}'s cast is not cancelable by user`);
+    if (!this.action.isCancelableByUser) throw new Error(`${this.action.name}'s cast is not cancelable by user`);
     this.interrupt();
   }
   get castable(): boolean {
-    return !this.action.unit.dead;
+    return this.action.level >= this.action.minLevel && (!this.action.owner.currentCast || this.action.castTime === 0) && !this.action.isCooldown && !this.action.owner.dead;
   }
 
   protected async watchInterrupt() {};
@@ -92,7 +98,9 @@ export abstract class Cast<TOption = any> {
   protected async onFinishCast() {};
   async init() {
     if (!this.castable) return false;
-    this.wheel = this.action.unit.sim.waitFor(this.action.castTime);
+    this.wheel = this.action.owner.sim.waitFor(this.action.castTime);
+    this.action.owner.currentCast = this;
+    this.action.startCooldown();
     this.watchInterrupt();
     this.onStartCast();
     const result = await this.wheel;
@@ -103,7 +111,7 @@ export abstract class Cast<TOption = any> {
 
 export abstract class SelfCast extends Cast<void> {
   watchInterrupt: () => Promise<void> = async () => {
-    const result = await Promise.any([ this.action.unit.onDeathPromise().then(() => false), this.wait() ]);
+    const result = await Promise.any([ this.action.owner.onDeathPromise().then(() => false), this.wait() ]);
     if (result === false) this.interrupt();
   };
 }
@@ -113,27 +121,7 @@ export abstract class TargetCast extends Cast<Unit> {
     return super.castable && this.option.targetable;
   }
   watchInterrupt: () => Promise<void> = async () => {
-    const result = await Promise.any([ this.option.onTargetablePromise(), this.action.unit.onDeathPromise().then(() => false), this.wait() ]);
+    const result = await Promise.any([ this.option.onTargetablePromise().then(() => false), this.action.owner.onDeathPromise().then(() => false), this.wait() ]);
     if (result === false) this.interrupt();
   };
-}
-
-export class UnitActions {
-  constructor(protected readonly unit: Unit) {}
-
-  // attack: Attack;
-
-  private _currentCast?: Cast;
-  get currentCast(): Cast | undefined {
-    if (this._currentCast?.isCasting) return this._currentCast;
-  }
-  set currentCast(newCurrent: Cast | undefined) {
-    if (newCurrent && this._currentCast && this._currentCast.isCasting) this._currentCast.cancel();
-    this._currentCast = newCurrent;
-  }
-
-  init(): this { 
-    //this.attack = new Attack(this.unit);
-    return this;
-  }
 }

@@ -2,7 +2,7 @@ import { MasterYi } from "../champions/MasterYi/MasterYi";
 import { Simulation } from "../simulation/simulation";
 import { DamageType } from "./unitInteraction";
 
-test("UnitAction.attack", async () => {
+test("attack", async () => {
   const sim = new Simulation().start(5000) as any;
   const yi1 = new MasterYi().init(sim);
   const yi2 = new MasterYi().init(sim);
@@ -16,19 +16,20 @@ test("UnitAction.attack", async () => {
   expect(yi2.health).toBeCloseTo(yi1.health - yi1.action.attack.calc(yi2));
 });
 
-test("UnitAction.attack.isCasting", async () => { 
+test("attack.currentCast.isCasting", async () => { 
   const sim = new Simulation().start(5000) as any;
   const yi1 = new MasterYi().init(sim);
   const yi2 = new MasterYi().init(sim);
 
-  expect(yi1.action.attack.isCasting).toBe(false);
+  expect(yi1.action.attack.currentCast).toBeUndefined();
   const prom = yi1.action.attack.cast(yi2);
-  expect(yi1.action.attack.isCasting).toBe(true);
+  expect(yi1.action.attack.currentCast).toBeTruthy();
+  expect(yi1.action.attack.currentCast?.isCasting).toBe(true);
   await prom;
-  expect(yi1.action.attack.isCasting).toBe(false);
+  expect(yi1.action.attack.currentCast).toBeUndefined();
 });
 
-test("UnitAction.attack multiple", async () => {
+test("attack multiple", async () => {
   const sim = new Simulation().start(5000) as any;
   const yi1 = new MasterYi().init(sim);
   const yi2 = new MasterYi().init(sim);
@@ -40,7 +41,7 @@ test("UnitAction.attack multiple", async () => {
   expect(sim.time).toBeGreaterThan(0);
 });
 
-test("UnitAction.attack after death", async () => {
+test("attack after death", async () => {
   const sim = new Simulation().start(5000) as any;
   const yi1 = new MasterYi().init(sim);
   const yi2 = new MasterYi().init(sim);
@@ -50,16 +51,16 @@ test("UnitAction.attack after death", async () => {
   yi2.interaction.onTakeDamage(() => hits += 1);
   
   const aa = yi1.action.attack.cast(yi2);
-  expect(yi1.action.attack.isCasting).toBe(true);
+  expect(yi1.action.attack.currentCast?.isCasting).toBe(true);
   yi1.interaction.takeDamage({ value: Infinity, src: yi1, type: DamageType.TRUE });
   expect(yi1.dead).toBe(true);
   await aa;
   expect(hits).toBe(0);
   expect(sim.time).toBe(0);
-  expect(yi1.action.attack.isCasting).toBe(false);
+  expect(yi1.action.attack.currentCast).toBeUndefined();
 });
 
-test("UnitAction.cancelAttack", async () => {
+test("cancelAttack", async () => {
   const sim = new Simulation().start(5000);
   const yi1 = new MasterYi().init(sim);
   const yi2 = new MasterYi().init(sim);
@@ -67,16 +68,16 @@ test("UnitAction.cancelAttack", async () => {
   let hits = 0;
   yi2.interaction.onTakeDamage(() => hits += 1);
   
-  expect(yi1.action.attack.isCasting).toBe(false);
+  expect(yi1.action.attack.currentCast).toBeUndefined();
   const prom = yi1.action.attack.cast(yi2);
-  expect(yi1.action.attack.isCasting).toBe(true);
-  yi1.action.attack.cancelByUser();
-  expect(yi1.action.attack.isCasting).toBe(false);
+  expect(yi1.action.attack.currentCast?.isCasting).toBe(true);
+  yi1.action.attack.currentCast?.cancel();
+  expect(yi1.action.attack.currentCast).toBeUndefined();
   await prom;
   expect(hits).toBe(0);
 });
 
-test("UnitAction.attack after target death", async () => {
+test("attack after target death", async () => {
   const sim = new Simulation().start(5000);
   const yi1 = new MasterYi().init(sim);
   const yi2 = new MasterYi().init(sim);
@@ -85,7 +86,7 @@ test("UnitAction.attack after target death", async () => {
   expect(yi2.dead).toBe(false);
   
   const aa = yi1.action.attack.cast(yi2);
-  expect(yi1.action.attack.isCasting).toBe(true);
+  expect(yi1.action.attack.currentCast?.isCasting).toBe(true);
   yi2.interaction.takeDamage({ value: Infinity, src: yi2, type: DamageType.TRUE });
 
   let hits = 0;
@@ -94,11 +95,11 @@ test("UnitAction.attack after target death", async () => {
   expect(yi2.dead).toBe(true);
   const res = await aa;
   expect(res).toBe(false);
-  expect(yi1.action.attack.isCasting).toBe(false);
+  expect(yi1.action.attack.currentCast).toBeUndefined();
   expect(hits).toBe(0);
 });
 
-test("UnitAction.attack cooldown after attack", async () => {
+test("attack cooldown after attack", async () => {
   const sim = new Simulation().start(5000);
   const yi1 = new MasterYi().init(sim);
   const yi2 = new MasterYi().init(sim);
@@ -106,40 +107,40 @@ test("UnitAction.attack cooldown after attack", async () => {
   expect(yi1.dead).toBe(false);
   expect(yi2.dead).toBe(false);
   
-  expect(yi1.action.attack.isCasting).toBe(false);
+  expect(yi1.action.attack.currentCast).toBeUndefined()
   const aa = yi1.action.attack.cast(yi2);
-  expect(yi1.action.attack.isCasting).toBe(true);
+  expect(yi1.action.attack.currentCast?.isCasting).toBe(true);
   await aa;
-  expect(yi1.action.attack.isCasting).toBe(false);
+  expect(yi1.action.attack.currentCast).toBeUndefined();
 
   const time1 = sim.time;
   expect(yi1.action.attack.isCooldown).toBe(true);
-  await yi1.action.attack.waitForCooldown();
+  await yi1.action.attack.waitCooldown();
   expect(yi1.action.attack.isCooldown).toBe(false);
   expect(time1).toBeLessThan(sim.time);
 });
 
-test("UnitAction.attack cooldown compliance", async () => {
+test("attack cooldown compliance", async () => {
   const sim = new Simulation().start(5000);
   const yi1 = new MasterYi().init(sim);
   const yi2 = new MasterYi().init(sim);
   expect(yi1.health).toBe(yi2.health);
   
-  expect(yi1.action.attack.isCasting).toBe(false);
+  expect(yi1.action.attack.currentCast).toBe(undefined)
   const aa = yi1.action.attack.cast(yi2);
-  expect(yi1.action.attack.isCasting).toBe(true);
+  expect(yi1.action.attack.currentCast?.isCasting).toBe(true);
   await aa;
-  expect(yi1.action.attack.isCasting).toBe(false);
+  expect(yi1.action.attack.currentCast).toBe(undefined)
 
   const time1 = sim.time;
   expect(yi1.action.attack.isCooldown).toBe(true);
   await yi1.action.attack.cast(yi2);
   expect(sim.time).toBeCloseTo(time1 + (1 / yi1.as) * 1000);
-  expect(yi1.action.attack.isCasting).toBe(false);
+  expect(yi1.action.attack.currentCast).toBeUndefined();
   expect(yi1.action.attack.isCooldown).toBe(true);
 });
 
-test("UnitAction.attack dead", async () => {
+test("attack dead", async () => {
   const sim = new Simulation().start(5000);
   const yi1 = new MasterYi().init(sim);
   const yi2 = new MasterYi().init(sim);
@@ -157,7 +158,7 @@ test("UnitAction.attack dead", async () => {
   expect(hits).toBe(0);
 });
 
-test("UnitAction.attack onHit", async () => {
+test("attack onHit", async () => {
   const sim = new Simulation().start(5000);
   const yi1 = new MasterYi().init(sim);
   const yi2 = new MasterYi().init(sim);
@@ -170,33 +171,33 @@ test("UnitAction.attack onHit", async () => {
   });
 
   await yi1.action.attack.cast(yi2);
-  expect(yi1.action.attack.isCasting).toBe(false);
+  expect(yi1.action.attack.currentCast).toBeUndefined();
   expect(yi1.action.attack.isCooldown).toBe(true);
   expect(hit).toBe(1);
 
   await yi1.action.attack.cast(yi2);
-  expect(yi1.action.attack.isCasting).toBe(false);
+  expect(yi1.action.attack.currentCast).toBeUndefined();
   expect(yi1.action.attack.isCooldown).toBe(true);
   expect(hit).toBe(2);
 
   await yi1.action.attack.cast(yi2);
-  expect(yi1.action.attack.isCasting).toBe(false);
+  expect(yi1.action.attack.currentCast).toBeUndefined();
   expect(yi1.action.attack.isCooldown).toBe(true);
   expect(hit).toBe(3);
 });
 
-test("UnitAction.attack change of unit.bonusAS", async () => {
+test("attack change of unit.bonusAS", async () => {
   const sim = new Simulation().start(15000);
   const yi1 = new MasterYi().init(sim);
   const yi2 = new MasterYi().init(sim);
   
   const prom = yi1.action.attack.cast(yi2);
-  expect(yi1.action.attack.remainingCast).toBeGreaterThan(50);
-  expect(yi1.action.attack.remainingCast).toBeLessThan(700);
-  const savedCastTime = yi1.action.attack.remainingCast;
+  expect(yi1.action.attack.currentCast?.remaining).toBeGreaterThan(50);
+  expect(yi1.action.attack.currentCast?.remaining).toBeLessThan(700);
+  const savedCastTime = yi1.action.attack.currentCast?.remaining as number;
   yi1.bonusAs += 1;
-  expect(yi1.action.attack.remainingCast).toBeGreaterThan(50);
-  expect(yi1.action.attack.remainingCast).toBeLessThan(savedCastTime);
+  expect(yi1.action.attack.currentCast?.remaining).toBeGreaterThan(50);
+  expect(yi1.action.attack.currentCast?.remaining).toBeLessThan(savedCastTime);
 
   await prom;
   expect(yi1.action.attack.remainingCooldown).toBeGreaterThan(300);
@@ -207,7 +208,7 @@ test("UnitAction.attack change of unit.bonusAS", async () => {
   expect(yi1.action.attack.remainingCooldown).toBeLessThan(1500);
 });
 
-test("UnitAction.attack cancel", async () => {
+test("attack cancel", async () => {
   const sim = new Simulation().start(15000);
   const yi1 = new MasterYi().init(sim);
   const yi2 = new MasterYi().init(sim);
@@ -217,16 +218,15 @@ test("UnitAction.attack cancel", async () => {
 
   expect(yi1.action.attack.isCancelableByUser).toBe(true);
   yi1.action.attack.cast(yi2);
-  const aaCastTime = yi1.action.attack.remainingCast;
+  const aaCastTime = yi1.action.attack.currentCast?.remaining as number;
   expect(aaCastTime).toBeGreaterThan(100);
   await sim.waitFor(100);
-  expect(yi1.action.attack.isCasting).toBe(true);
+  expect(yi1.action.attack.currentCast?.isCasting).toBe(true);
   expect(yi1.action.attack.isCooldown).toBe(true);
-  await yi1.action.attack.cancelByUser();
-  expect(yi1.action.attack.isCasting).toBe(false);
+  await yi1.action.attack.currentCast?.cancel();
+  expect(yi1.action.attack.currentCast).toBe(undefined)
   expect(yi1.action.attack.isCooldown).toBe(false);
 
-  expect(yi1.action.attack.canCast(yi2)).toBe(true);
   const result = await yi1.action.attack.cast(yi2);
   expect(result).toBe(true);
   expect(sim.time).toBe(100 + aaCastTime);
@@ -234,37 +234,18 @@ test("UnitAction.attack cancel", async () => {
   expect(count).toBe(1);
 });
 
-test("UnitAction.current", async () => {
-  const sim = new Simulation().start(15000);
-  const yi1 = new MasterYi().init(sim);
-  const yi2 = new MasterYi().init(sim);
-
-  expect(yi1.action.current).toBe(undefined);
-  const attack = yi1.action.attack.cast(yi2);
-  expect(yi1.action.current).toBe(yi1.action.attack);
-  expect(yi1.action.current?.isCasting).toBe(true);
-
-  await sim.waitFor(50);
-  expect(yi1.action.current).toBe(yi1.action.attack);
-  expect(yi1.action.current?.isCasting).toBe(true);
-
-  yi1.action.current?.cancelByUser();
-  expect(yi1.action.current).toBeFalsy();
-  expect(yi1.action.attack.isCasting).toBe(false);
-});
-
-test("UnitAction.attack x5", async () => {
+test("attack x5", async () => {
   const sim = new Simulation().start(15000);
   const yi1 = new MasterYi().init(sim);
   const yi2 = new MasterYi().init(sim);
 
   const attack = yi1.action.attack.cast(yi2);
-  const duration = yi1.action.attack.remainingCast;
+  const duration = yi1.action.attack.currentCast?.remaining;
   await Promise.all([attack, yi1.action.attack.cast(yi2), yi1.action.attack.cast(yi2), yi1.action.attack.cast(yi2), yi1.action.attack.cast(yi2), yi1.action.attack.cast(yi2)]);
   expect(sim.time).toBe(duration);
 });
 
-test("UnitAction.attack finish cooldown", async () => {
+test("attack finish cooldown", async () => {
   const sim = new Simulation().start(15000);
   const yi1 = new MasterYi().init(sim);
   const yi2 = new MasterYi().init(sim);
@@ -279,7 +260,7 @@ test("UnitAction.attack finish cooldown", async () => {
   expect(sim.time).toBe(time * 2);
 });
 
-test("UnitAction.attack untargetable", async () => {
+test("attack untargetable", async () => {
   const sim = new Simulation().start(15000);
   const yi1 = new MasterYi().init(sim);
   const yi2 = new MasterYi().init(sim);
@@ -287,7 +268,7 @@ test("UnitAction.attack untargetable", async () => {
   await yi1.action.attack.cast(yi2);
   expect(sim.time).toBe(0);
   expect(yi1.action.attack.isCooldown).toBe(false);
-  expect(yi1.action.attack.isCasting).toBe(false);
+  expect(yi1.action.attack.currentCast).toBeUndefined();
 
   yi2.targetable = true;
   await yi1.action.attack.cast(yi2);
@@ -295,7 +276,7 @@ test("UnitAction.attack untargetable", async () => {
   expect(yi1.action.attack.isCooldown).toBe(true);
 });
 
-test("UnitAction.attack targetable further", async () => {
+test("attack targetable further", async () => {
   const sim = new Simulation().start(15000);
   const yi1 = new MasterYi().init(sim);
   const yi2 = new MasterYi().init(sim);
@@ -306,7 +287,7 @@ test("UnitAction.attack targetable further", async () => {
   await aa;
   expect(sim.time).toBe(25);
   expect(yi1.action.attack.isCooldown).toBe(false);
-  expect(yi1.action.attack.isCasting).toBe(false);
+  expect(yi1.action.attack.cast).toBeUndefined();
 
   yi2.targetable = true;
   await yi1.action.attack.cast(yi2);

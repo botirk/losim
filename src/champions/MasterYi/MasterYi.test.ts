@@ -375,3 +375,35 @@ test("MasterYi Q Targetable", async () => {
   await sim.waitFor(50);
   expect(yi1.targetable).toBe(true);
 });
+
+test("MasterYi Q 4 Marks", async () => {
+  const sim = new Simulation().start(500000);
+  const yi1 = new MasterYi().init(sim);
+  const yi2 = new MasterYi().init(sim);
+  yi1.action.q.setLevel(1);
+
+  let count = 0;
+  yi2.interaction.onTakeDamage((e) => count += 1);
+
+  await yi1.action.q.cast(yi2);
+  expect(count).toBe(4);
+});
+
+test("MasterYi Q 4 Marks + 4 True damage", async () => {
+  const sim = new Simulation().start(500000);
+  const yi1 = new MasterYi().init(sim);
+  const yi2 = new MasterYi().init(sim);
+  yi1.action.q.setLevel(1);
+  yi1.action.e.setLevel(1);
+
+  let countP = 0, countT = 0;
+  yi2.interaction.onTakeDamage((e) => {
+    if (e.type === DamageType.PHYSIC) countP += 1;
+    else if (e.type === DamageType.TRUE) countT += 1;
+  });
+
+  yi1.action.e.cast();
+  await yi1.action.q.cast(yi2);
+  expect(countP).toBe(4);
+  expect(countt).toBe(4);
+});

@@ -45,7 +45,14 @@ test("TimedBuff remaining", async () => {
   expect(yi.buffsNamed("test")[0].remainingTime).toBe(500);
   await sim.waitFor(499);
   expect(yi.buffsNamed("test")[0].remainingTime).toBe(1);
-  await sim.waitFor(5);
+
+  yi.buffsNamed("test")[0].remainingTime = 500;
+  expect(yi.buffsNamed("test")[0].remainingTime).toBe(500);
+
+  await sim.waitFor(250);
+  expect(yi.buffsNamed("test")[0].remainingTime).toBe(250);
+
+  await sim.waitFor(400);
   expect(yi.buffsNamed("test")[0]).toBe(undefined);
 });
 

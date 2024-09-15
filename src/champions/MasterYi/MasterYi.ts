@@ -1,28 +1,45 @@
+import { Simulation } from "../../simulation/simulation";
 import { TimedBuff } from "../../unit/buff";
 import { Unit } from "../../unit/unit";
 import { TimedSingletonAction, UnitAction } from "../../unit/unitAction";
 import { Champion } from "../champion/champion";
+import { MasterYiStats } from "./MasterYiStats";
 
 export class MasterYiPassiveSkill {
   static readonly pname = "Double Strike";
 
-  constructor(private readonly unit: Unit) {
+  constructor(private readonly unit: Unit) { }
 
+  init(): this {
+    this.unit.action.attack.onHitUnit((target) => {
+      const buff = this.buff;
+      if (buff) {
+        buff.stacks += 1;
+        buff.remainingTime = 4000;
+        if (buff.stacks >= 3) {
+          buff.stacks = 0;
+          target.interaction.takeDamage(target.calcRawPhysicHit(this.unit.ad * 0.5), this.unit);
+          this.unit.action.attack.procOnHitUnit(target);
+        }
+      } else {
+        new MasterYiPassiveBuff(this.unit);
+      }
+    });
+    return this;
+  }
+
+  get buff() {
+    return this.unit.buffsNamed(MasterYiPassiveSkill.pname)[0] as (MasterYiPassiveBuff | undefined);
   }
 }
 
 export class MasterYiPassiveBuff extends TimedBuff {
-  private removeOnHit?: () => void;
-  private stacks = 1;
+  stacks = 1;
   constructor(unit: Unit) {
     super(MasterYiPassiveSkill.pname, unit, 4000);
-    this.removeOnHit = unit.action.attack.onHitUnit((target) => {
-      // this.stacks += 1;
-    });
   }
   fade(): void {
     super.fade();
-    this.removeOnHit?.();
   }
 }
 
@@ -97,22 +114,27 @@ export class MasterYiR extends TimedSingletonAction {
 }
 
 export class MasterYiAction extends UnitAction {
-  e = new MasterYiE(this.unit);
-  r = new MasterYiR(this.unit);
+  e: MasterYiE;
+  r: MasterYiR;
+  passive: MasterYiPassiveSkill;
+
+  init(): this {
+    super.init();
+    this.e = new MasterYiE(this.unit);
+    this.r = new MasterYiR(this.unit);
+    this.passive = new MasterYiPassiveSkill(this.unit).init();
+    return this;
+  }
 }
 
 export class MasterYi extends Champion {
-  action: MasterYiAction = new MasterYiAction(this);
+  action: MasterYiAction; 
+  stats = MasterYiStats;
 
-  protected baseHealth = 669;
-  protected healthGrowth = 100;
-
-  protected baseAd = 65;
-  protected adGrowth = 2.2;
-
-  protected baseArmor = 33;
-  protected armorGrowth = 4.2;
-
-  baseAs = 0.679;
-  protected asGrowth = 2;
+  init(simIN?: Simulation): this {
+    super.init(simIN);
+    this.action = new MasterYiAction(this);
+    this.action.init();
+    return this;
+  }
 }

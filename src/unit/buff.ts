@@ -9,6 +9,8 @@ export class Buff {
   get remainingTime() {
     return Infinity;
   }
+  set remainingTime(remainingTime: number) { 
+  }
 
   get duration() {
     return Infinity;
@@ -37,6 +39,9 @@ export class TimedBuff extends Buff {
 
   get remainingTime() {
     return this.promise.remainingTime;
+  }
+  set remainingTime(remainingTime: number) {
+    this.promise.remainingTime = remainingTime;
   }
 
   get duration(): number {

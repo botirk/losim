@@ -91,6 +91,9 @@ export abstract class TimedSingletonAction {
       if (i !== -1) this._onHitUnit.splice(i, 1);
     }
   }
+  procOnHitUnit(target: Unit) {
+    for (const listener of this._onHitUnit) listener(target);
+  }
 }
 
 export class Attack extends TimedSingletonAction {
@@ -117,7 +120,7 @@ export class Attack extends TimedSingletonAction {
         this.startCast((1 / this.unit.as) * this.unit.attackAnimation * 1000, [[ownerDeath, Rejection.UnitDeath], [targetDeath, Rejection.TargetDeath]]);
         await this.waitForCast();
         target.interaction.takeDamage(this.unit.calcRawPhysicHit(this.unit.ad), this.unit);
-        for (const listener of this._onHitUnit) listener(target);
+        this.procOnHitUnit(target);
         this.startCooldown((1 / this.unit.as) * (1 - this.unit.attackAnimation) * 1000);
       }
     } catch {
@@ -132,5 +135,10 @@ export class Attack extends TimedSingletonAction {
 export class UnitAction {
   constructor(protected readonly unit: Unit) {}
 
-  readonly attack = new Attack(this.unit);
+  attack: Attack;
+
+  init(): this { 
+    this.attack = new Attack(this.unit);
+    return this;
+  }
 }

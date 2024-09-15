@@ -20,12 +20,11 @@ type DamageEvent struct {
 	isCrit bool
 }
 
-
 func NewDamageEventContainer() utils.EventContainer[DamageEvent] {
 	return utils.NewEventContainer[DamageEvent]()
 }
 
-func (u *Unit) TakeDamage(de *DamageEvent) *DamageEvent {
+func (u *Unit) TakeDamage(de DamageEvent) DamageEvent {
 	// prevent beating dead
 	if u.dead {
 		de.value = 0
@@ -36,7 +35,7 @@ func (u *Unit) TakeDamage(de *DamageEvent) *DamageEvent {
 	// reduce health
 	u.health -= de.value
 	// call callbacks
-	u.OnTakeDamage.Proc(*de);
+	u.OnTakeDamage.Proc(de)
 	// death check
 	if u.health == 0 {
 		u.dead = true

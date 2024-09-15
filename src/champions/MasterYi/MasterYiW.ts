@@ -15,6 +15,12 @@ export class MasterYiWCast extends SelfCast<MasterYiW> {
       const result = await Promise.any([ this.wait(), this.action.owner.sim.waitFor(500) ]);
       if (result) {
         this.action.owner.interaction.takeHeal({ src: this.action.owner, value: MasterYiW.tickHeal(this.action.level, this.action.owner) });
+        if (this.action.owner.mana >= this.action.channelManaCost) {
+          this.action.owner.mana -= this.action.channelManaCost;
+        } else {
+          this.interrupt();
+          break;
+        }
       } else {
         break;
       }
@@ -33,6 +39,15 @@ export class MasterYiW extends Action<void, MasterYiWCast> {
   readonly minLevel: number = 1;
   readonly isCancelableByUser: boolean = true;
   readonly isCooldownFinishedOnInterrupt: boolean = false;
+
+  get manaCost(): number {
+    if (this.level <= 0) return 0;
+    return 40;
+  }
+  get channelManaCost(): number {
+    if (this.level === 0) return 0;
+    return this.owner.maxMana * 0.06;
+  }
 
   get castTime(): number {
     if (this.level === 0) return 0;

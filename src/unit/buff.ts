@@ -28,6 +28,8 @@ export class Buff {
     const i = this.owner.buffs.indexOf(this);
     if (i !== -1) this.owner.buffs.splice(i, 1);
   }
+
+  slow = 0;
 }
 
 export class TimedBuff extends Buff {
@@ -55,5 +57,12 @@ export class TimedBuff extends Buff {
   fade(): void {
     this.promise.resolve(true);
     super.fade();
+  }
+}
+
+export class TimedSlow extends TimedBuff {
+  constructor(name: string, owner: Unit, timeToFade: number, src: Unit, slow: number) {
+    super(name, owner, timeToFade, true, src);
+    this.slow = slow;
   }
 }

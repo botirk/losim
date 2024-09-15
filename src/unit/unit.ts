@@ -75,7 +75,10 @@ export abstract class Unit {
   baseMs = 0;
   bonusMs = 0;
   get ms() {
-    return this.baseMs + this.bonusMs;
+    return Math.max(110, (this.baseMs + this.bonusMs) * ((100 - this.slow) / 100));
+  }
+  get slow(): number {
+    return this.buffs.reduce((prev, cur) => cur.slow > prev ? cur.slow : prev, 0);
   }
 
   // ad

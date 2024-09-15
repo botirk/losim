@@ -67,3 +67,24 @@ test('Champion armor init', () => {
   yi.init();
   expect(yi.armor).toBeCloseTo(104.4);
 });
+
+test('Champion as init', () => {
+  const yi = new MasterYi().init();
+  expect(yi.as).toBeCloseTo(0.679);
+
+  yi.level = 10;
+  yi.init();
+  expect(yi.as).toBeCloseTo(0.7841092000000001);
+
+  yi.level = 5;
+  yi.init();
+  expect(yi.as).toBeCloseTo(0.7209622000000001);
+
+  yi.level = 14;
+  yi.init();
+  expect(yi.as).toBeCloseTo(0.8431822000000001);
+
+  yi.level = 18;
+  yi.init();
+  expect(yi.as).toBeCloseTo(0.9098600000000001);
+});

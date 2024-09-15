@@ -1,4 +1,4 @@
-import { WheelItem } from "../defered";
+import { WheelItem } from "../simulation/defered";
 import { Unit } from "./unit";
 
 export class Buff {

@@ -49,6 +49,6 @@ export class MasterYi extends Champion {
   protected baseArmor = 33;
   protected armorGrowth = 4.2;
 
-  protected baseAs = 0.679;
+  baseAs = 0.679;
   protected asGrowth = 0.02;
 }

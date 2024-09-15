@@ -25,7 +25,7 @@ export abstract class Champion extends Unit {
     this.health = this.maxHealth;
     this.ad = this.baseAd + this.calcStatGrowth(this.adGrowth);
     this.armor = this.baseArmor + this.calcStatGrowth(this.armorGrowth);
-    this.as = this.baseAs * (1 + this.calcStatGrowth(this.asGrowth));
+    this.bonusAs = this.calcStatGrowth(this.asGrowth);
     return this;
   }
 }

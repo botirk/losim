@@ -1,4 +1,4 @@
-import { Simulation } from "./simulation/simulation";
+import { Simulation } from "./simulation";
 
 export enum Rejection {
   SimulationStopped = 0,
@@ -35,7 +35,7 @@ export class Defered<TResolve = void> extends Promise<TResolve> {
 }
 
 export class WheelItem extends Defered {
-  constructor(internal = (i1: any, i2: any) => { return undefined; }, private readonly _sim: Simulation, private _waitFor: number) {
+  constructor(internal = (i1: any, i2: any) => { return undefined; }, private readonly _sim: Simulation, private _waitFor: number, private _reinsert: (oldWaitFor: number) => void) {
     super((resolveIn, rejectIn) => { return internal(resolveIn, rejectIn); });
     if (_sim === undefined) return;
     this.timeStart = _sim.time;
@@ -44,6 +44,11 @@ export class WheelItem extends Defered {
   get time() { return this.timeStart + this._waitFor; }
   get remainingTime() { return Math.max(0, this.time - this._sim.time); }
   get waitFor() { return this._waitFor; }
+  set waitFor(waitFor: number) {
+    const oldWaitFor = this._waitFor;
+    this._waitFor = waitFor;
+    this._reinsert(oldWaitFor);
+  }
 
   canceledBy(event: Defered, rej: Rejection) {
     event.then(() => { this.reject(rej); }).catch(() => {});

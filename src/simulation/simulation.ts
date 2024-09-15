@@ -1,4 +1,4 @@
-import { Rejection, WheelItem } from "../defered";
+import { Rejection, WheelItem } from "./defered";
 
 export class Simulation { // optimized queue of actions
   private _time = 0;
@@ -17,9 +17,26 @@ export class Simulation { // optimized queue of actions
     }
     this.wheel.splice(start, 0, wheelItem);
   }
+  reinsertIntoWheel(wheelItem: WheelItem, oldWaitFor: number) { 
+    let start = 0, end = this.wheel.length - 1;
+    while (start <= end) {
+      const mid = (start + end) >> 1;
+      if (this.wheel[mid] === wheelItem) {
+        break;
+      } else if (this.wheel[mid].time > oldWaitFor) {
+        start = mid + 1;
+      } else {
+        end = mid - 1;
+      }
+    }
+    if (this.wheel[start] === wheelItem) {
+      this.wheel.splice(start, 1);
+      this.insertIntoWheel(wheelItem);
+    }
+  }
 
   waitFor(time: number): WheelItem {
-    const wheelItem = new WheelItem(undefined, this, time);
+    const wheelItem = new WheelItem(undefined, this, time, (oldWaitFor) => this.reinsertIntoWheel(wheelItem, oldWaitFor));
     this.insertIntoWheel(wheelItem);
     return wheelItem;
   }

@@ -1,4 +1,4 @@
-import { Defered } from "../defered";
+import { Defered } from "../simulation/defered";
 import { Unit } from "./unit";
 
 export class UnitInteraction {

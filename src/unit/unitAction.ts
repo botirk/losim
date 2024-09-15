@@ -1,4 +1,4 @@
-import { Defered, Rejection, WheelItem } from "../defered";
+import { Defered, Rejection, WheelItem } from "../simulation/defered";
 import { Unit } from "./unit";
 
 export abstract class TimedSingletonAction {
@@ -48,6 +48,13 @@ export abstract class TimedSingletonAction {
     currentCast.then(() => { if (this.currentCast === currentCast) this.currentCast = undefined; }).catch(() => {});
     this.currentCast = currentCast;
   }
+  get remainingCast() {
+    return this.currentCast?.remainingTime || 0;
+  }
+  protected changeCast(waitFor: number) {
+    if (!this.currentCast) return;
+    this.currentCast.waitFor = waitFor;
+  }
 
   private cooldown?: WheelItem;
   get isCooldown() {
@@ -71,6 +78,10 @@ export abstract class TimedSingletonAction {
   get remainingCooldown() {
     return this.cooldown?.remainingTime || 0;
   }
+  protected changeCooldown(waitFor: number) {
+    if (!this.cooldown) return;
+    this.cooldown.waitFor = waitFor;
+  }
 
   protected _onHitUnit: ((target: Unit) => void)[] = [];
   onHitUnit(cb: typeof this._onHitUnit[0]) {
@@ -85,6 +96,12 @@ export abstract class TimedSingletonAction {
 export class Attack extends TimedSingletonAction {
   constructor(unit: Unit) {
     super("Attack", unit);
+    unit.onBonusASChange(() => {
+      if (this.isCasting) 
+        this.changeCast((1 / unit.as) * unit.attackAnimation * 1000);
+      else if (this.isCooldown)
+        this.changeCooldown((1 / this.unit.as) * (1 - this.unit.attackAnimation) * 1000);
+    });
   }
 
   protected _isCancelableByUser = true;

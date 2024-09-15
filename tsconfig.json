@@ -2,5 +2,6 @@
   "compilerOptions": {
     "esModuleInterop": true,
     "target": "es2021",
+    "lib": [ "ES2021" ],
   },
 }

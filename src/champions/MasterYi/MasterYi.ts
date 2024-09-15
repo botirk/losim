@@ -1,7 +1,7 @@
 import { Simulation } from "../../simulation/simulation";
 import { TimedBuff } from "../../unit/buff";
 import { Unit } from "../../unit/unit";
-import { SelfAction, TargetAction, TimedSingletonAction, UnitAction } from "../../unit/unitAction";
+import { SelfAction, TargetAction, UnitActions, UnitActions } from "../../unit/unitAction3";
 import { DamageType } from "../../unit/unitInteraction";
 import { Champion } from "../champion/champion";
 import { MasterYiStats } from "./MasterYiStats";
@@ -215,7 +215,7 @@ export class MasterYiQ extends TargetAction {
   
 }
 
-export class MasterYiAction extends UnitAction {
+export class MasterYiAction extends UnitActions {
   e: MasterYiE;
   r: MasterYiR;
   w: MasterYiW;

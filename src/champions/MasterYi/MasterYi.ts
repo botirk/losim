@@ -81,6 +81,7 @@ export class MasterYiRBuff extends TimedBuff {
 export class MasterYiE extends TimedSingletonAction {
   static readonly ename = "Wuju Style";
   protected maxLevel: number = 5;
+  protected _isCancelableByUser: boolean = false;
 
   constructor(unit: Unit) {
     super(MasterYiE.ename, unit);
@@ -96,6 +97,7 @@ export class MasterYiE extends TimedSingletonAction {
 export class MasterYiR extends TimedSingletonAction {
   static readonly rname = "Highlander";
   protected maxLevel: number = 3;
+  protected _isCancelableByUser: boolean = false;
 
   constructor(unit: Unit) {
     super(MasterYiR.rname, unit);
@@ -111,9 +113,20 @@ export class MasterYiR extends TimedSingletonAction {
 export class MasterYiW extends TimedSingletonAction {
   static readonly wname = "Meditate";
   protected maxLevel: number = 5;
+  protected _isCancelableByUser: boolean = true;
 
   constructor(unit: Unit) {
     super(MasterYiW.wname, unit);
+  }
+  
+  get dr() {
+    if (this.level === 0) return 0;
+    return 42.5 + this.level * 2.5;
+  }
+
+  get tickHeal() {
+    if (this.level === 0) return 0;
+    return (5 + this.level * 10) * (2 - this.unit.health / this.unit.maxHealth);
   }
 
   async cast() {
@@ -123,15 +136,22 @@ export class MasterYiW extends TimedSingletonAction {
       await this.waitForCast();
     } else {
       this.startCast(4000);
+      this.unit.action.attack.finishCooldown();
+      const cancelDR = this.unit.interaction.percentDamageReduction((e) => {
+        if (e.type === DamageType.TRUE) return;
+        else if (time < 500) e.value *= 0.1;
+        else e.value *= (100 - this.dr) / 100;
+      });
       let time = 0;
       for (; time <= 4000; time += 500) {
         const result = await Promise.any([this.waitForCast(), this.unit.sim.waitFor(500), this.unit.interaction.onDeathPromise()]);
         if (result === true) {
-          // TODO
+          this.unit.interaction.takeHeal({ src: this.unit, value: this.tickHeal });
         } else {
           break;
         }
       }
+      cancelDR();
       this.startCooldown(9000);
     }
   }

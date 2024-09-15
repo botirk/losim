@@ -254,3 +254,18 @@ test("UnitAction.attack x5", async () => {
   await Promise.all([attack, yi1.action.attack.cast(yi2), yi1.action.attack.cast(yi2), yi1.action.attack.cast(yi2), yi1.action.attack.cast(yi2), yi1.action.attack.cast(yi2)]);
   expect(sim.time).toBe(duration);
 });
+
+test("UnitAction.attack finish cooldown", async () => {
+  const sim = new Simulation().start(15000);
+  const yi1 = new MasterYi().init(sim);
+  const yi2 = new MasterYi().init(sim);
+
+  await yi1.action.attack.cast(yi2);
+  expect(yi1.action.attack.isCooldown).toBe(true);
+  yi1.action.attack.finishCooldown();
+  expect(yi1.action.attack.isCooldown).toBe(false);
+
+  const time = sim.time;
+  await yi1.action.attack.cast(yi2);
+  expect(sim.time).toBe(time * 2);
+});

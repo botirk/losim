@@ -7,8 +7,9 @@ export abstract class TimedSingletonAction {
 
   }
   // settings
-  private _level = 0;
   protected abstract readonly maxLevel: number;
+  protected abstract _isCancelableByUser: boolean;
+  private _level = 0;
   get level() {
     return this._level;
   }
@@ -16,7 +17,7 @@ export abstract class TimedSingletonAction {
     this._level = Math.max(0, Math.min(this.maxLevel, value));
   }
   // options
-  protected _isCancelableByUser = false;
+  
 
   get isCancelableByUser() { return this._isCancelableByUser; }
   cancelByUser() {
@@ -77,6 +78,11 @@ export abstract class TimedSingletonAction {
   protected changeCooldown(waitFor: number) {
     if (!this.cooldown) return;
     this.cooldown.waitFor = waitFor;
+  }
+  finishCooldown() {
+    if (!this.cooldown) return;
+    this.cooldown.resolve(true);
+    this.cooldown = undefined;
   }
 
   protected _onHitUnit: ((target: Unit) => void)[] = [];

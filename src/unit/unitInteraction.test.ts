@@ -93,7 +93,7 @@ test("UnitInteraction.onTakeDamage type of damage", async () => {
   yi.interaction.onTakeDamage((e) => {
     if (e.type === DamageType.MAGIC && e.value === 35) {
       magic += 1;
-    } else if (e.type === DamageType.PHYSIC && e.value === yi.interaction.calcPercentDamageReduction({ value: 34, src: yi, type: DamageType.PHYSIC }).value) {
+    } else if (e.type === DamageType.PHYSIC && e.value === yi.interaction.calcDamageReduction({ value: 34, src: yi, type: DamageType.PHYSIC }).value) {
       physic += 1;
     } else if (e.type === DamageType.TRUE && e.value === 33) {
       truthy += 1;
@@ -127,8 +127,8 @@ test("UnitInteraction.percentDamageReduction", async () => {
     }
   });
 
-  const e1 = yi.interaction.calcPercentDamageReduction({ value: 100, src: yi, type: DamageType.MAGIC });
-  const e2 = yi.interaction.calcPercentDamageReduction({ value: 100, src: yi, type: DamageType.PHYSIC });
+  const e1 = yi.interaction.calcDamageReduction({ value: 100, src: yi, type: DamageType.MAGIC });
+  const e2 = yi.interaction.calcDamageReduction({ value: 100, src: yi, type: DamageType.PHYSIC });
 
   expect(e1.value).toBe(50);
   expect(e2.value).toBeGreaterThan(50);
@@ -166,4 +166,29 @@ test("UnitInteraction.heal", async () => {
   yi.health = 0;
   yi.interaction.takeHeal({ src: yi, value: 50 });
   expect(yi.health).toBe(0);
+});
+
+test("UnitInteraction.onTakeDamage 2", async () => {
+  const sim = new Simulation().start(5000);
+  const yi = new MasterYi().init(sim);
+
+  yi.interaction.percentDamageReduction(e => {
+    e.value /= 2;
+  }) 
+
+  yi.interaction.flatDamageReduction((e) => {
+    e.value -= 50;
+  });
+
+  let count = 0;
+  yi.interaction.onTakeDamage(e => {
+    count = e.value;
+  });
+
+  yi.interaction.finalDamageReduction(e => {
+    e.value -= 1;
+  });
+
+  yi.interaction.takeDamage({ src: yi, type: DamageType.TRUE, value: 100 });
+  expect(count).toBe(24);
 });

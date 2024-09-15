@@ -14,7 +14,7 @@ test("MasterYi W NoLevel", async () => {
 
   yi1.action.w.cast();
   expect(yi1.action.w.currentCast).toBeUndefined();
-  expect(yi1.currentCast).toBeUndefined();
+  expect(yi1.currentCast.value).toBeUndefined();
 });
 
 test("MasterYi W just cast", async () => {
@@ -23,14 +23,14 @@ test("MasterYi W just cast", async () => {
   
   yi1.action.w.level = 1;
   const prom = yi1.action.w.cast();
-  expect(yi1.currentCast).toBeInstanceOf(MasterYiWCast);
-  expect(yi1.currentCast?.remaining).toBe(4000);
+  expect(yi1.currentCast.value).toBeInstanceOf(MasterYiWCast);
+  expect(yi1.currentCast.value?.remaining).toBe(4000);
   expect(yi1.action.w.remainingCooldown).toBe(9000);
   await prom;
   expect(sim.time).toBe(4000);
-  expect(yi1.currentCast).toBeUndefined();
+  expect(yi1.currentCast.value).toBeUndefined();
   expect(yi1.action.w.remainingCooldown).toBe(5000);
-  expect(yi1.currentCast).toBeFalsy();
+  expect(yi1.currentCast.value).toBeFalsy();
 });
 
 test("MasterYi W Damage Reduction", async () => {

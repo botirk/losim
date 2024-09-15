@@ -23,7 +23,7 @@ export class UnitInteraction {
 
   takeHeal(e: HealEvent) {
     // prevent beating the dead
-    if (this.unit.dead === true) return;
+    if (this.unit.dead.value === true) return;
     // fix
     e.value = Math.max(0, Math.min(this.unit.maxHealth, e.value));
     // increase health
@@ -32,7 +32,7 @@ export class UnitInteraction {
 
   takeDamage(e: DamageEvent) {
     // prevent beating the dead
-    if (this.unit.dead === true) return;
+    if (this.unit.dead.value === true) return;
     // percent damage reduction
     for (const listener of this._percentDamageReduction) listener(e);
     // fix
@@ -43,7 +43,7 @@ export class UnitInteraction {
     for (const listener of this._onTakeDamage) listener(e);
     this._takedownTimes.set(e.src, this.unit.sim.time);
     if (this.unit.health === 0) {
-      this.unit.dead = true;
+      this.unit.dead.value = true;
       e.src.interaction.kill(this.unit);
       for (const takedownTime of this._takedownTimes) {
         takedownTime[0].interaction.takedown(this.unit, takedownTime[1]);

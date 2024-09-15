@@ -58,7 +58,7 @@ test("attack after death", async () => {
   const aa = yi1.action.attack.cast(yi2);
   expect(yi1.action.attack.currentCast?.isCasting).toBe(true);
   yi1.interaction.takeDamage({ value: Infinity, src: yi1, type: DamageType.TRUE });
-  expect(yi1.dead).toBe(true);
+  expect(yi1.dead.value).toBe(true);
   await aa;
   expect(hits).toBe(0);
   expect(sim.time).toBe(0);
@@ -87,17 +87,18 @@ test("attack after target death", async () => {
   const yi1 = new MasterYi().init(sim);
   const yi2 = new MasterYi().init(sim);
   expect(yi1.health).toBe(yi2.health);
-  expect(yi1.dead).toBe(false);
-  expect(yi2.dead).toBe(false);
+  expect(yi1.dead.value).toBe(false);
+  expect(yi2.dead.value).toBe(false);
   
   const aa = yi1.action.attack.cast(yi2);
   expect(yi1.action.attack.currentCast?.isCasting).toBe(true);
+  expect(yi1.dead.value).toBe(false);
   yi2.interaction.takeDamage({ value: Infinity, src: yi2, type: DamageType.TRUE });
 
   let hits = 0;
   yi2.interaction.onTakeDamage(() => hits += 1);
 
-  expect(yi2.dead).toBe(true);
+  expect(yi2.dead.value).toBe(true);
   const res = await aa;
   expect(res).toBe(false);
   expect(yi1.action.attack.currentCast).toBeUndefined();
@@ -109,8 +110,8 @@ test("attack cooldown after attack", async () => {
   const yi1 = new MasterYi().init(sim);
   const yi2 = new MasterYi().init(sim);
   expect(yi1.health).toBe(yi2.health);
-  expect(yi1.dead).toBe(false);
-  expect(yi2.dead).toBe(false);
+  expect(yi1.dead.value).toBe(false);
+  expect(yi2.dead.value).toBe(false);
   
   expect(yi1.action.attack.currentCast).toBeUndefined()
   const aa = yi1.action.attack.cast(yi2);
@@ -153,7 +154,7 @@ test("attack dead", async () => {
   expect(yi1.health).toBe(yi2.health);
 
   yi2.interaction.takeDamage({ value: Infinity, src: yi2, type: DamageType.TRUE });
-  expect(yi2.dead).toBe(true);
+  expect(yi2.dead.value).toBe(true);
 
   let hits = 0;
   yi2.interaction.onTakeDamage(() => hits += 1);
@@ -201,7 +202,7 @@ test("attack change of unit.bonusAS", async () => {
   expect(yi1.action.attack.currentCast?.remaining).toBeGreaterThan(50);
   expect(yi1.action.attack.currentCast?.remaining).toBeLessThan(700);
   const savedCastTime = yi1.action.attack.currentCast?.remaining as number;
-  yi1.bonusAs += 1;
+  yi1.bonusAs.value += 1;
   expect(yi1.action.attack.currentCast?.remaining).toBeGreaterThan(50);
   expect(yi1.action.attack.currentCast?.remaining).toBeLessThan(savedCastTime);
 
@@ -209,7 +210,7 @@ test("attack change of unit.bonusAS", async () => {
   expect(yi1.action.attack.remainingCooldown).toBeGreaterThan(300);
   expect(yi1.action.attack.remainingCooldown).toBeLessThan(1500);
   const savedCd = yi1.action.attack.remainingCooldown;
-  yi1.bonusAs = 0;
+  yi1.bonusAs.value = 0;
   expect(yi1.action.attack.remainingCooldown).toBeGreaterThan(savedCd);
   expect(yi1.action.attack.remainingCooldown).toBeLessThan(1500);
 });
@@ -270,13 +271,13 @@ test("attack untargetable", async () => {
   const sim = new Simulation().start(15000);
   const yi1 = new MasterYi().init(sim);
   const yi2 = new MasterYi().init(sim);
-  yi2.targetable = false;
+  yi2.targetable.value = false;
   await yi1.action.attack.cast(yi2);
   expect(sim.time).toBe(0);
   expect(yi1.action.attack.isCooldown).toBe(false);
   expect(yi1.action.attack.currentCast).toBeUndefined();
 
-  yi2.targetable = true;
+  yi2.targetable.value = true;
   await yi1.action.attack.cast(yi2);
   expect(sim.time).toBeGreaterThan(100);
   expect(yi1.action.attack.isCooldown).toBe(true);
@@ -289,13 +290,13 @@ test("attack targetable further", async () => {
   
   const aa = yi1.action.attack.cast(yi2);
   await sim.waitFor(25);
-  yi2.targetable = false;
+  yi2.targetable.value = false;
   await aa;
   expect(sim.time).toBe(25);
   expect(yi1.action.attack.isCooldown).toBe(false);
-  expect(yi1.currentCast).toBeUndefined();
+  expect(yi1.currentCast.value).toBeUndefined();
 
-  yi2.targetable = true;
+  yi2.targetable.value = true;
   await yi1.action.attack.cast(yi2);
   expect(sim.time).toBeGreaterThan(100);
   expect(yi1.action.attack.isCooldown).toBe(true);

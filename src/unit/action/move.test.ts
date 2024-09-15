@@ -11,7 +11,7 @@ test("Move basic", async () => {
   expect(yi1.action.move.value).toBeCloseTo(yi1.ms * (sim.tickTime / 1000));
 
   const prom = yi1.action.move.cast(Infinity);
-  expect(yi1.currentCast?.action.name).toBe("Move");
+  expect(yi1.currentCast.value?.action.name).toBe("Move");
   await prom;
 
   expect(sim.time).toBe(0 + sim.tickTime);
@@ -28,7 +28,7 @@ test("Move negative", async () => {
   expect(yi1.action.move.value).toBeCloseTo(yi1.ms * (sim.tickTime / 1000));
 
   const prom = yi1.action.move.cast(-Infinity);
-  expect(yi1.currentCast?.action.name).toBe("Move");
+  expect(yi1.currentCast.value?.action.name).toBe("Move");
   await prom;
 
   expect(sim.time).toBe(0 + sim.tickTime);

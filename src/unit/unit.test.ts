@@ -4,24 +4,24 @@ import { Simulation } from "../simulation/simulation";
 test("Unit.onBonusASChange", () => {
   const yi = new MasterYi().init();
   let changed = false;
-  expect(yi.bonusAs).toBe(0);
-  yi.onBonusASChange(() => { changed = true; });
-  yi.bonusAs = 1;
-  expect(yi.bonusAs).toBe(1);
+  expect(yi.bonusAs.value).toBe(0);
+  yi.bonusAs.callback(() => { changed = true; });
+  yi.bonusAs.value = 1;
+  expect(yi.bonusAs.value).toBe(1);
   expect(changed).toBe(true);
 });
 
 test("Unit.targetable", () => {
   const yi = new MasterYi().init();
-  yi.targetable = false;
-  yi.targetable = false;
-  expect(yi.targetable).toBe(false);
-  yi.targetable = true;
-  expect(yi.targetable).toBe(false);
-  yi.targetable = true;
-  expect(yi.targetable).toBe(true);
-  yi.dead = true;
-  expect(yi.targetable).toBe(false);
+  yi.targetable.value = false;
+  yi.targetable.value = false;
+  expect(yi.targetable.value).toBe(false);
+  yi.targetable.value = true;
+  expect(yi.targetable.value).toBe(false);
+  yi.targetable.value = true;
+  expect(yi.targetable.value).toBe(true);
+  yi.dead.value = true;
+  expect(yi.targetable.value).toBe(false);
 });
 
 test("Unit.onDeath", async () => {
@@ -30,17 +30,17 @@ test("Unit.onDeath", async () => {
   const yi2 = new MasterYi().init(sim);
 
   let proc = 0;
-  yi2.onDeath(() => {
+  yi2.dead.callback(() => {
     proc += 1;
   });
 
-  while (!sim.isStopped && !yi2.dead) {
+  while (!sim.isStopped && !yi2.dead.value) {
     await yi1.action.attack.cast(yi2);
   }
   expect(sim.isStopped).toBeFalsy();
   expect(sim.time).toBeLessThan(20000);
   expect(sim.time).toBeGreaterThan(5000);
-  expect(yi2.dead).toBe(true);
+  expect(yi2.dead.value).toBe(true);
   expect(yi2.health).toBe(0);
   expect(proc).toBe(1);
 });

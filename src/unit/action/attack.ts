@@ -6,7 +6,7 @@ import seedrandom from "seedrandom";
 export class AttackAction extends EnemyTargetAction<AttackCast> {
   constructor(owner: Unit) {
     super("Attack", owner);
-    owner.onBonusASChange(() => {
+    owner.bonusAs.callback(() => {
       this.setCooldown(this.cooldownTime);
       if (this.currentCast) this.currentCast.waitFor = this.castTime;
     })
@@ -27,7 +27,7 @@ export class AttackAction extends EnemyTargetAction<AttackCast> {
     return (1 / this.owner.as) * 1000;
   }
   castable(option: Unit): boolean {
-    return !this.owner.dead && option.targetable && Math.abs(this.owner.pos - option.pos) < this.maxRange;
+    return !this.owner.dead.value && option.targetable.value && Math.abs(this.owner.pos - option.pos) < this.maxRange;
   }
   calc(target: Unit) {
     return target.interaction.calcPercentDamageReduction({ value: this.owner.ad, src: this.owner, type: DamageType.PHYSIC }).value;
@@ -56,7 +56,12 @@ export class AttackCast extends TargetCast<AttackAction> {
     if (!this.action.castable(this.option)) return false;
 
     if (this.action.isCooldown) {
-      const result = await Promise.any([ this.action.waitCooldown(), this.option.onTargetablePromise().then(() => false), this.action.owner.onDeathPromise().then(() => false), this.action.owner.onCurrentCastPromise(this).then(() => false) ]);
+      const result = await Promise.any([ 
+        this.action.waitCooldown(), 
+        this.option.targetable.promise(this.action.waitCooldown(), false).then(() => false), 
+        this.action.owner.dead.promise(this.action.waitCooldown(), true).then(() => false), 
+        this.action.owner.currentCast.promise(this.action.waitCooldown(), (cast) => cast !== this).then(() => false) 
+      ]);
       if (result === false) return false;
     }
     

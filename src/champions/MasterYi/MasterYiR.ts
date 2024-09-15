@@ -11,12 +11,12 @@ export class MasterYiRBuff extends TimedBuff {
     this.removeTakedown = unit.interaction.onTakedown((enemy, damagedTime) => {
       if (damagedTime + 10000 >= unit.sim.time) this.duration += 7000;
     });
-    unit.bonusAs += 15 + level * 10;
+    unit.bonusAs.value += 15 + level * 10;
   }
   fade(): void {
     super.fade();
     this.removeTakedown?.();
-    this.owner.bonusAs -= 15 + this.level * 10;
+    this.owner.bonusAs.value -= 15 + this.level * 10;
   }
 }
 

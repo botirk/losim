@@ -1,4 +1,5 @@
 import { Simulation } from "../simulation/simulation";
+import { Watchable } from "../simulation/watchable";
 import { UnitInteraction } from "./unitInteraction";
 import { Buff } from "./buff";
 import { AttackAction } from "./action/attack";
@@ -15,6 +16,38 @@ export class Actions {
     this.attack = new AttackAction(this.owner);
     this.move = new MoveAction(this.owner);
     return this;
+  }
+}
+
+class Targetable extends Watchable<boolean> {
+  constructor(value: boolean, private readonly unit: Unit) {
+    super(value);
+    unit.dead.callback(() => super.value = this.value);
+  }
+
+  private _stacks = 0;
+  get value() {
+    return (!this.unit.dead.value && this._stacks <= 0);
+  }
+  set value(value: boolean) {
+    if (value) {
+      this._stacks = Math.max(0, this._stacks - 1);
+    } else {
+      this._stacks += 1;
+    }
+    super.value = this.value;
+  }
+}
+
+class CurrentCast extends Watchable<undefined | AnyCast> {
+  constructor(value: undefined | AnyCast) {
+    super(value);
+  }
+  get value() {
+    if (!super.value?.isCasting) return undefined; else return super.value;
+  }
+  set value(value: undefined | AnyCast) {
+    super.value = value;
   }
 }
 
@@ -55,88 +88,18 @@ export abstract class Unit {
   
   // attack speed related
   baseAs = 0;
-  private _bonusAs = 0;
-  get bonusAs() {
-    return this._bonusAs;
-  }
-  set bonusAs(bonusAs: number) {
-    this._bonusAs = bonusAs;
-    for (const listener of this._onBonusASChange) listener();
-  }
-  private readonly _onBonusASChange: (() => void)[] = [];
-  onBonusASChange(cb: typeof this._onBonusASChange[0]) {
-    this._onBonusASChange.push(cb);
-    return () => {
-      const i = this._onBonusASChange.indexOf(cb);
-      if (i !== -1) this._onBonusASChange.splice(i, 1);
-    }
-  }
+  bonusAs = new Watchable(0);
   get as() {
-    return this.baseAs * (1 + this._bonusAs / 100);
+    return this.baseAs * (1 + this.bonusAs.value / 100);
   }
 
   // death related
-  private _dead = false;
-  get dead() {
-    return this._dead;
-  }
-  set dead(state: boolean) {
-    if (state === this._dead) return;
-    const oldT = this.targetable;
-    this._dead = state;
-    for (const listener of this._deathListeners) listener(state);
-    const newT = this.targetable;
-    if (oldT !== newT) for (const listener of this._targetableListeners) listener(newT);
-  }
-  private readonly _deathListeners: ((dead: boolean) => void)[] = [];
-  onDeath(cb: typeof this._deathListeners[0]) {
-    this._deathListeners.push(cb);
-    return () => {
-      const i = this._deathListeners.indexOf(cb);
-      if (i !== -1) this._deathListeners.splice(i, 1);
-    }
-  }
-  onDeathPromise() {
-    return new Promise<void>((resolve) => {
-      const cancel = this.onDeath(() => {
-        cancel();
-        resolve();
-      });
-    });
-  }
+  dead = new Watchable(false);
 
   // targetable related
-  private _targetable = 0;
-  get targetable(): boolean {
-    return this.dead === false && this._targetable <= 0;
-  }
-  set targetable(value: boolean) {
-    const old = this.targetable;
-    if (value) {
-      this._targetable = Math.max(0, this._targetable - 1);
-    } else {
-      this._targetable += 1;
-    }
-    const new1 = this.targetable;
-    if (old !== new1) for (const listener of this._targetableListeners) listener(new1);
-  }
-  private readonly _targetableListeners: ((targetable: boolean) => void)[] = [];
-  onTargetable(cb: typeof this._targetableListeners[0]) {
-    this._targetableListeners.push(cb);
-    return () => {
-      const i = this._targetableListeners.indexOf(cb);
-      if (i !== -1) this._targetableListeners.splice(i, 1);
-    }
-  }
-  onTargetablePromise() {
-    return new Promise<void>((resolve) => {
-      const cancel = this.onTargetable((targetable) => {
-        cancel();
-        resolve();
-      });
-    });
-  }
+  targetable = new Targetable(true, this);
 
+  // buffs
   buffs: Buff[] = [];
   buffsNamed(name: string) {
     return this.buffs.filter((buff) => buff.name === name);
@@ -145,34 +108,8 @@ export abstract class Unit {
     return this.buffs.find((buff) => buff.name === name);
   }
 
-  private _currentCast?: AnyCast;
-  get currentCast() {
-    if (this._currentCast?.isCasting) return this._currentCast;
-  }
-  set currentCast(cast: AnyCast | undefined) {
-    if (this._currentCast === cast) return;
-    if (this._currentCast?.isCasting) this._currentCast.cancel();
-    this._currentCast = cast;
-    for (const listener of this._onCurrentCast) listener();
-  }
-  private _onCurrentCast: (() => void)[] = [];
-  onCurrentCast(cb: typeof this._onCurrentCast[0]) {
-    this._onCurrentCast.push(cb);
-    return () => {
-      const i = this._onCurrentCast.indexOf(cb);
-      if (i !== -1) this._onCurrentCast.splice(i, 1);
-    }
-  }
-  onCurrentCastPromise(exception?: AnyCast): Promise<void> {
-    return new Promise<void>((res) => {
-      const cancel = this.onCurrentCast(() => {
-        if (exception === undefined || this._currentCast !== exception) {
-          res();
-          cancel();
-        }
-      });
-    });
-  }
+  // cast
+  currentCast = new CurrentCast(undefined);
 
   // logic
   async runAwayFromEnemyAsDummy(enemy: Unit) {
@@ -196,7 +133,7 @@ export abstract class Unit {
       this.sim.units.push(this);
     }
     
-    this.dead = false;
+    this.dead.value = false;
     return this;
   }
 }

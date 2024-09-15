@@ -12,7 +12,7 @@
 4. Tested with jest
 
 ## Try it in browser
-https://botirk.github.io/losim/build/bestItems.html
+https://botirk.github.io/losim/dist/bestItems.html
 
 ## Try it on pc with node
 npm i \

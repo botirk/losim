@@ -45,16 +45,14 @@ export class Simulation { // optimized queue of actions
   get isStopped() { return this._isStopped; }
   stop() { 
     this._isStopped = true;
-    for (const wheelItem of this.wheel) {
-      wheelItem.reject(Rejection.SimulationStopped);
-    }
+    for (const wheelItem of this.wheel) wheelItem.resolve(false);
   }
 
   private consume() {
     setImmediate(() => {
       const next = this.wheel.pop();
       this._time = next.time;
-      next.resolve();
+      next.resolve(true);
       if (!this.isStopped && this.wheel.length) this.consume();
     });
   }

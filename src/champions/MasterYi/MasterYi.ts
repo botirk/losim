@@ -80,6 +80,7 @@ export class MasterYiRBuff extends TimedBuff {
 
 export class MasterYiE extends TimedSingletonAction {
   static readonly ename = "Wuju Style";
+  protected maxLevel: number = 5;
 
   constructor(unit: Unit) {
     super(MasterYiE.ename, unit);
@@ -90,14 +91,11 @@ export class MasterYiE extends TimedSingletonAction {
     this.startCooldown(14000);
     new MasterYiEBuff(this.unit, this.level);
   }
-  
-  setLevel(value: number): void {
-    super.setLevel(Math.max(0, Math.min(5, value)));
-  }
 }
 
 export class MasterYiR extends TimedSingletonAction {
   static readonly rname = "Highlander";
+  protected maxLevel: number = 3;
 
   constructor(unit: Unit) {
     super(MasterYiR.rname, unit);
@@ -107,10 +105,6 @@ export class MasterYiR extends TimedSingletonAction {
     if (this.level === 0 || this.isCooldown) return;
     this.startCooldown(85000);
     new MasterYiRBuff(this.unit, this.level);
-  }
-
-  setLevel(value: number): void {
-    super.setLevel(Math.max(0, Math.min(3, value)));
   }
 }
 

@@ -33,7 +33,7 @@ export class TimedBuff extends Buff {
   constructor(name: string, unit: Unit, timeToFade: number) {
     super(name, unit);
     this.promise = unit.sim.waitFor(timeToFade);
-    this.promise.then(() => this.fade()).catch(() => {});
+    this.promise.then(() => this.fade());
   }
   private promise: WheelItem;
 
@@ -52,7 +52,7 @@ export class TimedBuff extends Buff {
   }
 
   fade(): void {
-    this.promise.resolve();
+    this.promise.resolve(true);
     super.fade();
   }
 }

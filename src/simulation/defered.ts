@@ -8,30 +8,23 @@ export enum Rejection {
   TargetDeath = 4,
 }
 
-export class Defered<TResolve = void> extends Promise<TResolve> {
+export class Defered extends Promise<boolean> {
   constructor(internal = (i1: any, i2: any) => { return undefined; }) {
-    let resolve: (value: TResolve) => void;
-    let reject: (e: Rejection) => void;
-    super((resolveIn, rejectIn) => { resolve = resolveIn; reject = rejectIn; return internal(resolveIn, rejectIn); });
+    let resolve: (value: boolean) => void;
+    super((resolveIn, rejectIn) => { resolve = resolveIn; return internal(resolveIn, rejectIn); });
     this._resolve = resolve;
-    this._reject = reject;
   }
 
-  private _isProcced = false;
-  get isProcced() {
-    return this._isProcced;
+  private _result?: boolean;
+  get result() {
+    return this._result;
   }
 
-  private _resolve: (value: TResolve) => void;
-  resolve(value: TResolve) {
-    this._isProcced = true;
+  private _resolve: (value: boolean) => void;
+  resolve(value: boolean) {
+    this._result = value;
     this._resolve(value);
   }
-  private _reject: (e: Rejection) => void;
-  reject(e: Rejection) {
-    this._isProcced = true;
-    this._reject(e);
-  };
 }
 
 export class WheelItem extends Defered {
@@ -51,10 +44,5 @@ export class WheelItem extends Defered {
     const oldWaitFor = this._waitFor;
     this._waitFor = waitFor;
     this._reinsert(oldWaitFor);
-  }
-
-  canceledBy(event: Defered, rej: Rejection) {
-    event.then(() => { this.reject(rej); }).catch(() => {});
-    return this;
   }
 }

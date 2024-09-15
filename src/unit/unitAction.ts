@@ -2,8 +2,16 @@ import { Defered, Rejection, WheelItem } from "../defered";
 import { Unit } from "./unit";
 
 export abstract class TimedSingletonAction {
-  constructor(protected unit: Unit) {
+  constructor(public readonly name: string, protected unit: Unit) {
 
+  }
+  // settings
+  private _level = 0;
+  get level() {
+    return this._level;
+  }
+  setLevel(value: number) {
+    this._level = value;
   }
   // options
   protected _isCancelableByUser = false;
@@ -72,6 +80,10 @@ export abstract class TimedSingletonAction {
 }
 
 export class Attack extends TimedSingletonAction {
+  constructor(unit: Unit) {
+    super("Attack", unit);
+  }
+
   protected _isCancelableByUser = true;
 
   async cast(target: Unit) {
@@ -98,7 +110,7 @@ export class Attack extends TimedSingletonAction {
 }
 
 export class UnitAction {
-  constructor(private readonly unit: Unit) {}
+  constructor(protected readonly unit: Unit) {}
 
   readonly attack = new Attack(this.unit);
 }

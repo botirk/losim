@@ -1,6 +1,7 @@
 import { Champion } from "../champions/champion/champion";
 import { Unit } from "../unit/unit";
 import { WheelItem } from "./defered";
+if (window) require("setimmediate");
 
 export class Simulation { // optimized queue of actions
   tickTime = 33;

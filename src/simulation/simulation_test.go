@@ -31,7 +31,7 @@ func TestWait(t *testing.T) {
 }
 
 func TestProc(t *testing.T) {
-	sim := NewSimulation(10000)
+	sim := NewSimulation(20000)
 
 	e := sim.Insert(10000)
 
@@ -116,5 +116,43 @@ func TestMaxTime(t *testing.T) {
 
 	if sim.Time() != 13333 {
 		t.Fatal(sim.Time())
+	}
+}
+
+func TestRemoved(t *testing.T) {
+	sim := NewSimulation(13333)
+
+	e := sim.Insert(5000)
+
+	len := sim.Len()
+	e.Remove()
+	newLen := sim.Len()
+
+	if (newLen >= len) {
+		t.Fatal(newLen, len)
+	}
+
+	e.Wait()
+
+	if (sim.Time() != 0) {
+		t.Fatal(sim.Time())
+	}
+}
+
+func TestConsumeMustReturnErrors(t *testing.T) {
+	sim := NewSimulation(13333)
+
+	sim.Insert(20000)
+
+	e1, _ := sim.consume()
+
+	if e1 == nil {
+		t.Fatal(e1)
+	}
+
+	_, err := sim.consume()
+
+	if err == nil {
+		t.Fatal(err)
 	}
 }

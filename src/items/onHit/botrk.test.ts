@@ -1,5 +1,5 @@
 import { Simulation } from "../../simulation/simulation";
-import { MasterYi } from "../../champions/MasterYi";
+import { MasterYi } from "../../champions/MasterYi/index";
 import { botrk } from "./botrk";
 import { DamageType } from "../../unit/unitInteraction";
 

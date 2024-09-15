@@ -1,4 +1,4 @@
-import { MasterYi } from "../../champions/MasterYi";
+import { MasterYi } from "../../champions/MasterYi/index";
 import { Simulation } from "../../simulation/simulation";
 import { DamageType } from "../../unit/unitInteraction";
 import { GuinsooBuff, GuinsooPhantomBuff, guinsoo } from "./guinsoo";

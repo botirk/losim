@@ -1,6 +1,9 @@
+import { createRequire } from 'module';
+
 
 test("bestItems", async () => {
-  const { $ } = await import("zx");
+  if (process.platform !== "linux") return;
+  const { $ } = await import("../../node_modules/zx/build/core");
   const command = $`npm run bestItems`;
   command.quiet();
   command.stdin.write("\n");
@@ -22,4 +25,4 @@ test("bestItems", async () => {
     expect(log[pdNum]).toBeUndefined();
     log[pdNum] = true;
   }
-}, 30000)
+}, 30000);

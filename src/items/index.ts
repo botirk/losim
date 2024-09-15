@@ -1,6 +1,6 @@
-import { ad } from "./ad";
-import { boots } from "./boots";
-import { onHit } from "./onHit";
+import { ad } from "./ad/index";
+import { boots } from "./boots/index";
+import { onHit } from "./onHit/index";
 
 export const items = [
   ...boots,

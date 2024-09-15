@@ -1,10 +1,23 @@
 import { WheelItem } from "../simulation/defered";
+import { Action, AnyAction } from "./action/action";
 import { Unit } from "./unit";
 
 export class Buff {
-  constructor(public readonly name: string, readonly owner: Unit, readonly unique: boolean = false, readonly src = owner) {
-    if (unique && owner.buffNamed(name)) throw new Error(`Buff ${name} is unique`);
-    owner.buffs.push(this);
+  src: Unit;
+  action: AnyAction;
+
+  constructor(public readonly name: string, readonly owner: Unit, readonly unique: boolean = false, src?: Unit | AnyAction) {
+    if (src instanceof Action) {
+      this.action = src;
+      this.src = src.owner;
+    } else if (src instanceof Unit) {
+      this.src = src;
+    } else {
+      this.src = owner;
+    }
+
+    if (unique && this.owner.buffNamed(name)) throw new Error(`Buff ${name} is unique`);
+    this.owner.buffs.push(this);
   }
 
   get remainingTime() {
@@ -33,9 +46,9 @@ export class Buff {
 }
 
 export class TimedBuff extends Buff {
-  constructor(name: string, owner: Unit, timeToFade: number, unique: boolean = false, src = owner) {
+  constructor(name: string, owner: Unit, timeToFade: number, unique: boolean = false, src?: Unit | AnyAction) {
     super(name, owner, unique, src);
-    this.promise = owner.sim.waitFor(timeToFade);
+    this.promise = this.owner.sim.waitFor(timeToFade);
     this.promise.then(() => this.fade());
   }
   private promise: WheelItem;
@@ -61,7 +74,7 @@ export class TimedBuff extends Buff {
 }
 
 export class TimedSlow extends TimedBuff {
-  constructor(name: string, owner: Unit, timeToFade: number, src: Unit, slow: number) {
+  constructor(name: string, owner: Unit, timeToFade: number, src: Unit | AnyAction, slow: number) {
     super(name, owner, timeToFade, true, src);
     this.slow = slow;
   }

@@ -1,17 +1,20 @@
 import seedrandom from "seedrandom";
 import { Unit } from "../../unit/unit";
-import { Action, EnemyTargetAction, TargetCast } from "../../unit/action/action";
+import { EnemyTargetAction, TargetCast } from "../../unit/action/action";
 import { Buff } from "../../unit/buff";
 import { DamageType } from "../../unit/unitInteraction";
 
 
 export class MasterYiQMark extends Buff {
-  damage = MasterYiQ.markDamage(this.src, this.level);
-  critDamage = MasterYiQ.markCritDamage(this.src, this.level);
+  level: number;
+  damage: number;
+  critDamage: number;
 
-  constructor(owner: Unit, src: Unit, readonly level: number, private readonly random:seedrandom.PRNG) {
-    level = Math.max(0, Math.min(5, level));
-    super(MasterYiQ.qname, owner, false, src);
+  constructor(owner: Unit, action: MasterYiQ, private readonly random: seedrandom.PRNG) {
+    super(MasterYiQ.qname, owner, false, action.owner);
+    this.level = action.level;
+    this.damage = MasterYiQ.markDamage(this.src, this.level);
+    this.critDamage = MasterYiQ.markCritDamage(this.src, this.level);
   }
 
   fade(): void {
@@ -44,13 +47,13 @@ export class MasterYiQCast extends TargetCast<MasterYiQ> {
           const potentialNextTarget = this.action.owner.sim.units.filter((u) => u !== nextTarget && this.action.targetable(u) && !u.buffNamed(MasterYiQ.qname))[0];
           if (potentialNextTarget) nextTarget = potentialNextTarget;
         }
-        marks.push(new MasterYiQMark(nextTarget, this.action.owner, this.action.level, this.random));
+        marks.push(new MasterYiQMark(nextTarget, this.action, this.random));
       } else {
         break;
       }
     }
     // appear near target
-    if (this.action.owner.pos <= this.option.pos) this.action.owner.pos = this.option.pos - 75; else this.action.owner.pos = this.option.pos + 75;
+    if (this.action.owner.pos <= this.option.pos) this.action.owner.pos = this.option.pos - MasterYiQ.appearDistance; else this.action.owner.pos = this.option.pos + MasterYiQ.appearDistance;
     // final wait become targetable
     this.action.owner.targetable.value = true;
     // proc wait - when alive
@@ -61,12 +64,23 @@ export class MasterYiQCast extends TargetCast<MasterYiQ> {
 }
 
 export class MasterYiQ extends EnemyTargetAction<MasterYiQCast> {
+  static readonly qname = "Alpha Strike";
+  static markDamage(owner: Unit, level: number) {
+    return level * 30 + owner.ad * 0.5;
+  }
+  static markCritDamage(owner: Unit, level: number) {
+    return (10.5 * level + owner.ad * 0.175) * (1 + owner.bonusCritDamage / 100);
+  }
+  static readonly markTime = 231;
+  static readonly markProcTime = 164;
+  static readonly appearDistance = 75;
+
   constructor(unit: Unit) {
     super(MasterYiQ.qname, unit);
     unit.action.attack.onCast(() => this.remainingCooldown -= 1000);
   }
 
-  static readonly qname = "Alpha Strike";
+  
   readonly maxLevel: number = 5;
   readonly minLevel: number = 1;
   readonly isCancelableByUser: boolean = false;
@@ -89,15 +103,6 @@ export class MasterYiQ extends EnemyTargetAction<MasterYiQCast> {
     if (this.level === 0) return 0;
     return 20500 - this.level * 500;
   }
-
-  static markDamage(owner: Unit, level: number) {
-    return level * 30 + owner.ad * 0.5;
-  }
-  static markCritDamage(owner: Unit, level: number) {
-    return (10.5 * level + owner.ad * 0.175) * (1 + owner.bonusCritDamage / 100);
-  }
-  static markTime = 231;
-  static markProcTime = 164;
 
   random: seedrandom.PRNG = seedrandom();
   async cast(option: Unit) {

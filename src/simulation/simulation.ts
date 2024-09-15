@@ -83,6 +83,8 @@ export interface Simulate1v1Result<TChampion1 extends Champion, TChampion2 exten
   winner?: TChampion1 | TChampion2,
   champion1: TChampion1,
   champion2: TChampion2,
+  /** from 0 to 1 */
+  crits: number,
 }
 
 export const simulate1v1 = async <TChampion1 extends Champion, TChampion2 extends Champion>(
@@ -96,9 +98,17 @@ export const simulate1v1 = async <TChampion1 extends Champion, TChampion2 extend
 
   sim.start(maxTime);
   // count damage
-  let damage1 = 0, damage2 = 0;
-  champ2.interaction.onTakeDamage((e) => damage1 += e.value);
-  champ1.interaction.onTakeDamage((e) => damage2 += e.value);
+  let damage1 = 0, damage2 = 0, crits = 0, total = 0;
+  champ2.interaction.onTakeDamage((e) => {
+    damage1 += e.value;
+    total += 1;
+    if (e.isCrit) crits += 1;
+  });
+  champ1.interaction.onTakeDamage((e) => {
+    damage2 += e.value
+    total += 1;
+    if (e.isCrit) crits += 1;
+  });
   
   // logic
   const champ1Logic = async () => {
@@ -131,5 +141,54 @@ export const simulate1v1 = async <TChampion1 extends Champion, TChampion2 extend
     winner,
     champion1: champ1,
     champion2: champ2,
+    crits: crits / total,
   };
+}
+
+export const simulate1v1WithCrits = async <TChampion1 extends Champion, TChampion2 extends Champion>(
+  getChampionsAndLogic: (sim: Simulation) => [TChampion1, (c1: TChampion1, c2: TChampion2) => Promise<void>, TChampion2, (c2: TChampion2, c1: TChampion1) => Promise<void>] | void, 
+  maxTime = 180*1000
+): Promise<Simulate1v1Result<TChampion1, TChampion2> | void> => {
+  
+  const results: Simulate1v1Result<TChampion1, TChampion2>[] = [];
+  const firstResult = await simulate1v1(getChampionsAndLogic, maxTime);
+  if (firstResult) {
+    results.push(firstResult);
+    if (firstResult.crits >= 0.01 && firstResult.crits <= 0.99) {
+      for (let i = 0; i < 10; i += 1) {
+        const nextResult = await simulate1v1(getChampionsAndLogic, maxTime);
+        if (nextResult) results.push(nextResult);
+      }
+    }
+
+    let winner1 = 0, winner2 = 0;
+    const result: Simulate1v1Result<TChampion1, TChampion2> = {
+      ttk: 0,
+      dps1: 0,
+      dps2: 0,
+      distance: 0,
+      champion1: firstResult.champion1,
+      champion2: firstResult.champion2,
+      crits: 0,
+    }
+    for (const subresult of results) {
+      result.ttk += subresult.ttk;
+      result.dps1 += subresult.dps1;
+      result.dps2 += subresult.dps2;
+      result.distance += subresult.distance;
+      result.crits += subresult.crits;
+      if (subresult.winner === subresult.champion1) winner1 += 1;
+      else if (subresult.winner === subresult.champion2) winner2 += 1;
+    }
+    if (winner1 > winner2) result.winner = firstResult.champion1;  
+    else if (winner2 > winner1) result.winner = firstResult.champion2;
+
+    result.ttk /= results.length;
+    result.dps1 /= results.length;
+    result.dps2 /= results.length;
+    result.distance /= results.length;
+    result.crits /= results.length;
+
+    return result;
+  }
 }

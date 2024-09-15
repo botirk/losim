@@ -30,11 +30,20 @@ export class MasterYiWCast extends SelfCast<MasterYiW> {
 }
 
 export class MasterYiW extends Action<void, MasterYiWCast> {
+  static readonly wname = "Meditate";
+  static dr(level: number) {
+    if (level <= 0) return 0;
+    return 42.5 + level * 2.5;
+  }
+  static tickHeal(level: number, owner: Unit) {
+    if (level <= 0) return 0;
+    return (5 + level * 10) * (2 - owner.health / owner.maxHealth);
+  }
+
   constructor(unit: Unit) {
     super(MasterYiW.wname, unit);
   }
-
-  static readonly wname = "Meditate";
+  
   readonly maxLevel: number = 5;
   readonly minLevel: number = 1;
   readonly isCancelableByUser: boolean = true;
@@ -57,15 +66,6 @@ export class MasterYiW extends Action<void, MasterYiWCast> {
   get cooldownTime(): number {
     if (this.level === 0) return 0;
     return 9000;
-  }
-
-  static dr(level: number) {
-    if (level <= 0) return 0;
-    return 42.5 + level * 2.5;
-  }
-  static tickHeal(level: number, owner: Unit) {
-    if (level <= 0) return 0;
-    return (5 + level * 10) * (2 - owner.health / owner.maxHealth);
   }
 
   async cast() {

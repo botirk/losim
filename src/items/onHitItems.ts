@@ -166,11 +166,17 @@ export class GuinsoPhantomBuff extends TimedBuff {
     super(GuinsoPhantomBuff.pname, owner, GuinsoPhantomBuff.duration, true);
   }
 
+  stacks = 1;
   onAttack(target: Unit) {
-    this.owner.sim.waitFor(GuinsoPhantomBuff.pause).then(() => {
-      if (target.targetable.value) this.owner.action.attack.procOnHitUnit(target, 1);
-    });
-    this.fade();
+    if (this.stacks >= 2) {
+      this.owner.sim.waitFor(GuinsoPhantomBuff.pause).then(() => {
+        if (target.targetable.value) this.owner.action.attack.procOnHitUnit(target, 1);
+      });
+      this.fade();
+    } else {
+      this.stacks += 1;
+      this.remainingTime = GuinsoPhantomBuff.duration;
+    }
   }
 }
 
@@ -244,17 +250,24 @@ export const guinso: Equip = {
       expect(count).toBe(6);
       expect(yi1.bonusAs.value).toBe(25 + 8 * 4);
 
-      await sim.waitFor(150 + 1);
-      expect(count).toBe(7);
-
       expect(await yi1.action.attack.cast(yi2)).toBe(true);
+      expect(count).toBe(7);
+      expect(yi1.bonusAs.value).toBe(25 + 8 * 4);
+
+      await sim.waitFor(150 + 1);
       expect(count).toBe(8);
 
       expect(await yi1.action.attack.cast(yi2)).toBe(true);
       expect(count).toBe(9);
 
-      await sim.waitFor(150 + 1);
+      expect(await yi1.action.attack.cast(yi2)).toBe(true);
       expect(count).toBe(10);
+
+      expect(await yi1.action.attack.cast(yi2)).toBe(true);
+      expect(count).toBe(11);
+
+      await sim.waitFor(150 + 1);
+      expect(count).toBe(12);
 
       await sim.waitFor(GuinsoPhantomBuff.duration + 1);
       expect(yi1.buffNamed(GuinsoPhantomBuff.pname)).toBeUndefined();
@@ -267,8 +280,149 @@ export const guinso: Equip = {
   }
 }
 
+export class KrakenDebuff extends TimedBuff {
+  static kname() {
+    return kraken.name + " debuff";
+  }
+  static duration = 6000;
+  static damage(src: Unit, target: Unit) {
+    let damage = 35;
+    if (src.level >= 9) for (let level = 9; level <= 18; level += 1) damage += 5;
+    // TODO add AP Scaling
+    damage += src.ad * 0.65;
+
+    const stacks = (target.buffNamed(KrakenDebuff.kname()) as KrakenDebuff | undefined)?.stacks || 0;
+    damage *= (1 + stacks * 0.5);
+    
+    return damage;
+  }
+
+  constructor(owner: Unit, src: Unit) {
+    super(KrakenDebuff.kname(), owner, KrakenDebuff.duration, true, src);
+  }
+  private _stacks = 1;
+  set stacks(stacks: number) {
+    this._stacks = Math.max(0, Math.min(2, stacks));
+    this.remainingTime = KrakenDebuff.duration;
+  }
+  get stacks() {
+    return this._stacks;
+  }
+}
+
+export class KrakenBuff extends TimedBuff {
+  static duration = 3000;
+    
+  constructor(owner: Unit) {
+    super(kraken.name, owner, KrakenBuff.duration, true);
+  }
+
+  stacks = 1;
+  onHit() {
+    this.stacks += 1;
+    this.remainingTime = KrakenBuff.duration;
+  }
+  onAttack(t: Unit) {
+    if (this.stacks <= 2) return;
+    t.interaction.takeDamage({ src: this.owner, type: DamageType.PHYSIC, value: KrakenDebuff.damage(this.owner, t) });
+    const debuff = t.buffNamed(KrakenDebuff.kname());
+    if (debuff instanceof KrakenDebuff) debuff.stacks += 1; else new KrakenDebuff(t, this.owner);
+    this.fade();
+  }
+}
+
+export const kraken: Equip = {
+  unique: true,
+  type: "finishedItem",
+  name: "Kraken Slayer",
+  bonusAd: 40,
+  bonusAs: 35,
+  crit: 20,
+  apply: (unit) => {
+    unit.action.attack.onHitUnit((t) => {
+      const buff = unit.buffNamed(kraken.name);
+      if (buff instanceof KrakenBuff) {
+        buff.onHit();
+      } else {
+        new KrakenBuff(unit);
+      }
+    });
+    unit.action.attack.onCast((t) => {
+      const buff = unit.buffNamed(kraken.name);
+      if (buff instanceof KrakenBuff) {
+        buff.onAttack(t);
+      }
+    });
+  },
+  test: () => {
+    test("kraken basic", async () => {
+      const sim = new Simulation().start(500000);
+      const yi1 = new MasterYi().init(sim);
+      yi1.action.passive.disabled = true;
+      expect(yi1.applyEquip(kraken)).toBe(true);
+      const yi2 = new MasterYi().init(sim);
+      yi2.armor = 0;
+      yi2.health = 10000;
+
+      let count = 0;
+      yi2.interaction.onTakeDamage((e) => {
+        if (e.type === DamageType.PHYSIC && e.value > 0) count += 1;
+      });
+
+      expect(await yi1.action.attack.cast(yi2)).toBe(true);
+      expect(await yi1.action.attack.cast(yi2)).toBe(true);
+      expect(count).toBe(2);
+
+      expect(await yi1.action.attack.cast(yi2)).toBe(true);
+      expect(count).toBe(4);
+    });
+
+    test("kraken advanced", async () => {
+      const sim = new Simulation().start(500000);
+      const yi1 = new MasterYi().init(sim);
+      yi1.action.passive.disabled = true;
+      expect(yi1.applyEquip(kraken)).toBe(true);
+      yi1.crit = 0;
+      const yi2 = new MasterYi().init(sim);
+      yi2.armor = 0;
+      yi2.health = 10000;
+
+      const damage = {};
+      yi2.interaction.onTakeDamage((e) => {
+        if (e.type === DamageType.PHYSIC && e.value > 0) damage[e.value.toFixed(2)] = true;
+      });
+
+      expect(await yi1.action.attack.cast(yi2)).toBe(true);
+      expect(await yi1.action.attack.cast(yi2)).toBe(true);
+      expect(Object.values(damage).length).toBe(1);
+      expect(await yi1.action.attack.cast(yi2)).toBe(true);
+      expect(Object.values(damage).length).toBe(2);
+
+      expect(await yi1.action.attack.cast(yi2)).toBe(true);
+      expect(Object.values(damage).length).toBe(2);
+      expect(await yi1.action.attack.cast(yi2)).toBe(true);
+      expect(Object.values(damage).length).toBe(2);
+      expect(await yi1.action.attack.cast(yi2)).toBe(true);
+      expect(Object.values(damage).length).toBe(3);
+
+      expect(await yi1.action.attack.cast(yi2)).toBe(true);
+      expect(await yi1.action.attack.cast(yi2)).toBe(true);
+      expect(Object.values(damage).length).toBe(3);
+      expect(await yi1.action.attack.cast(yi2)).toBe(true);
+      expect(Object.values(damage).length).toBe(4);
+
+      expect(await yi1.action.attack.cast(yi2)).toBe(true);
+      expect(await yi1.action.attack.cast(yi2)).toBe(true);
+      expect(Object.values(damage).length).toBe(4);
+      expect(await yi1.action.attack.cast(yi2)).toBe(true);
+      expect(Object.values(damage).length).toBe(4);
+    });
+  }
+}
+
 export const onHitItems: Equip[] = [
   botrk,
   witsend,
   guinso,
+  kraken,
 ]

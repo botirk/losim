@@ -66,3 +66,19 @@ test("MasterYi E Buff", async () => {
   expect(yi1.buffs).toHaveLength(0);
   expect(yi1.action.attack._onHitUnit).toHaveLength(0);
 });
+
+test("MasterYi E Cd", async () => {
+  const sim = new Simulation().start(20000);
+  const yi1 = new MasterYi().init(sim);
+  yi1.action.e.setLevel(1);
+  expect(yi1.action.e.isCooldown).toBe(false);
+  expect(yi1.action.e.remainingCooldown).toBe(0);
+  yi1.action.e.cast();
+  expect(yi1.action.e.remainingCooldown).toBe(14000);
+  await sim.waitFor(7000);
+  expect(yi1.action.e.remainingCooldown).toBe(7000);
+  expect(yi1.action.e.isCooldown).toBe(true);
+  await sim.waitFor(7001);
+  expect(yi1.action.e.isCooldown).toBe(false);
+  expect(yi1.action.e.remainingCooldown).toBe(0);
+});

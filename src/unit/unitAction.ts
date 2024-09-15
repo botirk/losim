@@ -68,6 +68,9 @@ export abstract class TimedSingletonAction {
     cooldown.then(() => { if (this.cooldown === cooldown) this.cooldown = undefined; }).catch(() => {});
     this.cooldown = cooldown;
   }
+  get remainingCooldown() {
+    return this.cooldown?.remainingTime || 0;
+  }
 
   protected _onHitUnit: ((target: Unit) => void)[] = [];
   onHitUnit(cb: typeof this._onHitUnit[0]) {

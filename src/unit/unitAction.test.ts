@@ -45,7 +45,7 @@ test("UnitAction.attack after death", async () => {
   
   const aa = yi1.action.attack.cast(yi2);
   expect(yi1.action.attack.isCasting).toBe(true);
-  yi1.interaction.takeDamage(Infinity);
+  yi1.interaction.takeDamage(Infinity, yi1);
   expect(yi1.dead).toBe(true);
   await aa;
   expect(sim.time).toBe(0);
@@ -74,7 +74,7 @@ test("UnitAction.attack after target death", async () => {
   
   const aa = yi1.action.attack.cast(yi2);
   expect(yi1.action.attack.isCasting).toBe(true);
-  yi2.interaction.takeDamage(Infinity);
+  yi2.interaction.takeDamage(Infinity, yi2);
   expect(yi2.dead).toBe(true);
   await aa;
   expect(yi1.action.attack.isCasting).toBe(false);
@@ -127,10 +127,40 @@ test("UnitAction.attack dead", async () => {
   const yi2 = new MasterYi().init(sim);
   expect(yi1.health).toBe(yi2.health);
   
-  yi2.interaction.takeDamage(Infinity);
+  yi2.interaction.takeDamage(Infinity, yi2);
   expect(yi2.dead).toBe(true);
 
   const time = sim.time;
   await yi1.action.attack.cast(yi2);
   expect(sim.time).toBe(time);
+});
+
+test("UnitAction.attack onHit", async () => {
+  const sim = new Simulation().start(5000);
+  const yi1 = new MasterYi().init(sim) as any;
+  const yi2 = new MasterYi().init(sim);
+  
+  let hit = 0;
+  const remove = yi1.action.attack.onHitUnit((target) => {
+    hit += 1;
+    expect(target).toBe(yi2);
+    if (hit === 3) remove();
+  });
+  expect(yi1.action.attack._onHitUnit).toHaveLength(1);
+
+  await yi1.action.attack.cast(yi2);
+  expect(yi1.action.attack.isCasting).toBe(false);
+  expect(yi1.action.attack.isCooldown).toBe(true);
+  expect(hit).toBe(1);
+
+  await yi1.action.attack.cast(yi2);
+  expect(yi1.action.attack.isCasting).toBe(false);
+  expect(yi1.action.attack.isCooldown).toBe(true);
+  expect(hit).toBe(2);
+
+  await yi1.action.attack.cast(yi2);
+  expect(yi1.action.attack.isCasting).toBe(false);
+  expect(yi1.action.attack.isCooldown).toBe(true);
+  expect(hit).toBe(3);
+  expect(yi1.action.attack._onHitUnit).toHaveLength(0);
 });

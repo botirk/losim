@@ -6,32 +6,51 @@ test("UnitInteraction.takeDamage", async () => {
   const yi = new MasterYi().init(sim);
   
   expect(yi.health).toBe(yi.maxHealth);
-  yi.interaction.takeDamage(100);
+  yi.interaction.takeDamage(100, yi);
   expect(yi.health).toBe(yi.maxHealth - 100);
 });
 
 test("UnitInteraction.onTakeDamage", async () => {
   const sim = new Simulation().start(5000);
-  const yi = new MasterYi().init(sim);
+  const yi = new MasterYi().init(sim) as any;
   
+  let proc = 0;
   expect(yi.health).toBe(yi.maxHealth);
-  const prom = yi.interaction.onTakeDamage();
-  yi.interaction.takeDamage(100);
-  const res = await prom;
-  expect(res).toBe(100);
-  expect(yi.health).toBe(yi.maxHealth - 100);
+  const remove1 = yi.interaction.onTakeDamage((value, src) => {
+    proc += 1;
+    expect(value).toBe(100);
+    expect(src).toBe(yi);
+    expect(yi.health).toBe(yi.maxHealth - 100);
+  });
+  expect(yi.interaction._onTakeDamage).toHaveLength(1);
+  yi.interaction.takeDamage(100, yi);
+  expect(proc).toBe(1);
+  remove1();
+  expect(yi.interaction._onTakeDamage).toHaveLength(0);
 
-  const prom2 = yi.interaction.onTakeDamage();
-  yi.interaction.takeDamage(125);
-  const res2 = await prom2;
-  expect(res2).toBe(125);
-  expect(yi.health).toBe(yi.maxHealth - 100 - 125);
+  const remove2 = yi.interaction.onTakeDamage((value, src) => {
+    proc += 1;
+    expect(value).toBe(125);
+    expect(src).toBe(yi);
+    expect(yi.health).toBe(yi.maxHealth - 100 - 125);
+  });
+  expect(yi.interaction._onTakeDamage).toHaveLength(1);
+  yi.interaction.takeDamage(125, yi);
+  expect(proc).toBe(2);
+  remove2();
+  expect(yi.interaction._onTakeDamage).toHaveLength(0);
 
-  const prom3 = yi.interaction.onTakeDamage();
-  yi.interaction.takeDamage(10000);
-  const res3 = await prom3;
-  expect(res3).toBe(yi.maxHealth - 100 - 125);
-  expect(yi.health).toBe(0);
+  const remove3 = yi.interaction.onTakeDamage((value, src) => {
+    proc += 1;
+    expect(value).toBe(yi.maxHealth - 100 - 125);
+    expect(src).toBe(yi);
+    expect(yi.health).toBe(0);
+  });
+  expect(yi.interaction._onTakeDamage).toHaveLength(1);
+  yi.interaction.takeDamage(10000, yi);
+  expect(proc).toBe(3);
+  remove3();
+  expect(yi.interaction._onTakeDamage).toHaveLength(0);
 });
 
 test("UnitInteraction.onDeath", async () => {

@@ -1,9 +1,12 @@
 package unit
 
-import "testing"
+import (
+	"losim/src/simulation"
+	"testing"
+)
 
 func TestDeath(t *testing.T) {
-	u := NewUnit("")
+	u := NewUnit(simulation.NewSimulation())
 
 	u.health = 149
 
@@ -21,7 +24,7 @@ func TestDeath(t *testing.T) {
 }
 
 func TestDamageEventBasic(t *testing.T) {
-	u := NewUnit("")
+	u := NewUnit(simulation.NewSimulation())
 
 	u.health = 100
 

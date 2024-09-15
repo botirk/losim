@@ -1,5 +1,5 @@
-import { MasterYi } from "../champions/MasterYi/MasterYi";
-import { Simulation } from "../simulation/simulation";
+import { MasterYi } from "../../champions/MasterYi/MasterYi";
+import { Simulation } from "../../simulation/simulation";
 
 test("Move basic", async () => {
   const sim = new Simulation().start(15000000);

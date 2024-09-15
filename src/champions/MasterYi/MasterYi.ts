@@ -27,6 +27,10 @@ export class MasterYiAction extends UnitActions {
 }
 
 export class MasterYi extends Champion {
+  constructor() {
+    super("Master Yi");
+  }
+
   action: MasterYiAction; 
   stats = MasterYiStats;
 

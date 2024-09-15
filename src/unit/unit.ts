@@ -1,9 +1,9 @@
 import { Simulation } from "../simulation/simulation";
 import { UnitInteraction } from "./unitInteraction";
 import { Buff } from "./buff";
-import { AttackAction } from "./attack";
-import { MoveAction } from "./move";
-import { Action, AnyCast, Cast } from "./action";
+import { AttackAction } from "./action/attack";
+import { MoveAction } from "./action/move";
+import { AnyCast } from "./action/action";
 
 export class UnitActions {
   constructor(protected readonly owner: Unit) {}
@@ -19,6 +19,8 @@ export class UnitActions {
 }
 
 export abstract class Unit {
+  constructor(readonly name: string) { }
+
   sim: Simulation;
 
   abstract action: UnitActions;
@@ -26,6 +28,8 @@ export abstract class Unit {
 
   health = 0;
   maxHealth = 0;
+  mana = 0;
+  maxMana = 0;
   attackAnimation = 0.4;
   armor = 0;
   crit = 0;

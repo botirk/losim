@@ -2,36 +2,13 @@ import { MasterYi } from "./MasterYi";
 import { Simulation } from "../../simulation/simulation";
 import { DamageType } from "../../unit/unitInteraction";
 import { MasterYiQ, MasterYiQMark } from "./MasterYiQ";
+import { enemyActionLevelTest, enemyActionManaTest, enemyActionTargetableTest } from "../../unit/action/actionTest";
 
-test("MasterYi Q NoLvL", async () => {
-  const sim = new Simulation().start(500000);
-  const yi1 = new MasterYi().init(sim);
-  const yi2 = new MasterYi().init(sim);
-  
-  await yi1.action.q.cast(yi2);
-  expect(yi1.action.q.isCooldown).toBe(false);
+enemyActionManaTest(MasterYiQ.qname, (sim) => new MasterYi().init(sim).action.q);
 
-  yi1.action.q.level = 1;
-  const prom = yi1.action.q.cast(yi2);
-  expect(yi1.action.q.remainingCooldown).toBe(20000);
-  await prom;
-  expect(yi1.action.q.isCooldown).toBe(true);
-});
+enemyActionLevelTest(MasterYiQ.qname, (sim) => new MasterYi().init(sim).action.q);
 
-test("MasterYi Q Targetable", async () => {
-  const sim = new Simulation().start(500000);
-  const yi1 = new MasterYi().init(sim);
-  const yi2 = new MasterYi().init(sim);
-  yi1.action.q.level = 1;
-
-  yi1.action.q.cast(yi2);
-  for (let i = 0; i < 4 * 231; i += 10) {
-    expect(yi1.targetable).toBe(false);
-    await sim.waitFor(10);
-  }
-  await sim.waitFor(200);
-  expect(yi1.targetable).toBe(true);
-});
+enemyActionTargetableTest(MasterYiQ.qname, (sim) => new MasterYi().init(sim).action.q);
 
 test("MasterYi Q 4 Marks", async () => {
   const sim = new Simulation().start(500000);

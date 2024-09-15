@@ -2,6 +2,9 @@
 export interface ChampionStats {
   baseMs: number,
 
+  baseMana: number;
+  manaGrowth: number;
+
   baseHealth: number,
   healthGrowth: number,
 

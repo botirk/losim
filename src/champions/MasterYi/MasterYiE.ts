@@ -1,4 +1,4 @@
-import { SelfCast, Action } from "../../unit/action";
+import { SelfCast, Action } from "../../unit/action/action";
 import { TimedBuff } from "../../unit/buff";
 import { Unit } from "../../unit/unit";
 import { DamageType } from "../../unit/unitInteraction";

@@ -21,6 +21,8 @@ export abstract class Champion extends Unit {
     this.baseAs = this.stats.baseAs;
     this.bonusAs = this.calcStatGrowth(this.stats.asGrowth);
     this.baseMs = this.stats.baseMs;
+    this.mana = this.stats.baseMana + this.calcStatGrowth(this.stats.manaGrowth);
+    this.maxMana = this.mana;
     return this;
   }
 }

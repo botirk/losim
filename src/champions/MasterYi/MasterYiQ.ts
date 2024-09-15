@@ -1,6 +1,6 @@
 import seedrandom from "seedrandom";
 import { Unit } from "../../unit/unit";
-import { Action, EnemyTargetAction, TargetCast } from "../../unit/action";
+import { Action, EnemyTargetAction, TargetCast } from "../../unit/action/action";
 import { Buff } from "../../unit/buff";
 import { DamageType } from "../../unit/unitInteraction";
 
@@ -68,6 +68,10 @@ export class MasterYiQ extends EnemyTargetAction<MasterYiQCast> {
   readonly isCooldownFinishedOnInterrupt: boolean = false;
   get maxRange(): number {
     return 600;
+  }
+  get manaCost(): number {
+    if (this.level === 0) return 0;
+    return 45 + this.level * 5;
   }
 
   get castTime(): number {

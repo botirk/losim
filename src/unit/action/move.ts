@@ -1,5 +1,5 @@
 import { Action, PosCast } from "./action";
-import { Unit } from "./unit";
+import { Unit } from "../unit";
 
 export class MoveAction extends Action<number, MoveCast> {
   constructor(owner: Unit) {

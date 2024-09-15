@@ -151,3 +151,15 @@ test("Unit.team", () => {
   expect(yi1.level).toBe(5);
 });
 
+test("Unit.ms cap", () => {
+  const yi1 = new MasterYi().init();
+  yi1.bonusMs = 10000;
+  expect(yi1.ms).toBeLessThan(9000);
+
+  yi1.bonusMs = -yi1.baseMs;
+  expect(yi1.ms).toBe(110);
+
+  yi1.bonusMs = -yi1.baseMs + 150;
+  expect(yi1.ms).toBeGreaterThan(150);
+});
+

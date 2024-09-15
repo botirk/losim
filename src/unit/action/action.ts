@@ -15,6 +15,20 @@ export abstract class Action<TOption extends any, TCast> {
   abstract readonly maxLevel: number;
   abstract readonly isCancelableByUser: boolean;
   abstract readonly isCooldownFinishedOnInterrupt: boolean;
+  abstract readonly isUltimate: boolean;
+
+
+  // level
+  levelUp() {
+    if (this.level >= this.maxLevel) return false;
+    else if (this.isUltimate) {
+      if (this.owner.level < 6) return false;
+      else if (this.owner.level < 11 && this.level >= 1) return false;
+      else if (this.owner.level < 16 && this.level >= 2) return false;
+    } else if (this.level >= Math.ceil(this.owner.level / 2)) return false;
+    this.level += 1;
+    return true;
+  }
 
   // costs
   get manaCost(): number {

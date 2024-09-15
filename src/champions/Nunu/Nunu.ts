@@ -1,6 +1,6 @@
 import { Simulation } from "../../simulation/simulation";
 import { Actions } from "../../unit/unit";
-import { Champion } from "../champion/champion";
+import { Champion, spellShort } from "../champion/champion";
 import { NunuStats } from "./NunuStats";
 
 export class Nunu extends Champion {
@@ -11,6 +11,11 @@ export class Nunu extends Champion {
 
   stats = NunuStats;
   action: Actions;
+
+  levelUpPriority: [spellShort, spellShort, spellShort, spellShort] = ["R", "Q", "E", "W"];
+  levelUp(): void {
+    
+  }
 
   init(simIN?: Simulation): this {
     super.init(simIN);

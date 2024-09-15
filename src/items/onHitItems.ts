@@ -111,7 +111,38 @@ export const witsend: Equip = {
   }
 }
 
+export const guinso: Equip = {
+  name: "Guinsoo's Rageblade",
+  unique: true,
+  type: "finishedItem",
+  bonusAd: 30,
+  bonusAs: 25,
+  // TODO: AP
+  apply: (unit) => {
+    unit.action.attack.onHitUnit((t, m) => {
+      t.interaction.takeDamage({ src: unit, type: DamageType.MAGIC, value: 30 * m });
+    })
+  },
+  test: () => {
+    test("guinso basic", async () => {
+      const sim = new Simulation().start(500000);
+      const yi1 = new MasterYi().init(sim);
+      expect(yi1.applyEquip(guinso)).toBe(true);
+      const yi2 = new MasterYi().init(sim);
+      yi2.mr = 0;
+
+      let magic = 0;
+      yi2.interaction.onTakeDamage((e) => {
+        if (e.src === yi1 && e.type === DamageType.MAGIC && e.value == 30) magic += 1;
+      });
+      expect(await yi1.action.attack.cast(yi2)).toBe(true);
+      expect(magic).toBe(1);
+    });
+  }
+}
+
 export const onHitItems: Equip[] = [
   botrk,
   witsend,
+  guinso,
 ]

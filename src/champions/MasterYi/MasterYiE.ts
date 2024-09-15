@@ -35,6 +35,7 @@ export class MasterYiE extends Action<void, MasterYiECast> {
   readonly minLevel: number = 1;
   readonly isCancelableByUser: boolean = false;
   readonly isCooldownFinishedOnInterrupt: boolean = false;
+  readonly isUltimate: boolean = false;
 
   get castTime(): number {
     return 0;

@@ -161,5 +161,9 @@ test("Unit.ms cap", () => {
 
   yi1.bonusMs = -yi1.baseMs + 150;
   expect(yi1.ms).toBeGreaterThan(150);
+
+  yi1.bonusMs = 0;
+  yi1.mMs = 100;
+  expect(yi1.ms).toBeGreaterThan(500);
 });
 

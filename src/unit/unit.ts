@@ -84,8 +84,10 @@ export abstract class Unit {
   pos = 0;
   baseMs = 0;
   bonusMs = 0;
+  /** multiplicative move speed. default is 1. 30% increase is 1.3 */
+  mMs = 1;
   get ms() {
-    let result = (this.baseMs + this.bonusMs) * ((100 - this.slow) / 100);
+    let result = (this.baseMs + this.bonusMs) * this.mMs * ((100 - this.slow) / 100);
 
     if (result <= 0) result = 110;
     else if (result < 220) result = 110 + result * 0.5

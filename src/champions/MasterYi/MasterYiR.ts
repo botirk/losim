@@ -4,29 +4,41 @@ import { SelfCast, Action } from "../../unit/action/action";
 
 export class MasterYiRBuff extends TimedBuff {
   private removeTakedown?: () => void;
-  constructor(unit: Unit, readonly level: number) {
-    level = Math.max(0, Math.min(3, level));
-    super(MasterYiR.rname, unit, level ? 7000 : 0);
-    if (!level) return;
-    this.removeTakedown = unit.interaction.onTakedown((enemy, damagedTime) => {
-      if (damagedTime + 10000 >= unit.sim.time) this.duration += 7000;
+  private level = 0;
+  constructor(unit: Unit, action: MasterYiR) {
+    super(MasterYiR.rname, unit, action.level ? MasterYiR.duration : 0);
+    if (!action.level) return;
+    this.level = action.level;
+    this.removeTakedown = unit.interaction.onTakedown((_, damagedTime) => {
+      if (damagedTime + MasterYiR.assistDuration >= unit.sim.time) this.duration += MasterYiR.duration;
     });
-    unit.bonusAs.value += 15 + level * 10;
+    unit.mMs *= MasterYiR.bonusMMs(this.level);
+    unit.bonusAs.value += MasterYiR.bonusAs(this.level);
   }
   fade(): void {
     super.fade();
     this.removeTakedown?.();
-    this.owner.bonusAs.value -= 15 + this.level * 10;
+    this.owner.mMs /= MasterYiR.bonusMMs(this.level);
+    this.owner.bonusAs.value -= MasterYiR.bonusAs(this.level);
   }
 }
 
 export class MasterYiRCast extends SelfCast<MasterYiR> {
   protected async onFinishCast() {
-    new MasterYiRBuff(this.action.owner, this.action.level);
+    new MasterYiRBuff(this.action.owner, this.action);
   }
 }
 
 export class MasterYiR extends Action<void, MasterYiRCast> {
+  static readonly duration = 7000;
+  static readonly assistDuration = 10000;
+  static bonusAs(level: number) {
+    return 15 + level * 10;
+  }
+  static bonusMMs(level: number) {
+    return 1 + (25 + level * 10) / 100;
+  }
+
   constructor(unit: Unit) {
     super(MasterYiR.rname, unit);
   }

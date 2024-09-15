@@ -110,3 +110,13 @@ test("MasterYi R Takedown", async () => {
   yi3.interaction.takeDamage({ value: Infinity, src: yi3, type: DamageType.TRUE });
   expect(yi1.buffNamed(MasterYiR.rname)?.remainingTime).toBe(time + 7000);
 });
+
+test("MasterYi R levels(as)", async () => {
+  const sim = new Simulation().start(500000);
+  const yi1 = new MasterYi().init(sim);
+  yi1.action.r.level = 1;
+
+  const ms = yi1.ms;
+  expect(await yi1.action.r.cast()).toBe(true);
+  expect(yi1.ms).toBeGreaterThan(ms + 10);
+});

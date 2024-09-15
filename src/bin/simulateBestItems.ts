@@ -41,7 +41,9 @@ const getSetupNode = async (): Promise<SimulateBestItemsSetup> => {
   }
 }
 
-const getSetupBrowser = (): SimulateBestItemsSetup => {
+const getSetupBrowser = async (): Promise<SimulateBestItemsSetup> => {
+  await new Promise((res) => setTimeout(res, 250));
+
   let champNames = champions.reduce((prev, cur, i) => prev + `${i} ${new cur().name}\n`, "");
   const champName = prompt(champNames + "Pick a champion (number or string) Master Yi default");
   const Champion: new() => Champion = champions[champName] || champions.find((champ) => new champ().name.toLowerCase() === champName.toLowerCase()) || MasterYi;
@@ -67,7 +69,7 @@ const getSetupBrowser = (): SimulateBestItemsSetup => {
 
 const getSetup = async (): Promise<SimulateBestItemsSetup> => {
   if (typeof window !== 'undefined') {
-    return getSetupBrowser();
+    return await getSetupBrowser();
   } else {
     return await getSetupNode();
   }

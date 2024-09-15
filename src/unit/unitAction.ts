@@ -112,16 +112,16 @@ export class Attack extends TimedSingletonAction {
   protected _isCancelableByUser = true;
 
   async cast(target: Unit) {
-    if (this.unit.dead || (this.unit.action.current && this.unit.action.current !== this) || target.dead) return;
+    if (this.unit.dead || (this.unit.action.current && this.unit.action.current !== this) || target.targetable === false) return;
     
     if (this.isCooldown) {
-      await Promise.any([ this.waitForCooldown(), target.interaction.onDeathPromise(), this.unit.interaction.onDeathPromise() ]);
-      if (this.unit.dead || (this.unit.action.current && this.unit.action.current !== this) || target.dead) return;
+      await Promise.any([ this.waitForCooldown(), target.onTargetablePromise(), this.unit.onDeathPromise() ]);
+      if (this.unit.dead || (this.unit.action.current && this.unit.action.current !== this) || (target.targetable as boolean) === false) return;
     }
     if (this.isCasting) {
       await this.waitForCast();
     } else {
-      const result = await Promise.any([ this.startCast((1 / this.unit.as) * this.unit.attackAnimation * 1000), target.interaction.onDeathPromise(), this.unit.interaction.onDeathPromise() ]);
+      const result = await Promise.any([ this.startCast((1 / this.unit.as) * this.unit.attackAnimation * 1000), target.onTargetablePromise(), this.unit.onDeathPromise() ]);
       if (result === true) {
         target.interaction.takeDamage({ value: this.unit.ad, src: this.unit, type: DamageType.PHYSIC });
         this.procOnHitUnit(target);

@@ -269,3 +269,38 @@ test("UnitAction.attack finish cooldown", async () => {
   await yi1.action.attack.cast(yi2);
   expect(sim.time).toBe(time * 2);
 });
+
+test("UnitAction.attack untargetable", async () => {
+  const sim = new Simulation().start(15000);
+  const yi1 = new MasterYi().init(sim);
+  const yi2 = new MasterYi().init(sim);
+  yi2.targetable = false;
+  await yi1.action.attack.cast(yi2);
+  expect(sim.time).toBe(0);
+  expect(yi1.action.attack.isCooldown).toBe(false);
+  expect(yi1.action.attack.isCasting).toBe(false);
+
+  yi2.targetable = true;
+  await yi1.action.attack.cast(yi2);
+  expect(sim.time).toBeGreaterThan(100);
+  expect(yi1.action.attack.isCooldown).toBe(true);
+});
+
+test("UnitAction.attack targetable further", async () => {
+  const sim = new Simulation().start(15000);
+  const yi1 = new MasterYi().init(sim);
+  const yi2 = new MasterYi().init(sim);
+  
+  const aa = yi1.action.attack.cast(yi2);
+  await sim.waitFor(25);
+  yi2.targetable = false;
+  await aa;
+  expect(sim.time).toBe(25);
+  expect(yi1.action.attack.isCooldown).toBe(false);
+  expect(yi1.action.attack.isCasting).toBe(false);
+
+  yi2.targetable = true;
+  await yi1.action.attack.cast(yi2);
+  expect(sim.time).toBeGreaterThan(100);
+  expect(yi1.action.attack.isCooldown).toBe(true);
+});

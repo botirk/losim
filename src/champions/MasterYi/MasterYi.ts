@@ -144,7 +144,7 @@ export class MasterYiW extends TimedSingletonAction {
       });
       let time = 0;
       for (; time <= 4000; time += 500) {
-        const result = await Promise.any([this.waitForCast(), this.unit.sim.waitFor(500), this.unit.interaction.onDeathPromise()]);
+        const result = await Promise.any([this.waitForCast(), this.unit.sim.waitFor(500), this.unit.onDeathPromise()]);
         if (result === true) {
           this.unit.interaction.takeHeal({ src: this.unit, value: this.tickHeal });
         } else {

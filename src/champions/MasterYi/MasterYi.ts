@@ -1,5 +1,5 @@
 import { Simulation } from "../../simulation/simulation";
-import { UnitActions } from "../../unit/unit";
+import { Actions } from "../../unit/unit";
 import { Champion } from "../champion/champion";
 import { MasterYiStats } from "./MasterYiStats";
 import { MasterYiE } from "./MasterYiE";
@@ -8,7 +8,7 @@ import { MasterYiW } from "./MasterYiW";
 import { MasterYiQ } from "./MasterYiQ";
 import { MasterYiPassive } from "./MasterYiPassive";
 
-export class MasterYiAction extends UnitActions {
+export class MasterYiAction extends Actions {
   e: MasterYiE;
   r: MasterYiR;
   w: MasterYiW;

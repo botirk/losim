@@ -1,3 +1,4 @@
+import { Unit } from "../unit/unit";
 import { WheelItem } from "./defered";
 
 export class Simulation { // optimized queue of actions
@@ -66,4 +67,6 @@ export class Simulation { // optimized queue of actions
     this.consume();
     return this;
   }
+
+  units: Unit[] = [];
 }

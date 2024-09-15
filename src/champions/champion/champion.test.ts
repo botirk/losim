@@ -1,3 +1,4 @@
+import { Simulation } from "../../simulation/simulation";
 import { MasterYi } from "../MasterYi/MasterYi";
 
 test('Champion health init', () => {
@@ -87,4 +88,21 @@ test('Champion as init', () => {
   yi.level = 18;
   yi.init();
   expect(yi.as).toBeCloseTo(0.9098600000000001);
+});
+
+test('Champion runAway', async () => {
+  const sim = new Simulation().start(10000);
+  const yi1 = new MasterYi().init(sim);
+  const yi2 = new MasterYi().init(sim);
+
+  expect(yi1.pos).toBe(0);
+  expect(yi2.pos).toBe(0);
+
+  await yi1.runAwayFromEnemyAsDummy(yi2);
+  expect(yi1.pos).toBeGreaterThan(0);
+  expect(yi1.pos).toBeLessThan(100);
+  
+  yi2.pos = yi1.pos + 5;
+  await yi1.runAwayFromEnemyAsDummy(yi2);
+  expect(yi1.pos).toBe(0);
 });

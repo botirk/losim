@@ -23,6 +23,13 @@ export class MoveAction extends Action<number, MoveCast> {
   cast(option: number) {
     return new MoveCast(this, option).init();
   }
+  awayFrom(unit: Unit) {
+    if (unit.pos <= this.owner.pos) return this.cast(Infinity);
+    else return this.cast(-Infinity);
+  }
+  closeTo(unit: Unit) {
+    return this.cast(unit.pos);
+  }
 }
 
 export class MoveCast extends PosCast<MoveAction> {

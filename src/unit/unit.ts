@@ -5,7 +5,7 @@ import { AttackAction } from "./action/attack";
 import { MoveAction } from "./action/move";
 import { AnyCast } from "./action/action";
 
-export class UnitActions {
+export class Actions {
   constructor(protected readonly owner: Unit) {}
 
   attack: AttackAction;
@@ -23,7 +23,7 @@ export abstract class Unit {
 
   sim: Simulation;
 
-  abstract action: UnitActions;
+  abstract action: Actions;
   interaction: UnitInteraction;
 
   health = 0;
@@ -174,9 +174,28 @@ export abstract class Unit {
     });
   }
 
+  // logic
+  async runAwayFromEnemyAsDummy(enemy: Unit) {
+    await this.action.move.awayFrom(enemy);
+  }
+  async killDummy(enemy: Unit) {
+    if (this.action.attack.currentCast && await this.action.attack.currentCast.wait()) return;
+    else if (this.action.attack.isCooldown && await this.action.move.closeTo(enemy)) return;
+    else if (await this.action.attack.cast(enemy)) return;
+    else await this.action.move.closeTo(enemy);
+  }
+
   init(simIN?: Simulation): this {
     if (!this.interaction) this.interaction = new UnitInteraction(this).init();
+    if (this.sim) {
+      const i = this.sim.units.indexOf(this);
+      if (i !== -1) this.sim.units.splice(i, 1);
+    }
     this.sim = simIN;
+    if (simIN) {
+      this.sim.units.push(this);
+    }
+    
     this.dead = false;
     return this;
   }

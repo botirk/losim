@@ -5,7 +5,7 @@ import { Buff } from "./buff";
 import { AttackAction } from "./action/attack";
 import { MoveAction } from "./action/move";
 import { AnyAction, AnyCast } from "./action/action";
-import { Equip } from "./equip";
+import { Equip, Item, Rune, isItem, isKeystone, isRune } from "./equip";
 
 export type UnitTeam = "RED" | "BLUE" | "DEATHMATCH" | "NEUTRAL";
 
@@ -169,14 +169,23 @@ export abstract class Unit {
     return this._itemCount;
   }
   appliedEquips: Equip[] = [];
-  applyEquip(equip: Equip) {
-    if (equip.unique && this.appliedEquips.includes(equip)) return false;
-    if (equip.uniqueGroup && this.appliedEquips.some(e => e.uniqueGroup === equip.uniqueGroup)) return false;
-    if (equip.type === "item" || equip.type === "finishedItem") {
+  private applyItem(item: Item) {
+    if (item.unique && this.appliedEquips.includes(item)) return false;
+    if (item.uniqueGroup && this.appliedEquips.some(e => isItem(e) && e.uniqueGroup === item.uniqueGroup)) return false;
+    if (item.type === "item" || item.type === "finishedItem") {
       if (this._itemCount >= 6) return false;
       this._itemCount += 1;
     }
-    
+    return true;
+  }
+  private applyRune(rune: Rune) {
+    if (isKeystone(rune) && this.appliedEquips.some(e => isKeystone(e))) return false;
+    return true;
+  }
+  applyEquip(equip: Equip): boolean {
+    if (isItem(equip) && !this.applyItem(equip)) return false;
+    else if (isRune(equip) && !this.applyRune(equip)) return false;
+
     if (equip.apply?.(this) === false) return false;
     
     if (equip.bonusAs) this.bonusAs.value += equip.bonusAs;

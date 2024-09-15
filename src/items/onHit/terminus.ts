@@ -1,11 +1,12 @@
 import { StackBuff } from "../../unit/buff";
-import { Equip } from "../../unit/equip";
+import { Item } from "../../unit/equip";
 import { Unit } from "../../unit/unit";
 import { DamageType } from "../../unit/unitInteraction";
 
-export const terminus: Equip = {
+export const terminus: Item = {
   unique: true,
-  type: "finishedItem",
+  type: "item",
+  isFinished: true,
   name: "Terminus",
   bonusAs: 30,
   bonusAd: 40,

@@ -92,8 +92,8 @@ const writeResult = (str: string) => {
   let resultStr = "";
   if (result.length > 0) {
     for (let i = 0; i < 10 && i < result.length; i += 1) {
-      for (const itemn in result[i].items) {
-        resultStr += `item${Number(itemn) + 1}: '${result[i].items[itemn].name}' `;;
+      for (const itemn in result[i].equips) {
+        resultStr += `item${Number(itemn) + 1}: '${result[i].equips[itemn].name}' `;;
       }
       if (setup.config.sustain1) resultStr += `damage: ${result[i].result.damage1.toFixed(2)} sustained: ${(result[i].result.ttk / 1000).toFixed(2)}\r\n`;
       else resultStr += `timetokill: ${(result[i].result.ttk / 1000).toFixed(2)} dps: ${result[i].result.dps1.toFixed(2)}\r\n`;

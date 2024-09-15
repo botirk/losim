@@ -1,6 +1,6 @@
 import { MasterYi } from "../champions/MasterYi/MasterYi";
 import { Simulation } from "../simulation/simulation";
-import { Equip } from "./equip";
+import { Equip, Item, Keystone } from "./equip";
 
 test("Unit.onBonusASChange", () => {
   const yi = new MasterYi().init();
@@ -113,7 +113,7 @@ test("Unit.applyEquip unique", () => {
   const yi = new MasterYi().init();
 
   const sMaxHealth = yi.maxHealth;
-  const item: Equip = { type: "item", name: "test", maxHealth: 50, unique: true };
+  const item: Item = { type: "item", name: "test", maxHealth: 50, unique: true, isFinished: false };
   expect(yi.applyEquip(item)).toBe(true);
   expect(yi.applyEquip(item)).toBe(false);
   expect(yi.maxHealth).toBe(sMaxHealth + 50);
@@ -123,7 +123,7 @@ test("Unit.applyEquip uniqueGroup", () => {
   const yi = new MasterYi().init();
 
   const sMaxHealth = yi.maxHealth;
-  const item: Equip = { type: "item", name: "test", maxHealth: 50, uniqueGroup: Symbol() };
+  const item: Item = { type: "item", name: "test", maxHealth: 50, uniqueGroup: Symbol(), isFinished: false };
   expect(yi.applyEquip(item)).toBe(true);
   expect(yi.applyEquip(item)).toBe(false);
   expect(yi.maxHealth).toBe(sMaxHealth + 50);
@@ -177,5 +177,16 @@ test("Unit.applyEquip maxHealth", () => {
   const item: Equip = { type: "item", name: "test", maxHealth: 50 };
   expect(yi.applyEquip(item)).toBe(true);
   expect(yi.health).toBe(yi.maxHealth);
+});
+
+test("Unit.applyEquip run", () => {
+  const yi = new MasterYi().init();
+  const mh = yi.maxHealth;
+  const key: Keystone = { path: "Domination", subtype: "Keystone", name: "test", type: "rune", maxHealth: 50 };
+  expect(yi.applyEquip(key)).toBe(true);
+  expect(yi.maxHealth).toBe(mh + 50);
+
+  expect(yi.applyEquip(key)).toBe(false);
+  expect(yi.maxHealth).toBe(mh + 50);
 });
 

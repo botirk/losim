@@ -1,4 +1,4 @@
-import { Equip } from "../../unit/equip";
+import { Equip, Item } from "../../unit/equip";
 import { Unit } from "../../unit/unit";
 import { DamageType } from "../../unit/unitInteraction";
 
@@ -10,9 +10,10 @@ export const witsendDamage = (src: Unit) => {
   return damage;
 }
 
-export const witsend: Equip = {
+export const witsend: Item = {
   unique: true,
-  type: "finishedItem",
+  type: "item",
+  isFinished: true,
   name: "Wit's End",
   bonusAs: 55,
   mr: 50,

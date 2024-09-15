@@ -1,18 +1,18 @@
 import { Champion } from "../champions/champion/champion";
 import { Simulation } from "./simulation";
 import { SimulateDummyConfig, SimulateDummyResult, simulateDummy } from "./simulateDummy";
-import { items } from "../items/index"
+import { items } from "../items/index";
 import { bootSymbol } from "../items/boots/index";
-import { Equip } from "../unit/equip";
+import { Equip, isItem } from "../unit/equip";
 
 export interface BestNextItem<TChampion extends Champion> {
-  item: Equip,
+  equip: Equip,
   result: SimulateDummyResult<TChampion>,
 }
 
 export class BestNextItemConfig extends SimulateDummyConfig {
   width = 10;
-  itemsToLook = items;
+  equipToLook = items;
   simulatedItems: { [key: string]: boolean } = {};
   equipToString(equip: Equip[]) {
     return equip.concat().sort((a,b) => a.name.localeCompare(b.name)).reduce((result, cur) => result + " " + cur.name, "");
@@ -24,10 +24,10 @@ export class BestNextItemConfig extends SimulateDummyConfig {
     return !!this.simulatedItems[this.equipToString(equip)];
   }
   championExists(champion: Champion) {
-    return this.equipExists(champion.appliedEquips.filter((e) => e.type === "finishedItem" || e.type === "item"));
+    return this.equipExists(champion.appliedEquips);
   }
   addChampion(champion: Champion) {
-    return this.equipAddToSimulated(champion.appliedEquips.filter((e) => e.type === "finishedItem" || e.type === "item"));
+    return this.equipAddToSimulated(champion.appliedEquips);
   }
   resetSimulatedItems() {
     this.simulatedItems = {};
@@ -37,14 +37,14 @@ export class BestNextItemConfig extends SimulateDummyConfig {
 export const simulateBestNextItem = async <TChampion extends Champion>(getChampion: (sim: Simulation) => TChampion | void, config = new BestNextItemConfig()): Promise<BestNextItem<TChampion>[]> => {
   const results: BestNextItem<TChampion>[] = [];
   
-  for (const item of config.itemsToLook) {
+  for (const item of config.equipToLook) {
     const result = await simulateDummy<TChampion>((sim) => {
       const champ = getChampion(sim);
       if (champ && champ.applyEquip(item) && !config.championExists(champ)) return champ;
     }, config);
     if (result) {
       config.addChampion(result.champion1);
-      results.push({ item, result });
+      results.push({ equip: item, result });
       if (config.sustain1) {
         results.sort((a, b) => b.result.damage1 - a.result.damage1);
       } else {
@@ -57,12 +57,12 @@ export const simulateBestNextItem = async <TChampion extends Champion>(getChampi
 }
 
 export const simulateBestBoot = async <TChampion extends Champion>(getChampion: (sim: Simulation) => TChampion | void, config = new BestNextItemConfig()): Promise<BestNextItem<TChampion> | void> => {
-  config.itemsToLook = config.itemsToLook.filter((item) => item.uniqueGroup === bootSymbol && item.type === "finishedItem")
+  config.equipToLook = config.equipToLook.filter((item) => isItem(item) && item.uniqueGroup === bootSymbol && item.isFinished === true);
   return (await simulateBestNextItem(getChampion, config))[0];
 }
 
 export interface BestNextItems<TChampion extends Champion> {
-  items: Equip[],
+  equips: Equip[],
   result: SimulateDummyResult<TChampion>,
 }
 
@@ -74,17 +74,17 @@ export const simulateBestNextItems = async <TChampion extends Champion>(getChamp
     if (count > 1) {
       const nextresults = (await simulateBestNextItems((sim) => {
         const champ = getChampion(sim);
-        if (champ && champ.applyEquip(preresult.item)) return champ;
+        if (champ && champ.applyEquip(preresult.equip)) return champ;
       }, count - 1, config));
 
       if (nextresults.length === 0) {
-        results.push({ items: [ preresult.item ], result: preresult.result });
+        results.push({ equips: [ preresult.equip ], result: preresult.result });
       } else {
-        for (const nextresult of nextresults) results.push({ items: [ preresult.item, ...nextresult.items  ], result: nextresult.result });
+        for (const nextresult of nextresults) results.push({ equips: [ preresult.equip, ...nextresult.equips  ], result: nextresult.result });
       }
     // no need for recursion
     } else {
-      results.push({ items: [ preresult.item ], result: preresult.result });
+      results.push({ equips: [ preresult.equip ], result: preresult.result });
     }
   }
 

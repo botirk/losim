@@ -1,6 +1,6 @@
 import { TimedBuff } from "../../unit/buff";
 import { Unit } from "../../unit/unit";
-import { Equip } from "../../unit/equip";
+import { Item } from "../../unit/equip";
 
 export class EHexplateBuff extends TimedBuff {
   constructor(owner: Unit) {
@@ -17,10 +17,11 @@ export class EHexplateBuff extends TimedBuff {
   }
 }
 
-export const ehexplate: Equip = {
+export const ehexplate: Item = {
+  type: "item",
   unique: true,
   name: "Experimental Hexplate",
-  type: "finishedItem",
+  isFinished: true,
   bonusAd: 55,
   bonusAs: 25,
   maxHealth: 300,

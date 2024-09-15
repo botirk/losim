@@ -1,5 +1,5 @@
 import { StackBuff } from "../../unit/buff";
-import { Equip } from "../../unit/equip";
+import { Item } from "../../unit/equip";
 import { Unit } from "../../unit/unit";
 import { DamageType } from "../../unit/unitInteraction";
 
@@ -35,10 +35,11 @@ export class GuinsooPhantomBuff extends StackBuff {
   }
 }
 
-export const guinsoo: Equip = {
+export const guinsoo: Item = {
   name: "Guinsoo's Rageblade",
   unique: true,
-  type: "finishedItem",
+  type: "item",
+  isFinished: true,
   bonusAd: 30,
   bonusAs: 25,
   // TODO: AP

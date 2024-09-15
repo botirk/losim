@@ -1,5 +1,5 @@
 import { TimedSlow } from "../../unit/buff";
-import { Equip } from "../../unit/equip";
+import { Item } from "../../unit/equip";
 import { Unit } from "../../unit/unit";
 import { DamageType } from "../../unit/unitInteraction";
 
@@ -7,9 +7,10 @@ export const botrkDamage = (src: Unit, target: Unit) => {
   return (src.isMelee ? 0.12 * target.health : 0.09 * target.health);
 }
 
-export const botrk: Equip = {
+export const botrk: Item = {
   unique: true,
-  type: "finishedItem",
+  type: "item",
+  isFinished: true,
   name: "Blade of the Ruined King",
   bonusAd: 40,
   bonusAs: 25,

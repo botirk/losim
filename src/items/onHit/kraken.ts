@@ -1,5 +1,5 @@
 import { StackBuff } from "../../unit/buff";
-import { Equip } from "../../unit/equip";
+import { Item } from "../../unit/equip";
 import { Unit } from "../../unit/unit";
 import { DamageType } from "../../unit/unitInteraction";
 
@@ -40,9 +40,10 @@ export class KrakenBuff extends StackBuff {
   protected readonly maxStacks: number = KrakenBuff.maxStacks;
 }
 
-export const kraken: Equip = {
+export const kraken: Item = {
   unique: true,
-  type: "finishedItem",
+  type: "item",
+  isFinished: true,
   name: "Kraken Slayer",
   bonusAd: 40,
   bonusAs: 35,

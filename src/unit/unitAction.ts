@@ -35,12 +35,13 @@ export abstract class TimedSingletonAction {
     if (this.unit.action.current === this) this.unit.action.current = undefined;
     if (this.currentCast && this.currentCast.result === undefined) {
       this.currentCast.resolve(false);
-      await this.unit.sim.clear();
+      await this.unit.sim.waitForResolve();
     }
   }
   protected cancelInternal() {
     if (this.unit.action.current === this) this.unit.action.current = undefined;
-    if (this.castCanceledWithCooldownReset) this.finishCooldown();
+    if (this.currentCast && this.currentCast.result === undefined) this.currentCast.resolve(false);
+    this.finishCooldown();
   }
 
   private currentCast?: WheelItem;
@@ -146,16 +147,16 @@ export abstract class SelfAction extends TimedSingletonAction {
 
     if (this.isCasting) return await this.waitForCast();
 
-    this.startCast();
     this.startCooldown();
     this.onStartCast?.();
-    const result = await Promise.any([this.waitForCast(), this.castInterruptPromise() ]);
-    if (result === false || this.canCast() === false) {
-      if (this.unit.action.current === this) this.unit.action.current = undefined;
-      if (this.castCanceledWithCooldownReset) this.finishCooldown();
-      return false;
+    if (this.castTime > 0) {
+      this.startCast();
+      const result = await Promise.any([this.waitForCast(), this.castInterruptPromise() ]);
+      if (result === false) {
+        this.cancelInternal();
+        return false;
+      }
     }
-    
     this.onFinishCast?.();
     return true;
   }
@@ -177,33 +178,28 @@ export abstract class TargetAction extends TimedSingletonAction {
   protected abstract onFinishCast?: (target: Unit) =>  Promise<void>;
 
   canCast(target: Unit) {
-    return (this.unit.dead === false && (this.unit.action.current === undefined || this.unit.action.current === this) && target.targetable === true && this.level >= this.minLevel);
+    return (!this.unit.dead && (!this.isCooldown || this.waitForCooldownInCast) && (this.unit.action.current === undefined || this.unit.action.current === this) && target.targetable && this.level >= this.minLevel);
   }
 
   async cast(target: Unit) {
-    if (!this.canCast(target)) return false;
-    
     if (this.isCasting) return await this.waitForCast();
 
-    if (this.isCooldown) {
-      if (this.waitForCooldownInCast) {
-        await Promise.any([ this.waitForCooldown(), this.readinessInterruptPromise(target) ]);
-        if (!this.canCast(target)) return false;
-      } else {
-        return false;
-      }
+    if (this.isCooldown && this.waitForCooldownInCast && target.targetable  && !this.unit.dead) {
+      const result = await Promise.any([ this.waitForCooldown(), this.readinessInterruptPromise(target) ]);
+      if (!result) return false;
     }
 
-    if (this.isCasting) return await this.waitForCast();
-
-    this.startCast();
+    if (!this.canCast(target)) return false;
+    
     this.startCooldown();
     this.onStartCast?.(target);
-    const result = await Promise.any([this.waitForCast(), this.castInterruptPromise(target) ]);
-    if (result === false || this.canCast(target) === false) {
-      if (this.unit.action.current === this) this.unit.action.current = undefined;
-      if (this.castCanceledWithCooldownReset) this.finishCooldown();
-      return false;
+    if (this.castTime > 0) {
+      this.startCast();
+      const result = await Promise.any([this.waitForCast(), this.castInterruptPromise(target) ]);
+      if (result === false) {
+        this.cancelInternal();
+        return false;
+      }
     }
     this.onFinishCast?.(target);
     return true;

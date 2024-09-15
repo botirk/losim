@@ -1,4 +1,4 @@
-import { Rejection, WheelItem } from "./defered";
+import { WheelItem } from "./defered";
 
 export class Simulation { // optimized queue of actions
   private _time = 0;
@@ -40,7 +40,7 @@ export class Simulation { // optimized queue of actions
     this.insertIntoWheel(wheelItem);
     return wheelItem;
   }
-  clear() {
+  waitForResolve() {
     return this.waitFor(0);
   }
 

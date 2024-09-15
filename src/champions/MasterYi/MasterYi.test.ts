@@ -29,7 +29,7 @@ test("MasterYi E unleveled", async () => {
 });
 
 test("MasterYi E leveled 1", async () => {
-  const sim = new Simulation().start(5000);
+  const sim = new Simulation().start(15000);
   const yi1 = new MasterYi().init(sim);
   yi1.action.e.level = 1;
   const yi2 = new MasterYi().init(sim);
@@ -38,7 +38,7 @@ test("MasterYi E leveled 1", async () => {
   let capturedE = 0;
   let capturedOthers = 0;
   yi2.interaction.onTakeDamage(({ value, src }) => {
-    if (src != yi1) return;
+    if (src !== yi1) return;
     if (value === yi1.action.attack.calc(yi2)) {
       capturedAA += 1;
     } else if (value === 30) {
@@ -47,8 +47,8 @@ test("MasterYi E leveled 1", async () => {
       capturedOthers += 1;
     }
   });
-  yi1.action.e.cast();
-  await yi1.action.attack.cast(yi2);
+  expect(await yi1.action.e.cast()).toBe(true);
+  expect(await yi1.action.attack.cast(yi2)).toBe(true);
   expect(capturedAA).toBe(1);
   expect(capturedE).toBe(1);
   expect(capturedOthers).toBe(0);
@@ -60,7 +60,7 @@ test("MasterYi E Buff", async () => {
   expect(yi1.buffs).toHaveLength(0);
   yi1.action.e.level = 1;
   expect(yi1.buffs).toHaveLength(0);
-  yi1.action.e.cast();
+  await yi1.action.e.cast();
   expect(yi1.buffs[0].name).toBe(MasterYiE.ename);
   await sim.waitFor(4999);
   expect(yi1.buffs).toHaveLength(1);
@@ -103,28 +103,28 @@ test("MasterYi R levels(as)", async () => {
   const yi1 = new MasterYi().init(sim);
 
   yi1.action.r.level = 1;
-  yi1.action.r.cast();
+  await yi1.action.r.cast();
   expect(yi1.buffs).toHaveLength(1);
   expect(yi1.bonusAs).toBe(25);
 
   await yi1.action.r.waitForCooldown();
   expect(yi1.bonusAs).toBe(0);
   yi1.action.r.level = 2;
-  yi1.action.r.cast();
+  await yi1.action.r.cast();
   expect(yi1.buffs).toHaveLength(1);
   expect(yi1.bonusAs).toBe(35);
 
   await yi1.action.r.waitForCooldown();
   expect(yi1.bonusAs).toBe(0);
   yi1.action.r.level = 3;
-  yi1.action.r.cast();
+  await yi1.action.r.cast();
   expect(yi1.buffs).toHaveLength(1);
   expect(yi1.bonusAs).toBe(45);
 
   await yi1.action.r.waitForCooldown();
   expect(yi1.bonusAs).toBe(0);
   yi1.action.r.level = 5;
-  yi1.action.r.cast();
+  await yi1.action.r.cast();
   expect(yi1.buffs).toHaveLength(1);
   expect(yi1.bonusAs).toBe(45);
 

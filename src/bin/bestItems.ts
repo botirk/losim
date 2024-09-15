@@ -1,5 +1,5 @@
 import { champions } from "../champions/champions";
-import { BestNextItemConfig, simulateBestNextItems } from "../simulation/simulateEquip";
+import { BestNextItemConfig, simulateBestNextItems, simulateBestNextSetup } from "../simulation/simulateEquip";
 import { Champion } from "../champions/champion/champion";
 import { MasterYi } from "../champions/MasterYi/MasterYi";
 
@@ -81,7 +81,9 @@ const writeResult = (str: string) => {
 (async () => {
   const setup = await getSetup();
 
-  const result = await simulateBestNextItems((sim) => {
+  writeResult("Simulation in progress...\r\n");
+
+  const result = await simulateBestNextSetup((sim) => {
     const champ = new setup.Champion();
     champ.level = setup.level;
     champ.init(sim);
@@ -92,11 +94,12 @@ const writeResult = (str: string) => {
   let resultStr = "";
   if (result.length > 0) {
     for (let i = 0; i < 10 && i < result.length; i += 1) {
+      if (result[i].keystone) resultStr += `keystone: '${result[i].keystone.name}' `;
       for (const itemn in result[i].items) {
         resultStr += `item${Number(itemn) + 1}: '${result[i].items[itemn].name}' `;;
       }
-      if (setup.config.sustain1) resultStr += `damage: ${result[i].result.damage1.toFixed(2)} sustained: ${(result[i].result.ttk / 1000).toFixed(2)}\r\n`;
-      else resultStr += `timetokill: ${(result[i].result.ttk / 1000).toFixed(2)} dps: ${result[i].result.dps1.toFixed(2)}\r\n`;
+      if (setup.config.sustain1) resultStr += `damage: ${result[i].result.damage1.toFixed(2)} sustained: ${(result[i].result.ttk / 1000).toFixed(2)}\r\n\r\n`;
+      else resultStr += `timetokill: ${(result[i].result.ttk / 1000).toFixed(2)} dps: ${result[i].result.dps1.toFixed(2)}\r\n\r\n`;
     }
     
   } else {

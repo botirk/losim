@@ -5,7 +5,7 @@ import { Buff } from "./buff";
 import { AttackAction } from "./action/attack";
 import { MoveAction } from "./action/move";
 import { AnyAction, AnyCast } from "./action/action";
-import { Equip, Item, Rune, isItem, isKeystone, isRune } from "./equip";
+import { Equip, Item, Keystone, Rune, isItem, isKeystone, isRune } from "./equip";
 
 export type UnitTeam = "RED" | "BLUE" | "DEATHMATCH" | "NEUTRAL";
 
@@ -212,6 +212,9 @@ export abstract class Unit {
     this.appliedEquips.push(equip);
 
     return true;
+  }
+  get keystone(): Keystone | void {
+    return this.appliedEquips.find(e => isKeystone(e)) as Keystone;
   }
 
   // cast

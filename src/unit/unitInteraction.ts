@@ -71,11 +71,13 @@ export class UnitInteraction {
     }
   }
   calcArmorDamageReduction(e: DamageEvent) {
-    if (e.type === DamageType.PHYSIC) e.value = (1 - this.unit.armor/(100 + this.unit.armor)) * e.value;
+    const armor = this.unit.armorRelatedTo(e.src);
+    if (e.type === DamageType.PHYSIC) e.value = (1 - armor/(100 + armor)) * e.value;
     return e;
   }
   calcMrDamageReduction(e: DamageEvent) {
-    if (e.type === DamageType.MAGIC) e.value = (1 - this.unit.mr/(100 + this.unit.mr)) * e.value;
+    const mr = this.unit.mrRelatedTo(e.src);
+    if (e.type === DamageType.MAGIC) e.value = (1 - mr/(100 + mr)) * e.value;
     return e;
   }
 

@@ -1,5 +1,6 @@
 import { MasterYi } from "../champions/MasterYi/MasterYi";
 import { Simulation } from "../simulation/simulation";
+import { god } from "./unit";
 import { DamageType } from "./unitInteraction";
 
 test("UnitInteraction.takeDamage", async () => {
@@ -191,4 +192,25 @@ test("UnitInteraction.onTakeDamage 2", async () => {
 
   yi.interaction.takeDamage({ src: yi, type: DamageType.TRUE, value: 100 });
   expect(count).toBe(24);
+});
+
+test("UnitInteraction pen calculation", async () => {
+  const sim = new Simulation().start(5000);
+  const yi1 = new MasterYi().init(sim);
+  const yi2 = new MasterYi().init(sim);
+  
+  yi2.bonusArmor = 10000000;
+  yi1.bonusAd = 100 - yi1.baseAd;
+  yi1.armorPenPercent = 100;
+
+  let value = 0;
+  yi2.interaction.onTakeDamage((e) => value = e.value);
+
+  expect(await yi1.action.attack.cast(yi2)).toBe(true);
+  expect(value).toBe(100);
+
+  yi2.bonusMr = 100000;
+  yi1.mrPenPercent = 100;
+  yi2.interaction.takeDamage({ value: 50, src: yi1, type: DamageType.MAGIC });
+  expect(value).toBe(50);
 });

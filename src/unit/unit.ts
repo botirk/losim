@@ -71,9 +71,27 @@ export abstract class Unit {
   maxHealth = 0;
   mana = 0;
   maxMana = 0;
-  armor = 0;
-  mr = 0;
+  /** 1 to 100 */
+  armorPenPercent = 0;
+  /** 1 to 100 */
+  mrPenPercent = 0;
   abstract isMelee: boolean;
+
+  // defense
+  bonusArmor = 0;
+  get armor() { 
+    return this.bonusArmor;
+  }
+  armorRelatedTo(unit: Unit) {
+    return this.armor * Math.max(0, Math.min(1, 1 - (unit.armorPenPercent / 100)));
+  }
+  bonusMr = 0;
+  get mr() {
+    return this.bonusMr;
+  }
+  mrRelatedTo(unit: Unit) {
+    return this.mr * Math.max(0, Math.min(1, 1 - (unit.mrPenPercent / 100)));
+  }
 
   // team 
   team: UnitTeam = "DEATHMATCH";
@@ -167,8 +185,8 @@ export abstract class Unit {
     if (equip.bonusCritDamage) this.bonusCritDamage += equip.bonusCritDamage;
     if (equip.lifesteal) this.lifesteal += equip.lifesteal;
 
-    if (equip.armor) this.armor += equip.armor;
-    if (equip.mr) this.mr += equip.mr;
+    if (equip.armor) this.bonusArmor += equip.armor;
+    if (equip.mr) this.bonusMr += equip.mr;
 
     if (equip.maxHealth) {
       this.maxHealth += equip.maxHealth;

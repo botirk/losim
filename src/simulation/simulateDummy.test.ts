@@ -1,4 +1,4 @@
-import { simulateDummy } from "./simulateDummy";
+import { SimulateDummyConfig, simulateDummy } from "./simulateDummy";
 import { MasterYi } from "../champions/MasterYi/MasterYi";
 
 test("simulateDummy", async () => {
@@ -13,7 +13,9 @@ test("simulateDummy", async () => {
 });
 
 test("simulateDummy nunu runs away", async () => {
-  const result = await simulateDummy((sim) => new MasterYi().init(sim), true, 180*1000);
+  const conf = new SimulateDummyConfig();
+  conf.dummyRunsAway = true;
+  const result = await simulateDummy((sim) => new MasterYi().init(sim), conf);
   if (!result) {
     expect(result).toBeTruthy();
     return;

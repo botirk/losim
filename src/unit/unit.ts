@@ -170,7 +170,10 @@ export abstract class Unit {
     if (equip.armor) this.armor += equip.armor;
     if (equip.mr) this.mr += equip.mr;
 
-    if (equip.maxHealth) this.maxHealth += equip.maxHealth;
+    if (equip.maxHealth) {
+      this.maxHealth += equip.maxHealth;
+      this.health = Math.min(this.maxHealth, this.health + equip.maxHealth);
+    }
     if (equip.maxMana) this.maxMana += equip.maxMana;
 
     if (equip.bonusMs) this.bonusMs += equip.bonusMs;
@@ -214,3 +217,14 @@ export abstract class Unit {
     return this;
   }
 }
+
+class GodUnit extends Unit {
+  constructor() {
+    super("GodUnit");
+  }
+
+  action: Actions;
+  readonly isMelee: boolean = true;
+}
+
+export const god = new GodUnit().init();

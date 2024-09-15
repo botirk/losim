@@ -79,3 +79,34 @@ export class TimedSlow extends TimedBuff {
     this.slow = slow;
   }
 }
+
+export class StackBuff extends TimedBuff {
+  constructor(name: string, owner: Unit, protected readonly stackDuration: number, unique?: boolean, src?: Unit | AnyAction) {
+    super(name, owner, stackDuration, unique, src);
+    this.onGainStats();
+  }
+
+  stack() {
+    if (!this.isMaxStacks) {
+      this.onLoseStats();
+      this._stacks = Math.min(this.maxStacks, this._stacks + 1);
+      this.onGainStats();
+    }
+    this.remainingTime = this.stackDuration;
+  }
+
+
+  private _stacks = 1;
+  get stacks() { return this._stacks; }
+  protected readonly maxStacks: number = 1;
+  get isMaxStacks() { return this._stacks >= this.maxStacks; }
+
+  protected onLoseStats() {}
+  protected onGainStats() {}
+
+  fade(): void {
+    if (!this.isActive) return;
+    this.onLoseStats();
+    super.fade();
+  }
+}

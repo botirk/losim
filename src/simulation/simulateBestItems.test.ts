@@ -20,6 +20,23 @@ test("simulateBestNextItem", async () => {
   }
 });
 
+test("simulateBestNextItem sustain", async () => {
+  const config = new BestNextItemConfig();
+  config.itemsToLook = onHitItems;
+  config.sustain1 = true;
+
+  const result = await simulateBestNextItem((sim) => { 
+    const yi = new MasterYi();
+    yi.level = 9;
+    return yi.init(sim);
+  }, config);
+
+  expect(result.length).toBeGreaterThanOrEqual(1);
+  for (let i = 1; i < result.length; i += 1) {
+    expect(result[i-1].result.damage1).toBeGreaterThan(result[i].result.damage1);
+  }
+});
+
 test("simulateBestBoot", async () => {
   const result = await simulateBestBoot((sim) => { 
     const yi = new MasterYi();

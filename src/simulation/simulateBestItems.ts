@@ -1,6 +1,6 @@
 import { Champion } from "../champions/champion/champion";
-import { Simulation } from "./simulation";
-import { SimulateDummyResult, simulateDummy } from "./simulateDummy";
+import { Simulate1v1Config, Simulation } from "./simulation";
+import { SimulateDummyConfig, SimulateDummyResult, simulateDummy } from "./simulateDummy";
 import { items } from "../items/items"
 import { bootSymbol } from "../items/boots";
 import { Equip } from "../unit/equip";
@@ -10,10 +10,8 @@ export interface BestNextItem<TChampion extends Champion> {
   result: SimulateDummyResult<TChampion>,
 }
 
-export class BestNextItemConfig {
-  dummyRunsAway = false; 
-  itemsToLook = items; 
-  maxResults = 10;
+export class BestNextItemConfig extends SimulateDummyConfig {
+  itemsToLook = items;
   simulatedItems: { [key: string]: boolean } = {};
   equipToString(equip: Equip[]) {
     return equip.concat().sort((a,b) => a.name.localeCompare(b.name)).reduce((result, cur) => result + " " + cur.name, "");
@@ -35,7 +33,6 @@ export class BestNextItemConfig {
   }
 }
 
-
 export const simulateBestNextItem = async <TChampion extends Champion>(getChampion: (sim: Simulation) => TChampion | void, config = new BestNextItemConfig()): Promise<BestNextItem<TChampion>[]> => {
   const results: BestNextItem<TChampion>[] = [];
   
@@ -43,12 +40,15 @@ export const simulateBestNextItem = async <TChampion extends Champion>(getChampi
     const result = await simulateDummy<TChampion>((sim) => {
       const champ = getChampion(sim);
       if (champ && champ.applyEquip(item) && !config.championExists(champ)) return champ;
-    }, config.dummyRunsAway);
+    }, config);
     if (result) {
       config.addChampion(result.champion1);
       results.push({ item, result });
-      results.sort((a, b) => a.result.ttk - b.result.ttk);
-      results.splice(config.maxResults);
+      if (config.sustain1) {
+        results.sort((a, b) => b.result.damage1 - a.result.damage1);
+      } else {
+        results.sort((a, b) => a.result.ttk - b.result.ttk);
+      }
     }
   }
 
@@ -66,7 +66,7 @@ export interface BestNextItems<TChampion extends Champion> {
 }
 
 export const simulateBestNextItems = async <TChampion extends Champion>(getChampion: (sim: Simulation) => TChampion | void, count: number, config = new BestNextItemConfig()): Promise<BestNextItems<TChampion>[]> => {
-  const result: BestNextItems<TChampion>[] = [];
+  const results: BestNextItems<TChampion>[] = [];
   
   for (const preresult of await simulateBestNextItem(getChampion, config)) {
     // needs recursion
@@ -77,16 +77,20 @@ export const simulateBestNextItems = async <TChampion extends Champion>(getChamp
       }, count - 1, config);
 
       if (nextresults.length === 0) {
-        result.push({ items: [ preresult.item ], result: preresult.result });
+        results.push({ items: [ preresult.item ], result: preresult.result });
       } else {
-        for (const nextresult of nextresults) result.push({ items: [ preresult.item, ...nextresult.items  ], result: nextresult.result });
+        for (const nextresult of nextresults) results.push({ items: [ preresult.item, ...nextresult.items  ], result: nextresult.result });
       }
     // no need for recursion
     } else {
-      result.push({ items: [ preresult.item ], result: preresult.result });
+      results.push({ items: [ preresult.item ], result: preresult.result });
     }
   }
 
-  result.sort((a, b) => a.result.ttk - b.result.ttk).splice(config.maxResults);
-  return result;
+  if (config.sustain1) {
+    results.sort((a, b) => b.result.damage1 - a.result.damage1);
+  } else {
+    results.sort((a, b) => a.result.ttk - b.result.ttk);
+  }
+  return results;
 }

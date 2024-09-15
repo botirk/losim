@@ -2,6 +2,20 @@ import { MasterYi } from "../../champions/MasterYi/MasterYi";
 import { Simulation } from "../../simulation/simulation";
 import { Action, AnyAction, AnyCast, EnemyTargetAction } from "./action";
 
+export const selfActionOnCast = (name: string, getAction: (sim: Simulation) => Action<void, AnyCast>) => {
+  test(`${name} selfActionOnCast`, async () => {
+    const sim = new Simulation().start(5000);
+    const action = getAction(sim);
+    action.level = action.minLevel;
+    
+    let proc = 0;
+    action.onCast(() => proc += 1);
+    
+    expect(await action.cast()).toBe(true);
+    expect(proc).toBe(1);
+  });
+}
+
 export const actionCdrTest = (name: string, getAction: (sim: Simulation) => AnyAction) => {
   test(`${name} actionCdrTest`, async () => {
     const sim = new Simulation().start(5000);
@@ -10,6 +24,18 @@ export const actionCdrTest = (name: string, getAction: (sim: Simulation) => AnyA
 
     const cd = action.cooldownTime;
     action.owner.abilityHaste += 10;
+    expect(action.cooldownTime).toBeLessThan(cd);
+  });
+}
+
+export const actionAbilityHasteTest = (name: string, getAction: (sim: Simulation) => AnyAction) => {
+  test(`${name} actionAbilityHasteTest`, async () => {
+    const sim = new Simulation().start(5000);
+    const action = getAction(sim);
+    action.level = action.minLevel;
+
+    const cd = action.cooldownTime;
+    action.abilityHaste = 100;
     expect(action.cooldownTime).toBeLessThan(cd);
   });
 }

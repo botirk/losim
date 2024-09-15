@@ -46,7 +46,7 @@ export class MasterYiE extends Action<void, MasterYiECast> {
   }
   get cooldownTime(): number {
     if (this.level === 0) return 0;
-    return 14000 * this.owner.abilityHasteModifier;
+    return 14000 * this.owner.abilityHasteModifier * this.abilityHasteModifier;
   }
   
   async cast() {

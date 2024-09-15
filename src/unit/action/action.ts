@@ -47,6 +47,7 @@ export abstract class Action<TOption extends any, TCast> {
   // cooldown & castTime
   abstract get castTime(): number;
   abstract get cooldownTime(): number;
+  
 
   // cooldown
   private cooldown?: WheelItem;
@@ -71,6 +72,10 @@ export abstract class Action<TOption extends any, TCast> {
   finishCooldown() {
     this.cooldown?.resolve(true);
     this.cooldown = undefined;
+  }
+  abilityHaste = 0;
+  get abilityHasteModifier() {
+    return 100 / (100 + this.abilityHaste);
   }
   // cast
   castable(option: TOption): boolean {
@@ -154,6 +159,7 @@ export abstract class Cast<TOption extends any, TAction extends Action<TOption, 
       this.action.startCooldown();
       this.onStartCast();
       this.onFinishCast();
+      this.action.procOnCast(this.option);
       return true;
     } else {
       this.wheel = this.action.owner.sim.waitFor(this.action.castTime);

@@ -2,7 +2,9 @@ import { MasterYi } from "./MasterYi";
 import { Simulation } from "../../simulation/simulation";
 import { DamageType } from "../../unit/unitInteraction";
 import { MasterYiQ, MasterYiQMark } from "./MasterYiQ";
-import { actionCdrTest, enemyActionLevelTest, enemyActionManaTest, enemyActionTargetableTest, enemyActionTeamTest } from "../../unit/action/actionTest";
+import { actionAbilityHasteTest, actionCdrTest, enemyActionLevelTest, enemyActionManaTest, enemyActionTargetableTest, enemyActionTeamTest } from "../../unit/action/actionTest";
+
+actionAbilityHasteTest("MasterYi W", (sim) => new MasterYi().init(sim).action.q);
 
 actionCdrTest("MasterYi Q", (sim) => new MasterYi().init(sim).action.q);
 

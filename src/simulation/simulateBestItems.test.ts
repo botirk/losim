@@ -36,8 +36,7 @@ test("simulateBestBoot", async () => {
 
 test("simulateBestNextItems", async () => {
   const config = new BestNextItemConfig();
-  // config.itemsToLook = onHitItems;
-
+  config.itemsToLook = onHitItems;
 
   const result1 = await simulateBestNextItems((sim) => { 
     const yi = new MasterYi();

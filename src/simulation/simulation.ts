@@ -1,18 +1,9 @@
+import { Defered, Rejection } from "../defered";
 
-export enum WheelItemRejection {
-  SimulationStopped = 0,
-}
-
-export class WheelItem extends Promise<void> {
+export class WheelItem extends Defered {
   constructor(internal = (i1: any, i2: any) => { return undefined; }, readonly time: number) {
-    let resolve: (value: void) => void;
-    let reject: (e: WheelItemRejection) => void;
-    super((resolveIn, rejectIn) => { resolve = resolveIn; reject = rejectIn; return internal(resolve, reject); });
-    this.resolve = resolve;
-    this.reject = reject;
+    super(internal);
   }
-  resolve: (value: void) => void;
-  reject: (e: WheelItemRejection) => void;
 }
 
 export class Simulation { // optimized queue of actions
@@ -33,7 +24,7 @@ export class Simulation { // optimized queue of actions
     this.wheel.splice(start, 0, wheelItem);
   }
 
-  waitFor(time: number): Promise<void> {
+  waitFor(time: number): Defered {
     const wheelItem = new WheelItem(undefined, this.time + time);
     this.insertIntoWheel(wheelItem);
     return wheelItem;
@@ -44,7 +35,7 @@ export class Simulation { // optimized queue of actions
   stop() { 
     this._isStopped = true;
     for (const wheelItem of this.wheel) {
-      wheelItem.reject(WheelItemRejection.SimulationStopped);
+      wheelItem.reject(Rejection.SimulationStopped);
     }
   }
 

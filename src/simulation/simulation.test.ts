@@ -1,5 +1,7 @@
+import { MasterYi, MasterYiAction } from "../champions/MasterYi/MasterYi";
+import { Nunu } from "../champions/Nunu/Nunu";
 import { WheelItem } from "./defered";
-import { Simulation } from "./simulation";
+import { Simulation, simulate1v1 } from "./simulation";
 
 test("Simulation.time", () => {
   const sim = new Simulation();
@@ -92,6 +94,35 @@ test("Simulation.start", async () => {
   expect(sim.wheel[0].time).toBe(25000);
 
   expect(sim.waitFor(25001)).resolves.toBe(false);
+});
+
+test("Simulate1v1", async () => {
+  const result = await simulate1v1((sim) => {
+    const yi = new MasterYi().init(sim);
+    const nunu = new Nunu().init(sim);
+    const logic = (champ, enemy) => champ.killDummy(enemy);
+    return [yi, logic, nunu, logic];
+  });
+  if (!result) {
+    expect(result).toBeTruthy();
+    return;
+  }
+  expect(result.winner).toBe(result.champion1);
+  expect(result.dps1).toBeGreaterThan(25);
+  expect(result.dps1).toBeLessThan(100);
+
+  expect(result.dps2).toBeGreaterThan(15);
+  expect(result.dps2).toBeLessThan(70);
+
+  expect(result.distance).toBeLessThan(500);
+});
+
+test("Simulate1v1 break", async () => {
+  const result = await simulate1v1((sim) => {
+    return undefined;
+  });
+  
+  expect(result).toBe(undefined);
 });
 
 

@@ -1,6 +1,8 @@
 import { WheelItem } from "./defered";
 
 export class Simulation { // optimized queue of actions
+  tickTime = 33;
+
   private _time = 0;
   get time() { return this._time; }
 

@@ -2,7 +2,7 @@ import { Unit } from "../../unit/unit";
 import { Action, SelfCast } from "../../unit/action";
 import { DamageType } from "../../unit/unitInteraction";
 
-export class MasterYiWCast extends SelfCast {
+export class MasterYiWCast extends SelfCast<MasterYiW> {
   protected async onStartCast() {
     this.action.owner.action.attack.finishCooldown();
     const cancelDR = this.action.owner.interaction.percentDamageReduction((e) => {
@@ -23,7 +23,7 @@ export class MasterYiWCast extends SelfCast {
   }
 }
 
-export class MasterYiW extends Action<void> {
+export class MasterYiW extends Action<void, MasterYiWCast> {
   constructor(unit: Unit) {
     super(MasterYiW.wname, unit);
   }

@@ -1,9 +1,9 @@
 import { Unit } from "./unit";
-import { Action, EnemyTargetAction, TargetCast } from "./action";
+import { EnemyTargetAction, TargetCast } from "./action";
 import { DamageType } from "./unitInteraction";
 import seedrandom from "seedrandom";
 
-export class AttackAction extends EnemyTargetAction {
+export class AttackAction extends EnemyTargetAction<AttackCast> {
   constructor(owner: Unit) {
     super("Attack", owner);
     owner.onBonusASChange(() => {
@@ -35,8 +35,8 @@ export class AttackAction extends EnemyTargetAction {
   }
 }
 
-export class AttackCast extends TargetCast {
-  constructor(action: Action<Unit>, option: Unit, private readonly random: seedrandom.PRNG) {
+export class AttackCast extends TargetCast<AttackAction> {
+  constructor(action: AttackAction, option: Unit, private readonly random: seedrandom.PRNG) {
     super(action, option);
   }
 

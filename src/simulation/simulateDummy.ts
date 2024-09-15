@@ -4,24 +4,28 @@ import { boot, bootSymbol } from "../items/boots/index";
 import { isItem } from "../unit/equip";
 import { Simulate1v1Config, Simulate1v1Result, Simulation, simulate1v1WithCrits } from "./simulation";
 
-export type SimulateDummyResult<TChampion extends Champion> = Simulate1v1Result<TChampion, Nunu>;
+export type SimulateDummyResult<TChampion1 extends Champion> = Simulate1v1Result<TChampion1, Nunu>;
 
-export class SimulateDummyConfig extends Simulate1v1Config {
+export class SimulateDummyConfig<TChampion1 extends Champion> extends Simulate1v1Config<TChampion1, Nunu> {
   dummyRunsAway = true;
 }
 
-export const simulateDummy = <TChampion extends Champion>(getChampion: (sim: Simulation) => TChampion | void, config = new SimulateDummyConfig()): Promise<SimulateDummyResult<TChampion> | void> => {
-  return simulate1v1WithCrits((sim) => {
-    const champion = getChampion(sim);
+export const simulateDummy = <TChampion1 extends Champion>(config = new SimulateDummyConfig<TChampion1>()): Promise<SimulateDummyResult<TChampion1> | void> => {
+  config.logic1 = (c1, c2) => {
+    return c1.killDummy(c2);
+  }
+  config.champ2 = (sim) => {
+    const champion = config.champ1(sim);
     if (!champion) return;
-    const championLogic = (champion: TChampion, nunu: Nunu) => champion.killDummy(nunu);
 
     const nunu = new Nunu();
     if (champion.appliedEquips.some((e) => isItem(e) && e.uniqueGroup === bootSymbol)) nunu.applyEquip(boot);
     nunu.level = champion.level;
     nunu.init(sim);
-    const nunuLogic = (nunu: Nunu, champion: TChampion) => { if (config.dummyRunsAway) return nunu.runAwayFromEnemyAsDummy(champion); }
-
-    return [champion, championLogic, nunu, nunuLogic];
-  }, config);
+    return nunu;
+  }
+  config.logic2 = (c1, c2) => {
+    if (config.dummyRunsAway) return c1.runAwayFromEnemyAsDummy(c2);
+  }
+  return simulate1v1WithCrits<TChampion1, Nunu>(config);
 }

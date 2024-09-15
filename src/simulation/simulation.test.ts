@@ -97,12 +97,7 @@ test("Simulation.start", async () => {
 });
 
 test("Simulate1v1", async () => {
-  const result = await simulate1v1((sim) => {
-    const yi = new MasterYi().init(sim);
-    const nunu = new Nunu().init(sim);
-    const logic = (champ, enemy) => champ.killDummy(enemy);
-    return [yi, logic, nunu, logic];
-  });
+  const result = await simulate1v1();
   if (!result) {
     expect(result).toBeTruthy();
     return;
@@ -118,9 +113,9 @@ test("Simulate1v1", async () => {
 });
 
 test("Simulate1v1 break", async () => {
-  const result = await simulate1v1((sim) => {
-    return undefined;
-  });
+  const config = new Simulate1v1Config();
+  config.champ1 = () => undefined;
+  const result = await simulate1v1(config);
   
   expect(result).toBe(undefined);
 });
@@ -128,12 +123,7 @@ test("Simulate1v1 break", async () => {
 test("Simulate1v1 undying nunu", async () => {
   const config = new Simulate1v1Config();
   config.undying2 = true;
-  const result = await simulate1v1((sim) => {
-    const yi = new MasterYi().init(sim);
-    const nunu = new Nunu().init(sim);
-    const logic = (champ, enemy) => champ.killDummy(enemy);
-    return [yi, logic, nunu, logic];
-  }, config);
+  const result = await simulate1v1(config);
   if (!result) {
     expect(result).toBeTruthy();
     return;
@@ -144,12 +134,7 @@ test("Simulate1v1 undying nunu", async () => {
 test("Simulate1v1 undying nunu 2", async () => {
   const config = new Simulate1v1Config();
   config.undying1 = true;
-  const result = await simulate1v1((sim) => {
-    const yi = new MasterYi().init(sim);
-    const nunu = new Nunu().init(sim);
-    const logic = (champ, enemy) => champ.killDummy(enemy);
-    return [nunu, logic, yi, logic];
-  }, config);
+  const result = await simulate1v1(config);
   if (!result) {
     expect(result).toBeTruthy();
     return;
@@ -160,12 +145,7 @@ test("Simulate1v1 undying nunu 2", async () => {
 test("Simulate1v1 sustain 1", async () => {
   const config = new Simulate1v1Config();
   config.sustain1 = true;
-  const result = await simulate1v1((sim) => {
-    const yi = new MasterYi().init(sim);
-    const nunu = new Nunu().init(sim);
-    const logic = (champ, enemy) => champ.killDummy(enemy);
-    return [yi, logic, nunu, logic];
-  }, config);
+  const result = await simulate1v1(config);
   if (!result) {
     expect(result).toBeTruthy();
     return;
@@ -176,12 +156,10 @@ test("Simulate1v1 sustain 1", async () => {
 test("Simulate1v1 sustain 2", async () => {
   const config = new Simulate1v1Config();
   config.sustain2 = true;
-  const result = await simulate1v1((sim) => {
-    const yi = new MasterYi().init(sim);
-    const nunu = new Nunu().init(sim);
-    const logic = (champ, enemy) => champ.killDummy(enemy);
-    return [nunu, logic, yi, logic];
-  }, config);
+  const temp = config.champ1;
+  config.champ1 = config.champ2;
+  config.champ2 = temp;
+  const result = await simulate1v1(config);
   if (!result) {
     expect(result).toBeTruthy();
     return;

@@ -32,6 +32,9 @@ export abstract class Unit {
   bonusCritDamage = 0;
 
   // move
+  distance(unit: Unit) {
+    return Math.abs(this.pos - unit.pos);
+  }
   pos = 0;
   baseMs = 0;
   get ms() {
@@ -39,6 +42,7 @@ export abstract class Unit {
   }
 
   // ad
+  attackRange = 175;
   baseAd = 0;
   bonusAd = 0;
   get ad() {

@@ -1,6 +1,6 @@
 import seedrandom from "seedrandom";
 import { Unit } from "../../unit/unit";
-import { Action, TargetCast } from "../../unit/action";
+import { Action, EnemyTargetAction, TargetCast } from "../../unit/action";
 import { Buff } from "../../unit/buff";
 import { DamageType } from "../../unit/unitInteraction";
 
@@ -44,6 +44,8 @@ export class MasterYiQCast extends TargetCast<MasterYiQ> {
         break;
       }
     }
+    // appear near target
+    if (this.action.owner.pos <= this.option.pos) this.action.owner.pos = this.option.pos - 75; else this.action.owner.pos = this.option.pos + 75;
     // final wait become targetable
     this.action.owner.targetable = true;
     // proc wait - when alive
@@ -53,7 +55,7 @@ export class MasterYiQCast extends TargetCast<MasterYiQ> {
   }
 }
 
-export class MasterYiQ extends Action<Unit, MasterYiQCast> {
+export class MasterYiQ extends EnemyTargetAction<MasterYiQCast> {
   constructor(unit: Unit) {
     super(MasterYiQ.qname, unit);
     unit.action.attack.onCast(() => this.remainingCooldown -= 1000);
@@ -64,6 +66,9 @@ export class MasterYiQ extends Action<Unit, MasterYiQCast> {
   readonly minLevel: number = 1;
   readonly isCancelableByUser: boolean = false;
   readonly isCooldownFinishedOnInterrupt: boolean = false;
+  get maxRange(): number {
+    return 600;
+  }
 
   get castTime(): number {
     if (this.level === 0) return 0;

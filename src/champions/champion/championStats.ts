@@ -7,6 +7,7 @@ export interface ChampionStats {
 
   baseAd: number,
   adGrowth: number,
+  attackRange: number,
 
   baseArmor: number,
   armorGrowth: number,

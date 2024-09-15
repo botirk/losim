@@ -1,6 +1,6 @@
 import { MasterYi } from "../champions/MasterYi/MasterYi";
 import { Simulation } from "../simulation/simulation";
-import { Equip } from "../items/equip";
+import { Equip } from "./equip";
 
 test("Unit.onBonusASChange", () => {
   const yi = new MasterYi().init();

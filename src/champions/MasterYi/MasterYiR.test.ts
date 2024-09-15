@@ -2,7 +2,9 @@ import { MasterYi } from "./MasterYi";
 import { Simulation } from "../../simulation/simulation";
 import { MasterYiR, MasterYiRBuff } from "./MasterYiR";
 import { DamageType } from "../../unit/unitInteraction";
-import { selfActionLevelTest, selfActionManaTest } from "../../unit/action/actionTest";
+import { actionCdrTest, selfActionLevelTest, selfActionManaTest } from "../../unit/action/actionTest";
+
+actionCdrTest("MasterYi R", (sim) => new MasterYi().init(sim).action.r);
 
 selfActionLevelTest(MasterYiR.rname, (sim) => new MasterYi().init(sim).action.r);
 

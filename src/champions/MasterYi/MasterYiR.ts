@@ -59,7 +59,7 @@ export class MasterYiR extends Action<void, MasterYiRCast> {
   }
   get cooldownTime(): number {
     if (this.level === 0) return 0;
-    return 85000;
+    return 85000 * this.owner.abilityHasteModifier;
   }
   async cast() {
     return await new MasterYiRCast(this).init();

@@ -25,11 +25,16 @@ export class MasterYiECast extends SelfCast<MasterYiE> {
 }
 
 export class MasterYiE extends Action<void, MasterYiECast> {
+  static readonly ename = "Wuju Style";
+  static damage(src: Unit, level: number) {
+    if (level <= 0) return 0;
+    return 25+level*5 + src.bonusAd * 0.3;
+  }
+  
   constructor(unit: Unit) {
     super(MasterYiE.ename, unit);
   }
   
-  static readonly ename = "Wuju Style";
   readonly maxLevel: number = 5;
   readonly minLevel: number = 1;
   readonly isCancelableByUser: boolean = false;
@@ -41,12 +46,9 @@ export class MasterYiE extends Action<void, MasterYiECast> {
   }
   get cooldownTime(): number {
     if (this.level === 0) return 0;
-    return 14000;
+    return 14000 * this.owner.abilityHasteModifier;
   }
-  static damage(src: Unit, level: number) {
-    if (level <= 0) return 0;
-    return 25+level*5 + src.bonusAd * 0.3;
-  }
+  
   async cast() {
     return new MasterYiECast(this).init();
   }

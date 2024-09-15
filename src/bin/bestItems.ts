@@ -1,5 +1,5 @@
 import { champions } from "../champions/champions";
-import { BestNextItemConfig, simulateBestNextItems } from "../simulation/simulateBestItems";
+import { BestNextItemConfig, simulateBestNextItems } from "../simulation/simulateEquip";
 import { Champion } from "../champions/champion/champion";
 import { MasterYi } from "../champions/MasterYi/MasterYi";
 
@@ -8,7 +8,7 @@ interface SimulateBestItemsSetup {
   level: number,
   itemsCount: number,
   withBoots: boolean,
-  config: BestNextItemConfig,
+  config: BestNextItemConfig<Champion>,
 }
 
 const askQuestion = async <T>(question: string, converter: (answer: string) => T): Promise<T> => {
@@ -59,7 +59,7 @@ const getSetup = async (): Promise<SimulateBestItemsSetup> => {
   config.sustain1 = await askQuestion<boolean>("Should test sustain (y/n) y default", (a) => a[0] === "n" ? false : true);
   if (config.sustain1) config.undying2 = true;
 
-  config.dummyRunsAway = await askQuestion<boolean>("Should dummy run away (y/n) n default", (a) => a[0] === "y" ? true : false);
+  config.dummyRunsAway = await askQuestion<boolean>("Should dummy run away (y/n) y default", (a) => a[0] === "n" ? false : true);
 
   return {
     level,
@@ -92,8 +92,8 @@ const writeResult = (str: string) => {
   let resultStr = "";
   if (result.length > 0) {
     for (let i = 0; i < 10 && i < result.length; i += 1) {
-      for (const itemn in result[i].equips) {
-        resultStr += `item${Number(itemn) + 1}: '${result[i].equips[itemn].name}' `;;
+      for (const itemn in result[i].items) {
+        resultStr += `item${Number(itemn) + 1}: '${result[i].items[itemn].name}' `;;
       }
       if (setup.config.sustain1) resultStr += `damage: ${result[i].result.damage1.toFixed(2)} sustained: ${(result[i].result.ttk / 1000).toFixed(2)}\r\n`;
       else resultStr += `timetokill: ${(result[i].result.ttk / 1000).toFixed(2)} dps: ${result[i].result.dps1.toFixed(2)}\r\n`;

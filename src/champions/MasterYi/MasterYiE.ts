@@ -9,8 +9,8 @@ export class MasterYiEBuff extends TimedBuff {
     level = Math.max(0, Math.min(5, level));
     super(MasterYiE.ename, unit, level ? 5000 : 0);
     if (!level) return;
-    this.removeOnHit = unit.action.attack.onHitUnit((target) => {
-      target.interaction.takeDamage({ value: 25+level*5, src: unit, type: DamageType.TRUE });
+    this.removeOnHit = unit.action.attack.onHitUnit((target, m) => {
+      target.interaction.takeDamage({ value: MasterYiE.damage(unit, level) * m, src: unit, type: DamageType.TRUE });
     });
   }
   fade(): void {
@@ -42,6 +42,10 @@ export class MasterYiE extends Action<void> {
   get cooldownTime(): number {
     if (this.level === 0) return 0;
     return 14000;
+  }
+  static damage(src: Unit, level: number) {
+    if (level <= 0) return 0;
+    return 25+level*5 + src.bonusAd * 0.3;
   }
   async cast() {
     return new MasterYiECast(this).init();

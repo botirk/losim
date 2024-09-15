@@ -136,3 +136,46 @@ test("MasterYi src death", async () => {
   await sim.waitFor(3000);
   expect(hits).toBe(0);
 });
+
+test("MasterYi Q crit", async () => {
+  const sim = new Simulation().start(20000);
+  const yi1 = new MasterYi().init(sim);
+  const yi2 = new MasterYi().init(sim);
+  yi1.action.q.level = 1;
+  
+  let captured1 = 0;
+  const cancel1 = yi2.interaction.onTakeDamage(({ value, src, type }) => {
+    if (src !== yi1 || type !== DamageType.PHYSIC) return;
+    captured1 += value;
+  });
+  expect(await yi1.action.q.cast(yi2)).toBe(true);
+  expect(captured1).toBeGreaterThan(50);
+  cancel1();
+
+  yi1.crit = 100;
+
+  let captured2 = 0;
+  const cancel2 = yi2.interaction.onTakeDamage(({ value, src, type }) => {
+    if (src !== yi1 || type !== DamageType.PHYSIC) return;
+    captured2 += value;
+  });
+  yi1.action.q.finishCooldown();
+  expect(await yi1.action.q.cast(yi2)).toBe(true);
+  expect(captured2).toBeGreaterThan(50);
+  cancel2();
+
+  expect(captured2).toBeGreaterThan(captured1);
+});
+
+test("MasterYi Q aa cooldown reduction", async () => {
+  const sim = new Simulation().start(20000);
+  const yi1 = new MasterYi().init(sim);
+  const yi2 = new MasterYi().init(sim);
+  yi1.action.q.level = 1;
+  
+  await yi1.action.q.cast(yi2);
+  const cd = yi1.action.q.remainingCooldown;
+  await yi1.action.attack.cast(yi2);
+
+  expect(yi1.action.q.remainingCooldown).toBe(cd - yi1.action.attack.castTime - 1000);
+});

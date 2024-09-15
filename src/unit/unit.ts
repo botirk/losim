@@ -23,10 +23,17 @@ export abstract class Unit {
 
   health = 0;
   maxHealth = 0;
-  ad = 0;
   attackAnimation = 0.4;
   armor = 0;
-  
+  crit = 0;
+  bonusCritDamage = 0;
+
+  // ad
+  baseAd = 0;
+  bonusAd = 0;
+  get ad() {
+    return this.baseAd + this.bonusAd;
+  }
   
   // attack speed related
   baseAs = 0;

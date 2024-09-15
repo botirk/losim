@@ -27,5 +27,4 @@ export interface Equip {
   abilityHaste?: number;
 
   apply?: (unit: Unit) => boolean | void,
-  test?: () => void,
 }

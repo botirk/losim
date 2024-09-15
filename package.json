@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "description": "rpg/moba simulator",
   "scripts": {
-    "test": "jest",
-    "testCurrent": "jest src/unit/buff.test.ts",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "testCurrent": "node --experimental-vm-modules node_modules/jest/bin/jest.js src/bin/bestItemsNode.test.ts",
     "bestItems": "tsx src/bin/bestItems.ts",
     "dev": "parcel src/bin/bestItems.html",
     "build": "parcel build src/bin/bestItems.html"
@@ -14,7 +14,8 @@
   "dependencies": {
     "seedrandom": "^3.0.5",
     "setimmediate": "^1.0.5",
-    "tsx": "^4.7.0"
+    "tsx": "^4.7.0",
+    "zx": "^7.2.3"
   },
   "devDependencies": {
     "@types/jest": "^29.5.11",

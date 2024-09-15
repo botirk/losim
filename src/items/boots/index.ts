@@ -1,4 +1,4 @@
-import { Equip } from "../unit/equip";
+import { Equip } from "../../unit/equip";
 
 export const bootSymbol = Symbol("boots");
 

@@ -1,5 +1,5 @@
-import { MasterYi } from "../champions/MasterYi/MasterYi";
-import { boots } from "./boots";
+import { MasterYi } from "../../champions/MasterYi/MasterYi";
+import { boots } from ".";
 
 test("boots", async () => {
   for (const boot of boots) {

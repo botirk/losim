@@ -137,3 +137,17 @@ test("Unit.applyEquip apply", () => {
   expect(yi.applyEquip(item2)).toBe(true);
   expect(yi.maxHealth).toBe(sMaxHealth + 50);
 });
+
+test("Unit.team", () => {
+  const sim = new Simulation().start(12000);
+  const yi1 = new MasterYi().init(sim, "RED", 5);
+  const yi2 = new MasterYi();
+
+  yi2.level = 5;
+  yi2.team = "RED";
+  yi2.init(sim);
+
+  expect(yi1.team).toBe("RED");
+  expect(yi1.level).toBe(5);
+});
+

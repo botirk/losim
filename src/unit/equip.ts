@@ -9,6 +9,7 @@ export interface Equip {
   bonusAs?: number,
   bonusAd?: number,
   crit?: number,
+  /** from 0 to 100 */
   bonusCritDamage?: number,
   lifesteal?: number,
 

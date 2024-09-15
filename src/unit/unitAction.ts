@@ -1,5 +1,6 @@
 import { Defered, Rejection, WheelItem } from "../simulation/defered";
 import { Unit } from "./unit";
+import { DamageType } from "./unitInteraction";
 
 export abstract class TimedSingletonAction {
   constructor(public readonly name: string, protected unit: Unit) {
@@ -111,24 +112,31 @@ export class Attack extends TimedSingletonAction {
 
   async cast(target: Unit) {
     if (target.dead) return;
-    const ownerDeath = this.unit.interaction.onDeath(), targetDeath = target.interaction.onDeath();
+    const ownerDeathCancel = this.unit.interaction.onDeath(() => { this.cancelByDeath(); interuptPromise.reject(Rejection.UnitDeath); });
+    const targetDeathCancel = target.interaction.onDeath(() => { this.cancelByTargetDeath(); interuptPromise.reject(Rejection.TargetDeath); });
+    const interuptPromise = new Defered();
+    interuptPromise.catch(() => {});
     try {
-      if (this.isCooldown) await Promise.any([this.waitForCooldown(), targetDeath, ownerDeath]);
+      if (this.isCooldown) await Promise.any([ this.waitForCooldown(), interuptPromise ]);
       if (this.isCasting) {
         await this.waitForCast();
       } else {
-        this.startCast((1 / this.unit.as) * this.unit.attackAnimation * 1000, [[ownerDeath, Rejection.UnitDeath], [targetDeath, Rejection.TargetDeath]]);
+        this.startCast((1 / this.unit.as) * this.unit.attackAnimation * 1000);
         await this.waitForCast();
-        target.interaction.takeDamage(this.unit.calcRawPhysicHit(this.unit.ad), this.unit);
+        target.interaction.takeDamage({ value: this.unit.ad, src: this.unit, type: DamageType.PHYSIC });
         this.procOnHitUnit(target);
         this.startCooldown((1 / this.unit.as) * (1 - this.unit.attackAnimation) * 1000);
       }
     } catch {
 
     } finally {
-      targetDeath.reject(Rejection.RemoveEventListener);
-      ownerDeath.reject(Rejection.RemoveEventListener);
+      ownerDeathCancel();
+      targetDeathCancel();
     }
+  }
+
+  calc(target: Unit) {
+    return target.interaction.calcPercentDamageReduction({ value: this.unit.ad, src: this.unit, type: DamageType.PHYSIC }).value;
   }
 }
 

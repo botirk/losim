@@ -1,5 +1,6 @@
 import { MasterYi, MasterYiE, MasterYiPassiveBuff, MasterYiR } from "./MasterYi";
 import { Simulation } from "../../simulation/simulation";
+import { DamageType } from "../../unit/unitInteraction";
 
 test("MasterYi E unleveled", async () => {
   const sim = new Simulation().start(5000);
@@ -11,9 +12,9 @@ test("MasterYi E unleveled", async () => {
 
   let capturedAA = 0;
   let capturedOthers = 0;
-  yi2.interaction.onTakeDamage((dmg, src) => {
+  yi2.interaction.onTakeDamage(({ value, src }) => {
     if (src != yi1) return;
-    if (dmg === yi2.calcRawPhysicHit(yi1.ad)) {
+    if (value === yi1.action.attack.calc(yi2)) {
       capturedAA += 1;
     } else {
       capturedOthers += 1;
@@ -36,11 +37,11 @@ test("MasterYi E leveled 1", async () => {
   let capturedAA = 0;
   let capturedE = 0;
   let capturedOthers = 0;
-  yi2.interaction.onTakeDamage((dmg, src) => {
+  yi2.interaction.onTakeDamage(({ value, src }) => {
     if (src != yi1) return;
-    if (dmg === yi2.calcRawPhysicHit(yi1.ad)) {
+    if (value === yi1.action.attack.calc(yi2)) {
       capturedAA += 1;
-    } else if (dmg === 30) {
+    } else if (value === 30) {
       capturedE += 1;
     } else {
       capturedOthers += 1;
@@ -173,13 +174,13 @@ test("MasterYi R Takedown", async () => {
   await sim.waitFor(10001);
   yi1.action.r.cast();
   expect(yi1.buffsNamed(MasterYiR.rname)[0].remainingTime).toBe(7000);
-  yi2.interaction.takeDamage(Infinity, yi2);
+  yi2.interaction.takeDamage({ value: Infinity, src: yi2, type: DamageType.TRUE });
   expect(yi1.buffsNamed(MasterYiR.rname)[0].remainingTime).toBe(7000);
 
   await yi1.action.attack.cast(yi3);
   expect(yi1.buffsNamed(MasterYiR.rname)[0].isActive).toBe(true);
   const time = yi1.buffsNamed(MasterYiR.rname)[0].remainingTime;
-  yi3.interaction.takeDamage(Infinity, yi3);
+  yi3.interaction.takeDamage({ value: Infinity, src: yi3, type: DamageType.TRUE });
   expect(yi1.buffsNamed(MasterYiR.rname)[0].remainingTime).toBe(time + 7000);
 });
 
@@ -190,8 +191,8 @@ test("MasterYi Passive", async () => {
 
   let passiveApplied = 0;
   let onHits = 0;
-  yi2.interaction.onTakeDamage((v, src) => {
-    if (src === yi1 && v === yi2.calcRawPhysicHit(yi1.ad / 2)) passiveApplied += 1;
+  yi2.interaction.onTakeDamage(({ value, src }) => {
+    if (src === yi1 && value === yi2.interaction.calcPercentDamageReduction({ value: yi1.ad / 2, src: yi1, type: DamageType.PHYSIC }).value) passiveApplied += 1;
   });
   yi1.action.attack.onHitUnit((t) => {
     if (t === yi2) onHits += 1;

@@ -1,5 +1,6 @@
 import { MasterYi } from "../champions/MasterYi/MasterYi";
 import { Simulation } from "../simulation/simulation";
+import { DamageType } from "./unitInteraction";
 
 test("UnitAction.attack", async () => {
   const sim = new Simulation().start(5000) as any;
@@ -12,7 +13,7 @@ test("UnitAction.attack", async () => {
   await yi1.action.attack.cast(yi2);
   expect(sim.time).toBeGreaterThan(100);
   expect(sim.time).toBeLessThan(600);
-  expect(yi2.health).toBeCloseTo(yi1.health - yi2.calcRawPhysicHit(yi2.ad));
+  expect(yi2.health).toBeCloseTo(yi1.health - yi1.action.attack.calc(yi2));
 });
 
 test("UnitAction.attack.isCasting", async () => { 
@@ -34,7 +35,7 @@ test("UnitAction.attack multiple", async () => {
   expect(yi1.health).toBe(yi2.health);
   
   await Promise.all([yi1.action.attack.cast(yi2), yi1.action.attack.cast(yi2), yi1.action.attack.cast(yi2), yi1.action.attack.cast(yi2), yi1.action.attack.cast(yi2), yi1.action.attack.cast(yi2), yi1.action.attack.cast(yi2), yi1.action.attack.cast(yi2)]);
-  expect(yi2.health).toBe(yi1.health - yi2.calcRawPhysicHit(yi1.ad));
+  expect(yi2.health).toBe(yi1.health - yi1.action.attack.calc(yi2));
   expect(sim.time).toBeLessThan(1500);
   expect(sim.time).toBeGreaterThan(0);
 });
@@ -44,12 +45,16 @@ test("UnitAction.attack after death", async () => {
   const yi1 = new MasterYi().init(sim);
   const yi2 = new MasterYi().init(sim);
   expect(yi1.health).toBe(yi2.health);
+
+  let hits = 0;
+  yi2.interaction.onTakeDamage(() => hits += 1);
   
   const aa = yi1.action.attack.cast(yi2);
   expect(yi1.action.attack.isCasting).toBe(true);
-  yi1.interaction.takeDamage(Infinity, yi1);
+  yi1.interaction.takeDamage({ value: Infinity, src: yi1, type: DamageType.TRUE });
   expect(yi1.dead).toBe(true);
   await aa;
+  expect(hits).toBe(0);
   expect(sim.time).toBe(0);
   expect(yi1.action.attack.isCasting).toBe(false);
 });
@@ -58,12 +63,17 @@ test("UnitAction.cancelAttack", async () => {
   const sim = new Simulation().start(5000);
   const yi1 = new MasterYi().init(sim);
   const yi2 = new MasterYi().init(sim);
+
+  let hits = 0;
+  yi2.interaction.onTakeDamage(() => hits += 1);
   
   expect(yi1.action.attack.isCasting).toBe(false);
   const prom = yi1.action.attack.cast(yi2);
   expect(yi1.action.attack.isCasting).toBe(true);
   yi1.action.attack.cancelByUser();
   expect(yi1.action.attack.isCasting).toBe(false);
+  await prom;
+  expect(hits).toBe(0);
 });
 
 test("UnitAction.attack after target death", async () => {
@@ -76,10 +86,15 @@ test("UnitAction.attack after target death", async () => {
   
   const aa = yi1.action.attack.cast(yi2);
   expect(yi1.action.attack.isCasting).toBe(true);
-  yi2.interaction.takeDamage(Infinity, yi2);
+  yi2.interaction.takeDamage({ value: Infinity, src: yi2, type: DamageType.TRUE });
+
+  let hits = 0;
+  yi2.interaction.onTakeDamage(() => hits += 1);
+
   expect(yi2.dead).toBe(true);
   await aa;
   expect(yi1.action.attack.isCasting).toBe(false);
+  expect(hits).toBe(0);
 });
 
 test("UnitAction.attack cooldown after attack", async () => {
@@ -128,13 +143,17 @@ test("UnitAction.attack dead", async () => {
   const yi1 = new MasterYi().init(sim);
   const yi2 = new MasterYi().init(sim);
   expect(yi1.health).toBe(yi2.health);
-  
-  yi2.interaction.takeDamage(Infinity, yi2);
+
+  yi2.interaction.takeDamage({ value: Infinity, src: yi2, type: DamageType.TRUE });
   expect(yi2.dead).toBe(true);
+
+  let hits = 0;
+  yi2.interaction.onTakeDamage(() => hits += 1);
 
   const time = sim.time;
   await yi1.action.attack.cast(yi2);
   expect(sim.time).toBe(time);
+  expect(hits).toBe(0);
 });
 
 test("UnitAction.attack onHit", async () => {

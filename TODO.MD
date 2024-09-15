@@ -1,1 +1,1 @@
-+ 
++ Change death from promise to event

@@ -300,3 +300,27 @@ test("attack targetable further", async () => {
   expect(sim.time).toBeGreaterThan(100);
   expect(yi1.action.attack.isCooldown).toBe(true);
 });
+
+test("attack crits", async () => {
+  const sim = new Simulation().start(15000000);
+  const yi1 = new MasterYi().init(sim);
+  const yi2 = new MasterYi().init(sim);
+  yi1.action.passive.disabled = true;
+  yi1.crit = 50;
+  
+  let crits = 0;
+  yi2.interaction.onTakeDamage((e) => {
+    if (e.isCrit) {
+      crits += 1;
+      expect(e.value).toBeCloseTo(yi1.action.attack.calc(yi2) * 1.75);
+    }
+  });
+
+  for (let i = 0; i < 1000; i += 1) {
+    await yi1.action.attack.cast(yi2);
+    yi2.health = yi2.maxHealth;
+  }
+
+  expect(crits).toBeGreaterThan(400);
+  expect(crits).toBeLessThan(600);
+});

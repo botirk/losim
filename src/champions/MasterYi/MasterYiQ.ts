@@ -21,7 +21,7 @@ export class MasterYiQMark extends Buff {
       const damage = (isCrit) ? this.damage + this.critDamage : this.damage;
       const modifier = (this.owner.buffsNamed(MasterYiQ.qname).length > 1) ? 0.25 : 1;
       
-      this.owner.interaction.takeDamage({ src: this.src, type: DamageType.PHYSIC, value: damage * modifier });
+      this.owner.interaction.takeDamage({ src: this.src, type: DamageType.PHYSIC, value: damage * modifier, isCrit });
       this.src.action.attack.procOnHitUnit(this.owner, 0.75 * modifier);
     }
     super.fade();

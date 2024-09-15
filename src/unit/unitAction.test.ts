@@ -211,18 +211,25 @@ test("UnitAction.attack cancel", async () => {
   const yi1 = new MasterYi().init(sim);
   const yi2 = new MasterYi().init(sim);
 
+  let count = 0;
+  yi2.interaction.onTakeDamage(() => count += 1);
+
   expect(yi1.action.attack.isCancelableByUser).toBe(true);
   yi1.action.attack.cast(yi2);
   const aaCastTime = yi1.action.attack.remainingCast;
   expect(aaCastTime).toBeGreaterThan(100);
   await sim.waitFor(100);
   expect(yi1.action.attack.isCasting).toBe(true);
-  yi1.action.attack.cancelByUser();
+  await yi1.action.attack.cancelByUser();
   expect(yi1.action.attack.isCasting).toBe(false);
   expect(yi1.action.attack.isCooldown).toBe(false);
 
-  await yi1.action.attack.cast(yi2);
+  expect(yi1.action.attack.canCast(yi2)).toBe(true);
+  const result = await yi1.action.attack.cast(yi2);
+  expect(result).toBe(true);
   expect(sim.time).toBe(100 + aaCastTime);
+
+  expect(count).toBe(1);
 });
 
 test("UnitAction.current", async () => {

@@ -16,7 +16,7 @@ export class Defered extends Promise<boolean> {
   }
 
   private _result?: boolean;
-  get result() {
+  get result(): boolean | undefined {
     return this._result;
   }
 

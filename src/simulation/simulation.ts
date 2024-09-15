@@ -40,6 +40,9 @@ export class Simulation { // optimized queue of actions
     this.insertIntoWheel(wheelItem);
     return wheelItem;
   }
+  clear() {
+    return this.waitFor(0);
+  }
 
   private _isStopped = false;
   get isStopped() { return this._isStopped; }

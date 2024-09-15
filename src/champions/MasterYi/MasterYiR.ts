@@ -16,7 +16,7 @@ export class MasterYiRBuff extends TimedBuff {
   fade(): void {
     super.fade();
     this.removeTakedown?.();
-    this.unit.bonusAs -= 15 + this.level * 10;
+    this.owner.bonusAs -= 15 + this.level * 10;
   }
 }
 

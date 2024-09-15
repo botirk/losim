@@ -75,3 +75,26 @@ test("TimedBuff duration", async () => {
   await sim.waitFor(1001);
   expect(yi.buffsNamed("test")[0]).toBe(undefined);
 });
+
+test("Buff unique", () => {
+  const sim = new Simulation().start(5000);
+  const yi = new MasterYi().init(sim);
+
+  expect(yi.buffNamed("test")).toBe(undefined);
+  new Buff("test", yi, true);
+  expect(yi.buffNamed("test")).toBeInstanceOf(Buff);
+
+  expect(() => new Buff("test", yi, true)).toThrow();
+});
+
+test("Buff isActive", () => {
+  const sim = new Simulation().start(5000);
+  const yi = new MasterYi().init(sim);
+
+  expect(yi.buffNamed("test")).toBe(undefined);
+  const buff = new Buff("test", yi, true);
+  expect(buff.isActive).toBe(true);
+
+  buff.fade();
+  expect(buff.isActive).toBe(false);
+});

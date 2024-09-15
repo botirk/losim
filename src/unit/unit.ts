@@ -116,6 +116,9 @@ export abstract class Unit {
   buffsNamed(name: string) {
     return this.buffs.filter((buff) => buff.name === name);
   }
+  buffNamed(name: string): Buff | undefined {
+    return this.buffs.find((buff) => buff.name === name);
+  }
 
   private _currentCast?: Cast;
   get currentCast() {

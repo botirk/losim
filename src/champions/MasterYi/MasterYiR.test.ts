@@ -1,6 +1,7 @@
 import { MasterYi } from "./MasterYi";
 import { Simulation } from "../../simulation/simulation";
-import { MasterYiR } from "./MasterYiR";
+import { MasterYiR, MasterYiRBuff } from "./MasterYiR";
+import { DamageType } from "../../unit/unitInteraction";
 
 test("MasterYi R unleveled", async () => {
   const sim = new Simulation().start(5000);
@@ -10,7 +11,7 @@ test("MasterYi R unleveled", async () => {
   expect(yi2.buffs).toHaveLength(0);
   expect(yi1.action.r.isCancelableByUser).toBe(false);
   yi1.action.r.cast();
-  expect(yi1.action.r.isCasting).toBe(false);
+  expect(yi1.action.r.currentCast).toBeUndefined();
   expect(yi1.action.r.isCooldown).toBe(false);
   expect(yi1.buffs).toHaveLength(0);
   expect(yi1.bonusAs).toBe(0);
@@ -25,28 +26,28 @@ test("MasterYi R levels(as)", async () => {
   expect(yi1.buffs).toHaveLength(1);
   expect(yi1.bonusAs).toBe(25);
 
-  await yi1.action.r.waitForCooldown();
+  await yi1.action.r.waitCooldown();
   expect(yi1.bonusAs).toBe(0);
   yi1.action.r.level = 2;
   await yi1.action.r.cast();
   expect(yi1.buffs).toHaveLength(1);
   expect(yi1.bonusAs).toBe(35);
 
-  await yi1.action.r.waitForCooldown();
+  await yi1.action.r.waitCooldown();
   expect(yi1.bonusAs).toBe(0);
   yi1.action.r.level = 3;
   await yi1.action.r.cast();
   expect(yi1.buffs).toHaveLength(1);
   expect(yi1.bonusAs).toBe(45);
 
-  await yi1.action.r.waitForCooldown();
+  await yi1.action.r.waitCooldown();
   expect(yi1.bonusAs).toBe(0);
   yi1.action.r.level = 5;
   await yi1.action.r.cast();
   expect(yi1.buffs).toHaveLength(1);
   expect(yi1.bonusAs).toBe(45);
 
-  await yi1.action.r.waitForCooldown();
+  await yi1.action.r.waitCooldown();
   expect(yi1.bonusAs).toBe(0);
 });
 
@@ -57,7 +58,7 @@ test("MasterYi R Buff", async () => {
   yi1.action.r.level = 1;
   expect(yi1.buffs).toHaveLength(0);
   yi1.action.r.cast();
-  expect(yi1.buffs[0].name).toBe(MasterYiR.rname);
+  expect(yi1.buffNamed(MasterYiR.rname)).toBeInstanceOf(MasterYiRBuff);
   await sim.waitFor(6999);
   expect(yi1.buffs).toHaveLength(1);
   await sim.waitFor(2);
@@ -91,13 +92,13 @@ test("MasterYi R Takedown", async () => {
   await yi1.action.attack.cast(yi2);
   await sim.waitFor(10001);
   yi1.action.r.cast();
-  expect(yi1.buffsNamed(MasterYiR.rname)[0].remainingTime).toBe(7000);
+  expect(yi1.buffNamed(MasterYiR.rname)?.remainingTime).toBe(7000);
   yi2.interaction.takeDamage({ value: Infinity, src: yi2, type: DamageType.TRUE });
-  expect(yi1.buffsNamed(MasterYiR.rname)[0].remainingTime).toBe(7000);
+  expect(yi1.buffNamed(MasterYiR.rname)?.remainingTime).toBe(7000);
 
   await yi1.action.attack.cast(yi3);
-  expect(yi1.buffsNamed(MasterYiR.rname)[0].isActive).toBe(true);
+  expect(yi1.buffNamed(MasterYiR.rname)?.isActive).toBe(true);
   const time = yi1.buffsNamed(MasterYiR.rname)[0].remainingTime;
   yi3.interaction.takeDamage({ value: Infinity, src: yi3, type: DamageType.TRUE });
-  expect(yi1.buffsNamed(MasterYiR.rname)[0].remainingTime).toBe(time + 7000);
+  expect(yi1.buffNamed(MasterYiR.rname)?.remainingTime).toBe(time + 7000);
 });

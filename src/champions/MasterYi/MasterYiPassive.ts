@@ -8,7 +8,7 @@ export class MasterYiPassive {
   constructor(private readonly owner: Unit) { }
 
   init(): this {
-    this.owner.action.attack.onHitUnit((target) => {
+    this.owner.action.attack.onCast((target) => {
       const buff = this.buff;
       if (buff) {
         buff.stacks += 1;
@@ -17,6 +17,7 @@ export class MasterYiPassive {
           buff.stacks = 0;
           target.interaction.takeDamage({ value: this.owner.ad * 0.5, src: this.owner, type: DamageType.PHYSIC });
           this.owner.action.attack.procOnHitUnit(target);
+          this.owner.action.attack.procOnCast(target);
         }
       } else {
         new MasterYiPassiveBuff(this.owner);
@@ -31,10 +32,11 @@ export class MasterYiPassive {
 }
 
 export class MasterYiPassiveBuff extends TimedBuff {
-  stacks = 1;
   constructor(unit: Unit) {
-    super(MasterYiPassive.pname, unit, 4000);
+    super(MasterYiPassive.pname, unit, 4000, true);
   }
+  
+  stacks = 1;
   fade(): void {
     super.fade();
   }

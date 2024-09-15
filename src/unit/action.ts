@@ -53,10 +53,22 @@ export abstract class Action<TOption extends any> {
     if (this.owner.currentCast?.action === this) return this.owner.currentCast;
   }
   abstract cast(option: TOption): Promise<boolean>;
+  // event
+  protected _onCast: ((option: TOption) => void)[] = [];
+  onCast(cb: typeof this._onCast[0]) {
+    this._onCast.push(cb);
+    return () => {
+      const i = this._onCast.indexOf(cb);
+      if (i !== -1) this._onCast.splice(i, 1);
+    }
+  }
+  procOnCast(option: TOption) {
+    for (const listener of this._onCast) listener(option);
+  }
 }
 
 export abstract class EnemyTargetAction extends Action<Unit> {
-  protected _onHitUnit: ((target: Unit) => void)[] = [];
+  protected _onHitUnit: ((target: Unit, multiplier: number) => void)[] = [];
   onHitUnit(cb: typeof this._onHitUnit[0]) {
     this._onHitUnit.push(cb);
     return () => {
@@ -64,8 +76,8 @@ export abstract class EnemyTargetAction extends Action<Unit> {
       if (i !== -1) this._onHitUnit.splice(i, 1);
     }
   }
-  procOnHitUnit(target: Unit) {
-    for (const listener of this._onHitUnit) listener(target);
+  procOnHitUnit(target: Unit, multiplier = 1) {
+    for (const listener of this._onHitUnit) listener(target, multiplier);
   }
   castable(option: Unit): boolean {
     return super.castable && option.targetable;
@@ -105,15 +117,26 @@ export abstract class Cast<TOption = any> {
   async init() {
     if (this.action.currentCast) return this.action.currentCast.wait();
     if (!this.action.castable(this.option)) return false;
-    this.wheel = this.action.owner.sim.waitFor(this.action.castTime);
-    this.action.owner.currentCast = this;
-    this.action.startCooldown();
-    this.watchInterrupt();
-    this.onStartCast();
-    const result = await this.wheel;
-    if (result) this.onFinishCast();
-    else if (this.action.isCooldownFinishedOnInterrupt) this.action.finishCooldown();
-    return result;
+    if (this.action.castTime <= 0) {
+      this.action.startCooldown();
+      this.onStartCast();
+      this.onFinishCast();
+      return true;
+    } else {
+      this.wheel = this.action.owner.sim.waitFor(this.action.castTime);
+      this.action.owner.currentCast = this;
+      this.action.startCooldown();
+      this.watchInterrupt();
+      this.onStartCast();
+      const result = await this.wheel;
+      if (result) {
+        this.onFinishCast();
+        this.action.procOnCast(this.option);
+      } else if (this.action.isCooldownFinishedOnInterrupt) {
+        this.action.finishCooldown();
+      }
+      return result;
+    }
   }
 }
 

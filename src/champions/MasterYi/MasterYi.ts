@@ -11,7 +11,7 @@ export class MasterYiEBuff extends TimedBuff {
     if (!level) return;
     this.removeOnHit = unit.action.attack.onHitUnit((target) => {
       target.interaction.takeDamage(25+level*5, unit);
-    })
+    });
   }
   fade(): void {
     super.fade();
@@ -19,11 +19,24 @@ export class MasterYiEBuff extends TimedBuff {
   }
 }
 
+export class MasterYiRBuff extends TimedBuff {
+  constructor(unit: Unit, readonly level: number) {
+    level = Math.max(0, Math.min(3, level));
+    super(MasterYiR.rname, unit, level ? 7000 : 0);
+    if (!level) return;
+    unit.bonusAs += 15 + level * 10;
+  }
+  fade(): void {
+    super.fade();
+    this.unit.bonusAs -= 15 + this.level * 10;
+  }
+}
+
 export class MasterYiE extends TimedSingletonAction {
   static readonly ename = "Wuju Style";
 
   constructor(unit: Unit) {
-    super("Wuju Style", unit);
+    super(MasterYiE.ename, unit);
   }
 
   cast() {
@@ -33,8 +46,23 @@ export class MasterYiE extends TimedSingletonAction {
   }
 }
 
+export class MasterYiR extends TimedSingletonAction {
+  static readonly rname = "Highlander";
+
+  constructor(unit: Unit) {
+    super(MasterYiR.rname, unit);
+  }
+
+  cast() {
+    if (this.level === 0 || this.isCooldown) return;
+    this.startCooldown(85000);
+    new MasterYiRBuff(this.unit, this.level);
+  }
+}
+
 export class MasterYiAction extends UnitAction {
   e = new MasterYiE(this.unit);
+  r = new MasterYiR(this.unit);
 }
 
 export class MasterYi extends Champion {
@@ -50,5 +78,5 @@ export class MasterYi extends Champion {
   protected armorGrowth = 4.2;
 
   baseAs = 0.679;
-  protected asGrowth = 0.02;
+  protected asGrowth = 2;
 }

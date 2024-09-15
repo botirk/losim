@@ -69,3 +69,38 @@ test("UnitInteraction.onDeath", async () => {
   const res = await prom;
   expect(res).toBeUndefined();
 });
+
+test('UnitInteraction.onTakedown', async () => {
+  const sim = new Simulation().start(15000);
+  const yi1 = new MasterYi().init(sim);
+  const yi2 = new MasterYi().init(sim);
+  
+  let counted = 0;
+  let kills = 0;
+  yi1.interaction.onTakedown((unit) => {
+    if (unit === yi2) counted += 1;
+  });
+  yi1.interaction.onKill((unit) => {
+    if (unit === yi2) kills += 1;
+  });
+
+  await yi1.action.attack.cast(yi2);
+  await sim.waitFor(1000);
+  yi2.interaction.takeDamage(Infinity, yi2);
+  expect(counted).toBe(1);
+  expect(kills).toBe(0);
+});
+
+test('UnitInteraction.onKill', async () => {
+  const sim = new Simulation().start(35000);
+  const yi1 = new MasterYi().init(sim);
+  const yi2 = new MasterYi().init(sim);
+  
+  let counted = 0;
+  yi1.interaction.onKill((unit) => {
+    if (unit === yi2) counted += 1;
+  });
+  while (!yi2.dead) await yi1.action.attack.cast(yi2);
+
+  expect(counted).toBe(1);
+});

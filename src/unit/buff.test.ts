@@ -9,9 +9,11 @@ test("Buff creation / deletion", () => {
   const buff =  new Buff("test", yi);
   expect(yi.buffs).toContain(buff);
   expect(yi.buffs[0].name).toBe("test");
+  expect(yi.lastBuff["test"]).toBe(buff);
 
   buff.fade();
   expect(yi.buffs.includes(buff)).toBe(false);
+  expect(yi.lastBuff["test"]).toBe(undefined);
 });
 
 test("TimedBuff creation / autoDeletion", async () => {

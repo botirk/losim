@@ -5,6 +5,7 @@ import { Buff } from "./buff";
 import { AttackAction } from "./action/attack";
 import { MoveAction } from "./action/move";
 import { AnyCast } from "./action/action";
+import { Equip } from "../items/equip";
 
 export class Actions {
   constructor(protected readonly owner: Unit) {}
@@ -74,8 +75,9 @@ export abstract class Unit {
   }
   pos = 0;
   baseMs = 0;
+  bonusMs = 0;
   get ms() {
-    return this.baseMs;
+    return this.baseMs + this.bonusMs;
   }
 
   // ad
@@ -106,6 +108,39 @@ export abstract class Unit {
   }
   buffNamed(name: string): Buff | undefined {
     return this.buffs.find((buff) => buff.name === name);
+  }
+
+  // item
+  private _itemCount = 0;
+  get itemCount() {
+    return this._itemCount;
+  }
+  appliedEquips: Equip[] = [];
+  applyEquip(equip: Equip) {
+    if (equip.unique && this.appliedEquips.includes(equip)) return false;
+    if (equip.uniqueGroup && this.appliedEquips.some(e => e.uniqueGroup === equip.uniqueGroup)) return false;
+    if (equip.type === "item" || equip.type === "finishedItem") {
+      if (this._itemCount >= 6) return false;
+      this._itemCount += 1;
+    }
+    
+    if (equip.apply?.(this) === false) return false;
+    
+    if (equip.bonusAs) this.bonusAs.value += equip.bonusAs;
+    if (equip.bonusAd) this.bonusAd += equip.bonusAd;
+    if (equip.crit) this.crit = Math.max(0, Math.min(100, this.crit + equip.crit));
+    if (equip.bonusCritDamage) this.bonusCritDamage += equip.bonusCritDamage;
+
+    if (equip.armor) this.armor += equip.armor;
+
+    if (equip.maxHealth) this.maxHealth += equip.maxHealth;
+    if (equip.maxMana) this.maxMana += equip.maxMana;
+
+    if (equip.bonusMs) this.bonusMs += equip.bonusMs;
+
+    this.appliedEquips.push(equip);
+
+    return true;
   }
 
   // cast

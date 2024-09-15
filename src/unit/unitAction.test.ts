@@ -224,3 +224,33 @@ test("UnitAction.attack cancel", async () => {
   await yi1.action.attack.cast(yi2);
   expect(sim.time).toBe(100 + aaCastTime);
 });
+
+test("UnitAction.current", async () => {
+  const sim = new Simulation().start(15000);
+  const yi1 = new MasterYi().init(sim);
+  const yi2 = new MasterYi().init(sim);
+
+  expect(yi1.action.current).toBe(undefined);
+  const attack = yi1.action.attack.cast(yi2);
+  expect(yi1.action.current).toBe(yi1.action.attack);
+  expect(yi1.action.current?.isCasting).toBe(true);
+
+  await sim.waitFor(50);
+  expect(yi1.action.current).toBe(yi1.action.attack);
+  expect(yi1.action.current?.isCasting).toBe(true);
+
+  yi1.action.current?.cancelByUser();
+  expect(yi1.action.current).toBeFalsy();
+  expect(yi1.action.attack.isCasting).toBe(false);
+});
+
+test("UnitAction.attack x5", async () => {
+  const sim = new Simulation().start(15000);
+  const yi1 = new MasterYi().init(sim);
+  const yi2 = new MasterYi().init(sim);
+
+  const attack = yi1.action.attack.cast(yi2);
+  const duration = yi1.action.attack.remainingCast;
+  await Promise.all([attack, yi1.action.attack.cast(yi2), yi1.action.attack.cast(yi2), yi1.action.attack.cast(yi2), yi1.action.attack.cast(yi2), yi1.action.attack.cast(yi2)]);
+  expect(sim.time).toBe(duration);
+});

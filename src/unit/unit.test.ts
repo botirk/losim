@@ -61,6 +61,7 @@ test("Unit.applyEquip simple stats", () => {
   const bonusAd = yi.bonusAd;
   const crit = yi.crit;
   const bonusCritDamage = yi.bonusCritDamage;
+  const lifesteal = yi.lifesteal;
 
   const armor = yi.armor;
 
@@ -69,13 +70,14 @@ test("Unit.applyEquip simple stats", () => {
 
   const bonusMs = yi.bonusMs;
  
-  const item: Equip = { type: "item", name: "test", bonusAs: 50, bonusAd: 50, crit: 50, bonusCritDamage: 50, armor: 50, maxHealth: 50, maxMana: 50, bonusMs: 50 };
+  const item: Equip = { type: "item", name: "test", bonusAs: 50, bonusAd: 50, crit: 50, bonusCritDamage: 50, armor: 50, maxHealth: 50, maxMana: 50, bonusMs: 50, lifesteal: 50 };
   expect(yi.applyEquip(item)).toBe(true);
 
   expect(yi.bonusAs.value).toBe(bonusAs + 50);
   expect(yi.bonusAd).toBe(bonusAd + 50);
   expect(yi.crit).toBe(crit + 50);
   expect(yi.bonusCritDamage).toBe(bonusCritDamage + 50);
+  expect(yi.lifesteal).toBe(lifesteal + 50);
 
   expect(yi.armor).toBe(armor + 50);
 

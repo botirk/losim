@@ -12,6 +12,7 @@ export interface Equip {
   bonusAd?: number,
   crit?: number,
   bonusCritDamage?: number,
+  lifesteal?: number,
 
   armor?: number,
   

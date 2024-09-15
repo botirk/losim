@@ -339,3 +339,16 @@ test("attack crits", async () => {
   yi2.pos = yi1.pos;
   expect(await yi1.action.attack.cast(yi2)).toBe(true);
 });
+
+test("attack lifesteal", async () => {
+  const sim = new Simulation().start(15000000);
+  const yi1 = new MasterYi().init(sim);
+  const yi2 = new MasterYi().init(sim);
+  
+  yi1.health = 1;
+  yi1.lifesteal = 100;
+
+  expect(await yi1.action.attack.cast(yi2)).toBe(true);
+  expect(yi1.health).toBeGreaterThan(yi1.action.attack.calc(yi2));
+  expect(yi1.health).toBeLessThan(yi1.action.attack.calc(yi2) + 2);
+});

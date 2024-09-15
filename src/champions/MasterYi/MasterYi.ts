@@ -108,9 +108,39 @@ export class MasterYiR extends TimedSingletonAction {
   }
 }
 
+export class MasterYiW extends TimedSingletonAction {
+  static readonly wname = "Meditate";
+  protected maxLevel: number = 5;
+
+  constructor(unit: Unit) {
+    super(MasterYiW.wname, unit);
+  }
+
+  async cast() {
+    if (this.level === 0 || this.unit.dead || (this.unit.action.current && this.unit.action.current !== this)) return;
+
+    if (this.isCasting) {
+      await this.waitForCast();
+    } else {
+      this.startCast(4000);
+      let time = 0;
+      for (; time <= 4000; time += 500) {
+        const result = await Promise.any([this.waitForCast(), this.unit.sim.waitFor(500), this.unit.interaction.onDeathPromise()]);
+        if (result === true) {
+          // TODO
+        } else {
+          break;
+        }
+      }
+      this.startCooldown(9000);
+    }
+  }
+}
+
 export class MasterYiAction extends UnitAction {
   e: MasterYiE;
   r: MasterYiR;
+  w: MasterYiW;
   passive: MasterYiPassiveSkill;
 
   init(): this {
@@ -118,6 +148,7 @@ export class MasterYiAction extends UnitAction {
     this.e = new MasterYiE(this.unit);
     this.r = new MasterYiR(this.unit);
     this.passive = new MasterYiPassiveSkill(this.unit).init();
+    this.w = new MasterYiW(this.unit);
     return this;
   }
 }

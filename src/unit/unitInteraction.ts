@@ -29,6 +29,7 @@ export class UnitInteraction {
     this._takedownTimes.set(e.src, this.unit.sim.time);
     if (this.unit.health === 0) {
       this.unit.dead = true;
+      this.unit.action.current?.cancel();
       for (const listener of this._deathListeners) listener();
       e.src.interaction.kill(this.unit);
       for (const takedownTime of this._takedownTimes) {

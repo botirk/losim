@@ -217,3 +217,27 @@ test("MasterYi Passive", async () => {
   await yi1.action.attack.cast(yi2);
   expect(passiveApplied).toBe(2);
 });
+
+test("MasterYi W NoLevel", async () => {
+  const sim = new Simulation().start(500000);
+  const yi1 = new MasterYi().init(sim);
+
+  yi1.action.w.cast();
+  expect(yi1.action.current).toBeFalsy();
+});
+
+test("MasterYi W just cast", async () => {
+  const sim = new Simulation().start(500000);
+  const yi1 = new MasterYi().init(sim);
+  
+  yi1.action.w.setLevel(1);
+  const prom = yi1.action.w.cast();
+  expect(yi1.action.current).toBe(yi1.action.w);
+  expect(yi1.action.w.isCasting).toBe(true);
+  expect(yi1.action.w.remainingCast).toBe(4000);
+  await prom;
+  expect(sim.time).toBe(4000);
+  expect(yi1.action.w.isCasting).toBe(false);
+  expect(yi1.action.w.remainingCooldown).toBe(9000);
+  expect(yi1.action.current).toBeFalsy();
+});

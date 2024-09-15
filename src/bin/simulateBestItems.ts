@@ -3,8 +3,6 @@ import { simulateBestNextItems } from "../simulation/simulateBestItems";
 import { Champion } from "../champions/champion/champion";
 import { MasterYi } from "../champions/MasterYi/MasterYi";
 
-
-
 interface SimulateBestItemsSetup {
   Champion: new() => Champion,
   itemsCount: number,
@@ -14,31 +12,32 @@ interface SimulateBestItemsSetup {
 }
 
 const getSetupNode = async (): Promise<SimulateBestItemsSetup> => {
-  const { stdin, stdout } = require("node:process");
-  const rli = require("node:readline/promises").createInterface(stdin, stdout);
+  if (typeof require !== undefined) {
+    const rli = require("node:readline/promises").createInterface(process.stdin, process.stdout);
 
-  for (const i in champions) rli.write(`${i} ${new champions[i]().name}\n`);
-  const champName = await rli.question("Pick a champion (number or string) Master Yi default\n");
-  const Champion: new() => Champion = champions[champName] || champions.find((champ) => new champ().name.toLowerCase() === champName.toLowerCase()) || MasterYi;
+    for (const i in champions) rli.write(`${i} ${new champions[i]().name}\n`);
+    const champName = await rli.question("Pick a champion (number or string) Master Yi default\n");
+    const Champion: new() => Champion = champions[champName] || champions.find((champ) => new champ().name.toLowerCase() === champName.toLowerCase()) || MasterYi;
 
-  let itemsCount = parseInt(await rli.question("Count of items (1-6) 1 default\n"));
-  if (isNaN(itemsCount)) itemsCount = 1;
-  itemsCount = Math.max(1, Math.min(6, Math.floor(itemsCount)));
+    let itemsCount = parseInt(await rli.question("Count of items (1-6) 1 default\n"));
+    if (isNaN(itemsCount)) itemsCount = 1;
+    itemsCount = Math.max(1, Math.min(6, Math.floor(itemsCount)));
 
-  let level = parseInt(await rli.question("Select champion level (1-18) 9 default\n"));
-  if (isNaN( level))  level = 9;
-  level = Math.max(1, Math.min(18, Math.floor(level)));
+    let level = parseInt(await rli.question("Select champion level (1-18) 9 default\n"));
+    if (isNaN( level))  level = 9;
+    level = Math.max(1, Math.min(18, Math.floor(level)));
 
-  const shouldRunAway = (await rli.question("Should dummy run away (y/n) n default\n"))[0] === "y" ? true : false;
+    const shouldRunAway = (await rli.question("Should dummy run away (y/n) n default\n"))[0] === "y" ? true : false;
 
-  rli.close();
+    rli.close();
 
-  return {
-    level,
-    shouldRunAway,
-    Champion,
-    itemsCount,
-    withBoots: false,
+    return {
+      level,
+      shouldRunAway,
+      Champion,
+      itemsCount,
+      withBoots: false,
+    }
   }
 }
 

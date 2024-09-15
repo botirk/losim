@@ -15,6 +15,7 @@ export interface Equip {
   lifesteal?: number,
 
   armor?: number,
+  mr?: number,
   
   maxHealth?: number,
   maxMana?: number,

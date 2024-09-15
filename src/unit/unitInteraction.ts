@@ -78,6 +78,10 @@ export class UnitInteraction {
     if (e.type === DamageType.PHYSIC) e.value = (1 - this.unit.armor/(100 + this.unit.armor)) * e.value;
     return e;
   }
+  calcMrDamageReduction(e: DamageEvent) {
+    if (e.type === DamageType.MAGIC) e.value = (1 - this.unit.mr/(100 + this.unit.mr)) * e.value;
+    return e;
+  }
 
   private readonly _onKill: ((unit: Unit) => void)[] = [];
   onKill(cb: typeof this._onKill[0]) {
@@ -106,6 +110,7 @@ export class UnitInteraction {
 
   init() {
     this.percentDamageReduction((e) => this.calcArmorDamageReduction(e));
+    this.percentDamageReduction((e) => this.calcMrDamageReduction(e));
     return this;
   }
 }

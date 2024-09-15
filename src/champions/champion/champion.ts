@@ -3,7 +3,6 @@ import { Unit } from "../../unit/unit";
 import { ChampionStats } from "./championStats";
 
 export abstract class Champion extends Unit {
-  level = 1;
   abstract stats: ChampionStats;
 
   calcStatGrowth(growth: number) {

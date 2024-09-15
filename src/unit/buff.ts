@@ -86,10 +86,18 @@ export class StackBuff extends TimedBuff {
     this.onGainStats();
   }
 
+  unstack() {
+    if (this._stacks > 0) {
+      this.onLoseStats();
+      this._stacks -= 1;
+      this.onGainStats();
+    }
+  }
+
   stack() {
     if (!this.isMaxStacks) {
       this.onLoseStats();
-      this._stacks = Math.min(this.maxStacks, this._stacks + 1);
+      this._stacks += 1;
       this.onGainStats();
     }
     this.remainingTime = this.stackDuration;

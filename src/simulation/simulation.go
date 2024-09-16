@@ -19,17 +19,7 @@ func (sim *Simulation) Insert(waitFor uint) *SimulationEvent {
 		OnProc:    nil,
 	}
 
-	start := 0
-	end := len(sim.wheel) - 1
-	for start <= end {
-		mid := (start + end) >> 1
-		if sim.wheel[mid].Time() > result.Time() {
-			start = mid + 1
-		} else {
-			end = mid - 1
-		}
-	}
-	sim.wheel = slices.Insert(sim.wheel, start, &result)
+	result.insert()
 
 	return &result
 }
@@ -53,7 +43,7 @@ func (sim *Simulation) Len() int {
 }
 
 func (sim *Simulation) consume() (*SimulationEvent, error) {
-	if (sim.IsComplete()) {
+	if sim.IsComplete() {
 		return nil, errors.New("Simulation is complete can't consume")
 	}
 
@@ -133,4 +123,29 @@ func (se *SimulationEvent) Remove() {
 		se.parent.wheel = slices.Delete(se.parent.wheel, start, start+1)
 	}
 	se.isComplete = true
+}
+
+func (se *SimulationEvent) insert() {
+	start := 0
+	end := len(se.parent.wheel) - 1
+	for start <= end {
+		mid := (start + end) >> 1
+		if se.parent.wheel[mid].Time() > se.Time() {
+			start = mid + 1
+		} else {
+			end = mid - 1
+		}
+	}
+	se.parent.wheel = slices.Insert(se.parent.wheel, start, se)
+}
+
+func (se *SimulationEvent) Reinsert(waitFor uint) {
+	if se.isComplete {
+		return
+	}
+	se.Remove()
+	se.isComplete = false
+	se.timeStart = se.parent.time
+	se.waitFor = waitFor
+	se.insert()
 }

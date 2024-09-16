@@ -156,3 +156,17 @@ func TestConsumeMustReturnErrors(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+func TestReinsert(t *testing.T) {
+	sim := NewSimulation(13333)
+
+	e := sim.Insert(5000)
+
+	e.Reinsert(7000)
+
+	e.Wait()
+
+	if (sim.Time() != 7000) {
+		t.Fatal(sim.Time())
+	}
+}

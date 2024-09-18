@@ -1,7 +1,7 @@
 package unit
 
 import (
-	"losim/src/utils"
+	utils "losim/src/utils"
 	"math"
 )
 
@@ -14,10 +14,10 @@ const (
 )
 
 type DamageEvent struct {
-	src    Unit
-	value  float64
-	dtype  DamageType
-	isCrit bool
+	Src    *Unit
+	Value  float64
+	Dtype  DamageType
+	IsCrit bool
 }
 
 func NewDamageEventContainer() utils.EventContainer[DamageEvent] {
@@ -27,13 +27,13 @@ func NewDamageEventContainer() utils.EventContainer[DamageEvent] {
 func (u *Unit) TakeDamage(de DamageEvent) DamageEvent {
 	// prevent beating dead
 	if u.dead {
-		de.value = 0
+		de.Value = 0
 		return de
 	}
 	// fix
-	de.value = math.Max(0, math.Min(u.health, de.value))
+	de.Value = math.Max(0, math.Min(u.health, de.Value))
 	// reduce health
-	u.health -= de.value
+	u.health -= de.Value
 	// call callbacks
 	u.OnTakeDamage.Proc(de)
 	// death check

@@ -1,5 +1,4 @@
 package utils
-
 type eventProc[T any] func(proc T)
 
 type remove func()

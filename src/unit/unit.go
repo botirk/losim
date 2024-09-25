@@ -2,23 +2,35 @@ package unit
 
 import "losim/src/utils"
 
-func NewUnit(name string, sim SimInterface) *Unit {
+const defaultName = "Default Unit"
+
+func NewUnitAddToSim(name string, sim SimInterface) *Unit {
+	result := NewUnit(name)
+	result.Sim = sim
+	sim.AddActor(result)
+	return result
+}
+
+func NewDefaultUnitAddToSim(sim SimInterface) *Unit {
+	return NewUnitAddToSim(defaultName, sim)
+}
+
+func NewUnit(name string) *Unit {
 	u := Unit{
 		name:         name,
-		sim:          sim,
+		Sim:          nil,
 		OnTakeDamage: NewDamageEventContainer(),
 	}
-	sim.AddActor(&u)
 	return &u
 }
 
-func NewDefaultUnit(sim SimInterface) *Unit {
-	return NewUnit("Default unit", sim)
+func NewDefaultUnit() *Unit {
+	return NewUnit(defaultName)
 }
 
 type Unit struct {
 	name string
-	sim  SimInterface
+	Sim  SimInterface
 
 	health    float64
 	maxHealth float64

@@ -103,6 +103,7 @@ func (sim *Sim[T]) consume() (*SimulationEvent[T], error) {
 
 func (sim *Sim[T]) AddActor(actor T) {
 	sim.actors = append(sim.actors, actor)
+	sim.Log("sim", fmt.Sprintf("%v actor added", actor.Name()))
 }
 
 func (sim *Sim[T]) Actors() []T {

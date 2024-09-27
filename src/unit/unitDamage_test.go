@@ -1,6 +1,7 @@
 package unit
 
 import (
+	"math"
 	"testing"
 )
 
@@ -137,5 +138,55 @@ func TestComboDamageReduction(t *testing.T) {
 
 	if e2.Value != 10 {
 		t.Fatal(e2)
+	}
+}
+
+func TestCalcArmorReduction(t *testing.T) {
+	u := NewDefaultUnit()
+
+	v1 := u.CalcArmorDamageReduction(DamageEvent{Src: u, Value: 100, Dtype: PHYSICALD})
+
+	if v1.Value != 100 {
+		t.Fatal(v1.Value)
+	}
+
+	u.armor = 100
+
+	v2 := u.CalcArmorDamageReduction(DamageEvent{Src: u, Value: 100, Dtype: PHYSICALD})
+
+	if v2.Value != 50 {
+		t.Fatal(v2.Value)
+	}
+
+	v3 := u.CalcMrDamageReduction(DamageEvent{Src: u, Value: 100, Dtype: MAGICALD})
+
+	if v3.Value != 100 {
+		t.Fatal(v3.Value)
+	}
+
+	u.mr = 200
+
+	v4 := u.CalcMrDamageReduction(DamageEvent{Src: u, Value: 100, Dtype: MAGICALD})
+
+	if math.Abs(v4.Value - 100 * 0.3333) > 0.1 {
+		t.Fatal(v4.Value)
+	}
+}
+
+func TestTakePhysicalDamaage(t *testing.T) {
+	u := NewDefaultUnit()
+
+	u.armor = 100
+
+	u.health = 100
+
+	result := u.TakeDamage(DamageEvent{Src: u, Value: 10, Dtype: PHYSICALD })
+
+	if result.Value != 5 {
+		t.Fatal(result)
+	}
+
+	if (u.health != 95) {
+		t.Fatal(u.health)
 	}
 }

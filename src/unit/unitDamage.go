@@ -45,6 +45,8 @@ func (u *Unit) TakeDamage(de DamageEvent) DamageEvent {
 		de.Value = 0
 		return de
 	}
+	// damage reduction
+	de.Value = u.CalcDamageReduction(de).Value
 	// fix
 	de.Value = math.Max(0, math.Min(u.health, de.Value))
 	// reduce health
@@ -71,5 +73,21 @@ func (u *Unit) CalcDamageReduction(de DamageEvent) DamageEvent {
 	u.OnFlatDamageReduction.Proc(&de)
 	u.OnPercentDamageReduction.Proc(&de)
 	u.OnFinalDamageReduction.Proc(&de)
+	return de
+}
+
+func (u *Unit) CalcArmorDamageReduction(de DamageEvent) DamageEvent {
+	if de.Dtype == PHYSICALD {
+		armor := u.ArmorRelativeTo(de.Src)
+		de.Value = (1 - armor/(100+armor)) * de.Value
+	}
+	return de
+}
+
+func (u *Unit) CalcMrDamageReduction(de DamageEvent) DamageEvent {
+	if de.Dtype == MAGICALD {
+		mr := u.MRRelativeTo(de.Src)
+		de.Value = (1 - mr/(100+mr)) * de.Value
+	}
 	return de
 }

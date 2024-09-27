@@ -2,7 +2,17 @@ package unit
 
 import "losim/src/utils"
 
-const defaultName = "Default Unit"
+func NewUnit(name string) *Unit {
+	u := Unit{
+		name:                     name,
+		Sim:                      nil,
+		OnTakeDamage:             NewDamageEventContainer(),
+		OnFlatDamageReduction:    NewCalcDamageEventContainer(),
+		OnPercentDamageReduction: NewCalcDamageEventContainer(),
+		OnFinalDamageReduction:   NewCalcDamageEventContainer(),
+	}
+	return &u
+}
 
 func NewUnitAddToSim(name string, sim SimInterface) *Unit {
 	result := NewUnit(name)
@@ -11,21 +21,14 @@ func NewUnitAddToSim(name string, sim SimInterface) *Unit {
 	return result
 }
 
-func NewDefaultUnitAddToSim(sim SimInterface) *Unit {
-	return NewUnitAddToSim(defaultName, sim)
-}
-
-func NewUnit(name string) *Unit {
-	u := Unit{
-		name:         name,
-		Sim:          nil,
-		OnTakeDamage: NewDamageEventContainer(),
-	}
-	return &u
-}
+const defaultName = "Default Unit"
 
 func NewDefaultUnit() *Unit {
 	return NewUnit(defaultName)
+}
+
+func NewDefaultUnitAddToSim(sim SimInterface) *Unit {
+	return NewUnitAddToSim(defaultName, sim)
 }
 
 type Unit struct {
@@ -36,7 +39,10 @@ type Unit struct {
 	maxHealth float64
 	dead      bool
 
-	OnTakeDamage utils.EventContainer[DamageEvent]
+	OnFlatDamageReduction    utils.EventContainer[*DamageEvent]
+	OnPercentDamageReduction utils.EventContainer[*DamageEvent]
+	OnFinalDamageReduction   utils.EventContainer[*DamageEvent]
+	OnTakeDamage             utils.EventContainer[DamageEvent]
 }
 
 func (u *Unit) Name() string {

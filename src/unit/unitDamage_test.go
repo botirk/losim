@@ -52,3 +52,90 @@ func TestDamageEventBasic(t *testing.T) {
 		t.Fatal()
 	}
 }
+
+func TestFlatDamageReduction(t *testing.T) {
+	u := NewDefaultUnit()
+
+	u.SetHealth(100)
+	u.OnFlatDamageReduction.MustAdd(func(proc *DamageEvent) {
+		proc.Value -= 10
+	})
+
+	e1 := u.CalcDamageReduction(DamageEvent{ Value: 50, Src: u, Dtype: MAGICALD });
+	e2 := u.CalcDamageReduction(DamageEvent{ Value: 40, Src: u, Dtype: MAGICALD });
+
+	if e1.Value != 40 {
+		t.Fatal(e1)
+	}
+
+	if e2.Value != 30 {
+		t.Fatal(e2)
+	}
+}
+
+func TestPercentDamageReduction(t *testing.T) {
+	u := NewDefaultUnit()
+
+	u.SetHealth(100)
+	u.OnPercentDamageReduction.MustAdd(func(proc *DamageEvent) {
+		proc.Value /= 2
+	})
+
+	e1 := u.CalcDamageReduction(DamageEvent{ Value: 50, Src: u, Dtype: MAGICALD });
+	e2 := u.CalcDamageReduction(DamageEvent{ Value: 40, Src: u, Dtype: MAGICALD });
+
+	if e1.Value != 25 {
+		t.Fatal(e1)
+	}
+
+	if e2.Value != 20 {
+		t.Fatal(e2)
+	}
+}
+
+func TestFinalDamageReduction(t *testing.T) {
+	u := NewDefaultUnit()
+
+	u.SetHealth(100)
+	u.OnPercentDamageReduction.MustAdd(func(proc *DamageEvent) {
+		proc.Value -= 15
+	})
+
+	e1 := u.CalcDamageReduction(DamageEvent{ Value: 50, Src: u, Dtype: MAGICALD });
+	e2 := u.CalcDamageReduction(DamageEvent{ Value: 40, Src: u, Dtype: MAGICALD });
+
+	if e1.Value != 35 {
+		t.Fatal(e1)
+	}
+
+	if e2.Value != 25 {
+		t.Fatal(e2)
+	}
+}
+
+func TestComboDamageReduction(t *testing.T) {
+	u := NewDefaultUnit()
+
+	u.SetHealth(100)
+
+	u.OnFlatDamageReduction.MustAdd(func(proc *DamageEvent) {
+		proc.Value -= 10
+	})
+	u.OnPercentDamageReduction.MustAdd(func(proc *DamageEvent) {
+		proc.Value /= 2
+	})
+	u.OnFinalDamageReduction.MustAdd(func(proc *DamageEvent) {
+		proc.Value -= 5
+	})
+
+	e1 := u.CalcDamageReduction(DamageEvent{ Value: 50, Src: u, Dtype: MAGICALD });
+	e2 := u.CalcDamageReduction(DamageEvent{ Value: 40, Src: u, Dtype: MAGICALD });
+
+	if e1.Value != 15 {
+		t.Fatal(e1)
+	}
+
+	if e2.Value != 10 {
+		t.Fatal(e2)
+	}
+}

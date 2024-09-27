@@ -43,3 +43,14 @@ func (u *Unit) TakeDamage(de DamageEvent) DamageEvent {
 
 	return de
 }
+
+func NewCalcDamageEventContainer() utils.EventContainer[*DamageEvent] {
+	return utils.NewEventContainer[*DamageEvent]()
+}
+
+func (u *Unit) CalcDamageReduction(de DamageEvent) DamageEvent {
+	u.OnFlatDamageReduction.Proc(&de)
+	u.OnPercentDamageReduction.Proc(&de)
+	u.OnFinalDamageReduction.Proc(&de)
+	return de
+}

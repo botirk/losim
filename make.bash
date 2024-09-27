@@ -1,1 +1,1 @@
-go test ./src/sim ./src/utils ./src/unitSimTest
+go test ./src/sim ./src/utils ./src/unitSimTest ./src/unit

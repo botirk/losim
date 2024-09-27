@@ -40,6 +40,10 @@ func (sim *Sim[T]) EnableLog() *Sim[T] {
 	return sim
 }
 
+func (sim *Sim[T]) IsLogEnabled() bool {
+	return sim.isLogEnabled
+}
+
 func (sim *Sim[T]) Log(system string, message string) {
 	if sim.log.Len() > 0 {
 		sim.log.WriteRune('\n')
@@ -109,5 +113,3 @@ func (sim *Sim[T]) AddActor(actor T) {
 func (sim *Sim[T]) Actors() []T {
 	return sim.actors
 }
-
-

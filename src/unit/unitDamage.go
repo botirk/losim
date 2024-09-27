@@ -1,10 +1,12 @@
 package unit
 
 import (
+	"fmt"
 	utils "losim/src/utils"
 	"math"
 )
 
+//go:generate stringer -type=TLSType
 type DamageType int
 
 const (
@@ -12,6 +14,19 @@ const (
 	PHYSICALD DamageType = 1
 	MAGICALD  DamageType = 2
 )
+
+func (dt DamageType) toString() string {
+	switch dt {
+	case TRUED:
+		return "true"
+	case PHYSICALD:
+		return "physical"
+	case MAGICALD:
+		return "magical"
+	default:
+		return "unknown"
+	}
+}
 
 type DamageEvent struct {
 	Src    *Unit
@@ -34,6 +49,10 @@ func (u *Unit) TakeDamage(de DamageEvent) DamageEvent {
 	de.Value = math.Max(0, math.Min(u.health, de.Value))
 	// reduce health
 	u.health -= de.Value
+	// log
+	if u.Sim != nil && u.Sim.IsLogEnabled() {
+		u.Sim.Log("unitDamage", fmt.Sprintf("%v took %v %v damage from %v", u.Name(), de.Value, de.Dtype.toString(), de.Src.Name()))
+	}
 	// call callbacks
 	u.OnTakeDamage.Proc(de)
 	// death check

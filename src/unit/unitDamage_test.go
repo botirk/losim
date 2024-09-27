@@ -61,8 +61,8 @@ func TestFlatDamageReduction(t *testing.T) {
 		proc.Value -= 10
 	})
 
-	e1 := u.CalcDamageReduction(DamageEvent{ Value: 50, Src: u, Dtype: MAGICALD });
-	e2 := u.CalcDamageReduction(DamageEvent{ Value: 40, Src: u, Dtype: MAGICALD });
+	e1 := u.CalcDamageReduction(DamageEvent{Value: 50, Src: u, Dtype: MAGICALD})
+	e2 := u.CalcDamageReduction(DamageEvent{Value: 40, Src: u, Dtype: MAGICALD})
 
 	if e1.Value != 40 {
 		t.Fatal(e1)
@@ -81,8 +81,8 @@ func TestPercentDamageReduction(t *testing.T) {
 		proc.Value /= 2
 	})
 
-	e1 := u.CalcDamageReduction(DamageEvent{ Value: 50, Src: u, Dtype: MAGICALD });
-	e2 := u.CalcDamageReduction(DamageEvent{ Value: 40, Src: u, Dtype: MAGICALD });
+	e1 := u.CalcDamageReduction(DamageEvent{Value: 50, Src: u, Dtype: MAGICALD})
+	e2 := u.CalcDamageReduction(DamageEvent{Value: 40, Src: u, Dtype: MAGICALD})
 
 	if e1.Value != 25 {
 		t.Fatal(e1)
@@ -101,8 +101,8 @@ func TestFinalDamageReduction(t *testing.T) {
 		proc.Value -= 15
 	})
 
-	e1 := u.CalcDamageReduction(DamageEvent{ Value: 50, Src: u, Dtype: MAGICALD });
-	e2 := u.CalcDamageReduction(DamageEvent{ Value: 40, Src: u, Dtype: MAGICALD });
+	e1 := u.CalcDamageReduction(DamageEvent{Value: 50, Src: u, Dtype: MAGICALD})
+	e2 := u.CalcDamageReduction(DamageEvent{Value: 40, Src: u, Dtype: MAGICALD})
 
 	if e1.Value != 35 {
 		t.Fatal(e1)
@@ -128,8 +128,8 @@ func TestComboDamageReduction(t *testing.T) {
 		proc.Value -= 5
 	})
 
-	e1 := u.CalcDamageReduction(DamageEvent{ Value: 50, Src: u, Dtype: MAGICALD });
-	e2 := u.CalcDamageReduction(DamageEvent{ Value: 40, Src: u, Dtype: MAGICALD });
+	e1 := u.CalcDamageReduction(DamageEvent{Value: 50, Src: u, Dtype: MAGICALD})
+	e2 := u.CalcDamageReduction(DamageEvent{Value: 40, Src: u, Dtype: MAGICALD})
 
 	if e1.Value != 15 {
 		t.Fatal(e1)

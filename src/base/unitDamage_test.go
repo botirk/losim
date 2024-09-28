@@ -1,4 +1,4 @@
-package unit
+package base
 
 import (
 	"math"
@@ -6,7 +6,7 @@ import (
 )
 
 func TestDeath(t *testing.T) {
-	u := NewDefaultUnit()
+	u := NewDefaultUnit(NewSimulationDefault())
 
 	u.SetHealth(149)
 
@@ -24,7 +24,7 @@ func TestDeath(t *testing.T) {
 }
 
 func TestDamageEventBasic(t *testing.T) {
-	u := NewDefaultUnit()
+	u := NewDefaultUnit(NewSimulationDefault())
 
 	u.SetHealth(100)
 
@@ -55,7 +55,7 @@ func TestDamageEventBasic(t *testing.T) {
 }
 
 func TestFlatDamageReduction(t *testing.T) {
-	u := NewDefaultUnit()
+	u := NewDefaultUnit(NewSimulationDefault())
 
 	u.SetHealth(100)
 	u.OnFlatDamageReduction.MustAdd(func(proc *DamageEvent) {
@@ -75,7 +75,7 @@ func TestFlatDamageReduction(t *testing.T) {
 }
 
 func TestPercentDamageReduction(t *testing.T) {
-	u := NewDefaultUnit()
+	u := NewDefaultUnit(NewSimulationDefault())
 
 	u.SetHealth(100)
 	u.OnPercentDamageReduction.MustAdd(func(proc *DamageEvent) {
@@ -95,7 +95,7 @@ func TestPercentDamageReduction(t *testing.T) {
 }
 
 func TestFinalDamageReduction(t *testing.T) {
-	u := NewDefaultUnit()
+	u := NewDefaultUnit(NewSimulationDefault())
 
 	u.SetHealth(100)
 	u.OnPercentDamageReduction.MustAdd(func(proc *DamageEvent) {
@@ -115,7 +115,7 @@ func TestFinalDamageReduction(t *testing.T) {
 }
 
 func TestComboDamageReduction(t *testing.T) {
-	u := NewDefaultUnit()
+	u := NewDefaultUnit(NewSimulationDefault())
 
 	u.SetHealth(100)
 
@@ -142,7 +142,7 @@ func TestComboDamageReduction(t *testing.T) {
 }
 
 func TestCalcArmorReduction(t *testing.T) {
-	u := NewDefaultUnit()
+	u := NewDefaultUnit(NewSimulationDefault())
 
 	v1 := u.CalcArmorDamageReduction(DamageEvent{Src: u, Value: 100, Dtype: PHYSICALD})
 
@@ -174,7 +174,7 @@ func TestCalcArmorReduction(t *testing.T) {
 }
 
 func TestTakePhysicalDamaage(t *testing.T) {
-	u := NewDefaultUnit()
+	u := NewDefaultUnit(NewSimulationDefault())
 
 	u.armor = 100
 

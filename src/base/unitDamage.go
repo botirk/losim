@@ -1,4 +1,4 @@
-package unit
+package base
 
 import (
 	"fmt"
@@ -6,7 +6,6 @@ import (
 	"math"
 )
 
-//go:generate stringer -type=TLSType
 type DamageType int
 
 const (
@@ -15,7 +14,7 @@ const (
 	MAGICALD  DamageType = 2
 )
 
-func (dt DamageType) toString() string {
+func (dt DamageType) ToString() string {
 	switch dt {
 	case TRUED:
 		return "true"
@@ -52,9 +51,7 @@ func (u *Unit) TakeDamage(de DamageEvent) DamageEvent {
 	// reduce health
 	u.health -= de.Value
 	// log
-	if u.Sim != nil && u.Sim.IsLogEnabled() {
-		u.Sim.Log("unitDamage", fmt.Sprintf("%v took %v %v damage from %v", u.Name(), de.Value, de.Dtype.toString(), de.Src.Name()))
-	}
+	u.Sim.Log("unitDamage", fmt.Sprintf("%v took %v %v damage from %v", u.Name(), de.Value, de.Dtype.ToString(), de.Src.Name()))
 	// call callbacks
 	u.OnTakeDamage.Proc(de)
 	// death check

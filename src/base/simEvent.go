@@ -1,20 +1,22 @@
-package sim
+package base
 
-import "slices"
+import (
+	"slices"
+)
 
-type SimulationEvent[T Actor] struct {
-	parent     *Sim[T]
+type SimulationEvent struct {
+	parent     *Sim
 	waitFor    uint
 	timeStart  uint
 	isComplete bool
 	OnProc     func()
 }
 
-func (se *SimulationEvent[T]) Time() uint {
+func (se *SimulationEvent) Time() uint {
 	return se.timeStart + se.waitFor
 }
 
-func (se *SimulationEvent[T]) Wait() {
+func (se *SimulationEvent) Wait() {
 	if se.parent.IsComplete() || se.IsComplete() {
 		return
 	}
@@ -30,11 +32,11 @@ func (se *SimulationEvent[T]) Wait() {
 	}
 }
 
-func (se *SimulationEvent[T]) IsComplete() bool {
+func (se *SimulationEvent) IsComplete() bool {
 	return se.isComplete
 }
 
-func (se *SimulationEvent[T]) Remove() {
+func (se *SimulationEvent) Remove() {
 	start := 0
 	end := len(se.parent.wheel)
 	for start <= end {
@@ -54,7 +56,7 @@ func (se *SimulationEvent[T]) Remove() {
 	se.isComplete = true
 }
 
-func (se *SimulationEvent[T]) insert() {
+func (se *SimulationEvent) insert() {
 	start := 0
 	end := len(se.parent.wheel) - 1
 	for start <= end {
@@ -68,7 +70,7 @@ func (se *SimulationEvent[T]) insert() {
 	se.parent.wheel = slices.Insert(se.parent.wheel, start, se)
 }
 
-func (se *SimulationEvent[T]) Reinsert(waitFor uint) {
+func (se *SimulationEvent) Reinsert(waitFor uint) {
 	if se.isComplete {
 		return
 	}

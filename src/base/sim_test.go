@@ -1,4 +1,4 @@
-package sim
+package base
 
 import (
 	"testing"
@@ -13,7 +13,7 @@ func TestTime(t *testing.T) {
 }
 
 func TestMaxTime(t *testing.T) {
-	sim := NewSimulation[DefaultActor](13333)
+	sim := NewSimulation(13333)
 
 	if sim.IsComplete() != false {
 		t.Fatal(sim.IsComplete())

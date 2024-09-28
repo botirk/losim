@@ -1,13 +1,13 @@
-package unit
+package base
 
 import (
 	"testing"
 )
 
 func TestUnitBaseStats(t *testing.T) {
-	unit := NewDefaultUnit()
+	unit := NewDefaultUnit(NewSimulationDefault())
 
-	if unit.Health() != 0 || unit.MaxHealth() != 0 {
+	if unit.Health() != 100 || unit.MaxHealth() != 100 {
 		t.Fail()
 	}
 

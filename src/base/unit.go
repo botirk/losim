@@ -9,6 +9,8 @@ type Unit struct {
 	name string
 	Sim  *Sim
 
+	Level uint
+
 	health    float64
 	maxHealth float64
 	dead      bool
@@ -25,8 +27,9 @@ type Unit struct {
 func NewUnit(name string, sim *Sim) *Unit {
 	u := Unit{
 		name: name,
+		Sim:  sim,
 
-		Sim: sim,
+		Level: 1,
 
 		dead:      false,
 		health:    100,

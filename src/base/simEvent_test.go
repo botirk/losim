@@ -46,9 +46,7 @@ func TestProc(t *testing.T) {
 	}
 
 	proccedTime := uint(0)
-	e.OnProc = func() {
-		proccedTime = sim.Time()
-	}
+	e.OnProc.MustAdd(func(proc bool) { proccedTime = sim.Time() })
 
 	e.Wait()
 
@@ -68,21 +66,16 @@ func TestProcOrder(t *testing.T) {
 
 	e := sim.Insert(10000)
 	proccedTime := uint(0)
-	e.OnProc = func() {
-		proccedTime = sim.Time()
-	}
+
+	e.OnProc.MustAdd(func(proc bool) { proccedTime = sim.Time() })
 
 	e1 := sim.Insert(5000)
 	proccedTime1 := uint(0)
-	e1.OnProc = func() {
-		proccedTime1 = sim.Time()
-	}
+	e1.OnProc.MustAdd(func(proc bool) { proccedTime1 = sim.Time() })
 
 	e2 := sim.Insert(25000)
 	proccedTime2 := uint(0)
-	e2.OnProc = func() {
-		proccedTime2 = sim.Time()
-	}
+	e2.OnProc.MustAdd(func(proc bool) { proccedTime2 = sim.Time() })
 
 	e.Wait()
 	e2.Wait()
@@ -113,6 +106,149 @@ func TestWait(t *testing.T) {
 	e.Wait()
 
 	if sim.Time() != 1000 {
+		t.Fatal(sim.Time())
+	}
+}
+
+func TestRemaining(t *testing.T) {
+	sim := NewSimulationDefault()
+
+	e := sim.Insert(1000)
+
+	e1 := sim.Insert(300)
+
+	if e.RemainingTime() != 1000 || e1.RemainingTime() != 300 {
+		t.Fatal(e.RemainingTime(), e1.RemainingTime())
+	}
+
+	e1.Wait()
+
+	if e.RemainingTime() != 700 || e1.RemainingTime() != 0 {
+		t.Fatal(e.RemainingTime(), e1.RemainingTime())
+	}
+
+	e.Wait()
+
+	if e.RemainingTime() != 0 || e1.RemainingTime() != 0 {
+		t.Fatal(e.RemainingTime(), e1.RemainingTime())
+	}
+}
+
+func TestSetRemaining(t *testing.T) {
+	sim := NewSimulationDefault()
+
+	e := sim.Insert(1000)
+
+	e1 := sim.Insert(300)
+
+	if e.RemainingTime() != 1000 || e1.RemainingTime() != 300 {
+		t.Fatal(e.RemainingTime(), e1.RemainingTime())
+	}
+
+	e1.Wait()
+
+	if e.RemainingTime() != 700 || e1.RemainingTime() != 0 {
+		t.Fatal(e.RemainingTime(), e1.RemainingTime())
+	}
+
+	e.SetRemainingTime(500)
+
+	if e.RemainingTime() != 500 {
+		t.Fatal(e.RemainingTime())
+	}
+
+	e.Wait()
+
+	if sim.Time() != 800 {
+		t.Fatal(sim.Time())
+	}
+}
+
+func TestWaitFor(t *testing.T) {
+	sim := NewSimulationDefault()
+
+	e := sim.Insert(1000)
+
+	e1 := sim.Insert(300)
+
+	if e.RemainingTime() != 1000 || e1.RemainingTime() != 300 {
+		t.Fatal(e.RemainingTime(), e1.RemainingTime())
+	}
+
+	e1.Wait()
+
+	if e.WaitFor() != 1000 {
+		t.Fatal(e.WaitFor())
+	}
+}
+
+func TestSetWaitFor(t *testing.T) {
+	sim := NewSimulationDefault()
+
+	e := sim.Insert(1000)
+
+	e1 := sim.Insert(300)
+
+	if e.RemainingTime() != 1000 || e1.RemainingTime() != 300 {
+		t.Fatal(e.RemainingTime(), e1.RemainingTime())
+	}
+
+	e1.Wait()
+
+	if e.WaitFor() != 1000 {
+		t.Fatal(e.WaitFor())
+	}
+
+	e.SetWaitFor(1100)
+
+	if e.WaitFor() != 1100 {
+		t.Fatal(e.WaitFor())
+	}
+
+	e.Wait()
+
+	if e.Time() != 1100 {
+		t.Fatal(e.Time())
+	}
+}
+
+func TestFinish(t *testing.T) {
+	sim := NewSimulationDefault()
+
+	e := sim.Insert(1000)
+
+	e.Finish(false)
+
+	e.Wait()
+
+	if sim.Time() != 0 {
+		t.Fatal(sim.Time())
+	}
+}
+
+func TestFinish2(t *testing.T) {
+	sim := NewSimulationDefault()
+
+	e := sim.Insert(1000)
+
+	e1 := sim.Insert(100)
+	e1.OnProc.MustAdd(func(proc bool) { e.Finish(false) })
+	sim.Insert(200)
+	e2 := sim.Insert(300)
+
+	result := e.Wait()
+
+	if sim.Time() != 100 && result != false {
+		t.Fatal(sim.Time(), result)
+	}
+
+	e1.Wait()
+	if sim.Time() != 100 {
+		t.Fatal(sim.Time())
+	}
+
+	e2.Wait()
+	if sim.Time() != 300 {
 		t.Fatal(sim.Time())
 	}
 }

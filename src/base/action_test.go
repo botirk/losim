@@ -24,4 +24,8 @@ func TestBaseAction(t *testing.T) {
 	if a.IsCancelableByUser != false || a.IsCooldownFinishedOnInterrupt != false || a.IsUltimate != false {
 		t.Fatal(a.IsCancelableByUser, a.IsCooldownFinishedOnInterrupt, a.IsUltimate)
 	}
+
+	if a.IsCooldown() {
+		t.Fatal(a.IsCooldown())
+	}
 }

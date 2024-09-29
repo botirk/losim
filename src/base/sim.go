@@ -3,10 +3,9 @@ package base
 import (
 	"errors"
 	"fmt"
+	"losim/src/utils"
 	"strings"
 )
-
-
 
 type Sim struct {
 	maxTime uint
@@ -53,10 +52,12 @@ func (sim *Sim) GetLog() string {
 
 func (sim *Sim) Insert(waitFor uint) *SimulationEvent {
 	result := SimulationEvent{
-		parent:    sim,
-		waitFor:   waitFor,
-		timeStart: sim.time,
-		OnProc:    nil,
+		parent:        sim,
+		waitFor:       waitFor,
+		timeStart:     sim.time,
+		state:         true,
+		isInitialized: true,
+		OnProc:        utils.NewEventContainer[bool](),
 	}
 
 	result.insert()
@@ -93,10 +94,8 @@ func (sim *Sim) consume() (*SimulationEvent, error) {
 	sim.wheel = sim.wheel[:lastItem]
 
 	sim.time = result.Time()
-	if result.OnProc != nil {
-		result.OnProc()
-	}
 	result.isComplete = true
+	result.OnProc.Proc(result.state)
 
 	return result, nil
 }

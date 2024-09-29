@@ -1,39 +1,37 @@
 package base
 
 import (
+	"losim/src/utils"
+	"math"
 	"slices"
 )
 
 type SimulationEvent struct {
-	parent     *Sim
-	waitFor    uint
-	timeStart  uint
-	isComplete bool
-	OnProc     func()
+	parent        *Sim
+	waitFor       uint
+	timeStart     uint
+	isComplete    bool
+	isInitialized bool
+	state         bool
+
+	OnProc utils.EventContainer[bool]
 }
 
 func (se *SimulationEvent) Time() uint {
 	return se.timeStart + se.waitFor
 }
 
-func (se *SimulationEvent) Wait() {
-	if se.parent.IsComplete() || se.IsComplete() {
-		return
+func (se *SimulationEvent) Wait() bool {
+	// se.Finish used or event popped or simulation ended
+	for !se.IsComplete() {
+		// pop next SimEvent
+		se.parent.consume()
 	}
-
-	for {
-		next, err := se.parent.consume()
-		if err != nil {
-			break
-		}
-		if next == se {
-			break
-		}
-	}
+	return se.state
 }
 
 func (se *SimulationEvent) IsComplete() bool {
-	return se.isComplete
+	return se.parent.IsComplete() || se.isComplete
 }
 
 func (se *SimulationEvent) Remove() {
@@ -71,7 +69,7 @@ func (se *SimulationEvent) insert() {
 }
 
 func (se *SimulationEvent) Reinsert(waitFor uint) {
-	if se.isComplete {
+	if se.IsComplete() {
 		return
 	}
 	se.Remove()
@@ -79,4 +77,33 @@ func (se *SimulationEvent) Reinsert(waitFor uint) {
 	se.timeStart = se.parent.time
 	se.waitFor = waitFor
 	se.insert()
+}
+
+func (se *SimulationEvent) RemainingTime() uint {
+	return uint(math.Max(0, float64(se.Time())-float64(se.parent.Time())))
+}
+
+func (se *SimulationEvent) SetRemainingTime(rt uint) {
+	if !se.IsComplete() {
+		se.Reinsert(rt)
+	}
+}
+
+func (se *SimulationEvent) WaitFor() uint {
+	return se.waitFor
+}
+
+func (se *SimulationEvent) SetWaitFor(wf uint) {
+	if se.IsComplete() {
+		return
+	}
+	se.Remove()
+	se.isComplete = false
+	se.waitFor = wf
+	se.insert()
+}
+
+func (se *SimulationEvent) Finish(state bool) {
+	se.isComplete = true
+	se.state = state
 }

@@ -17,6 +17,8 @@ type Action struct {
 	CooldownTime func() uint
 
 	ManaCost func() float64
+
+	cooldown SimulationEvent
 }
 
 func NewDefaultAction(owner Unit) *Action {
@@ -52,4 +54,29 @@ func (a *Action) LevelUp() bool {
 	}
 	a.level += 1
 	return true
+}
+
+func (a *Action) IsCooldown() bool {
+	return a.cooldown.isInitialized && a.cooldown.IsComplete()
+}
+
+func (a *Action) WaitCooldown() {
+	if a.cooldown.isInitialized {
+		a.cooldown.Wait()
+	}
+}
+
+func (a *Action) RemainingCooldown() uint {
+	if a.cooldown.isInitialized {
+		return a.cooldown.RemainingTime()
+	}
+	return 0
+}
+
+func (a *Action) SetRemainingCooldown(rc uint) {
+	a.cooldown.SetRemainingTime(rc)
+}
+
+func (a *Action) FinishCooldown() {
+
 }

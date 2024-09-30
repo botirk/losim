@@ -37,3 +37,8 @@ func TestTakeDamageLog(t *testing.T) {
 		t.Fatal(log, m)
 	}
 }
+
+func TestCastLog(t *testing.T) {
+	/*sim := NewSimulationDefault().EnableLog()
+	a := NewDefaultAction(*NewDefaultUnit(sim))*/
+}

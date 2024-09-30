@@ -15,6 +15,9 @@ type Unit struct {
 	maxHealth float64
 	dead      bool
 
+	mana    float64
+	maxMana float64
+
 	armor float64
 	mr    float64
 
@@ -24,31 +27,33 @@ type Unit struct {
 	OnTakeDamage             utils.EventContainer[DamageEvent]
 }
 
-func NewUnit(name string, sim *Sim) *Unit {
-	u := Unit{
-		name: name,
-		Sim:  sim,
+func InitUnit(u *Unit, name string, sim *Sim) *Unit {
+	u.name = name
+	u.Sim = sim
+	u.Level = 1
 
-		Level: 1,
+	u.dead =      false
+	u.health =    100
+	u.maxHealth = 100
 
-		dead:      false,
-		health:    100,
-		maxHealth: 100,
-
-		OnTakeDamage:             NewDamageEventContainer(),
-		OnFlatDamageReduction:    NewCalcDamageEventContainer(),
-		OnPercentDamageReduction: NewCalcDamageEventContainer(),
-		OnFinalDamageReduction:   NewCalcDamageEventContainer(),
-	}
+	u.OnTakeDamage =             NewDamageEventContainer()
+	u.OnFlatDamageReduction =    NewCalcDamageEventContainer()
+	u.OnPercentDamageReduction = NewCalcDamageEventContainer()
+	u.OnFinalDamageReduction =   NewCalcDamageEventContainer()
+	
 	u.OnPercentDamageReduction.MustAdd(func(proc *DamageEvent) {
 		proc.Value = u.CalcArmorDamageReduction(*proc).Value
 		proc.Value = u.CalcMrDamageReduction(*proc).Value
 	})
 
-	sim.Units = append(sim.Units, &u)
+	sim.Units = append(sim.Units, u)
 	sim.Log("unit", fmt.Sprintf("%v unit added", name))
 
-	return &u
+	return u
+}
+
+func NewUnit(name string, sim *Sim) *Unit {
+	return InitUnit(&Unit{}, name, sim)
 }
 
 const defaultName = "default"

@@ -56,7 +56,6 @@ func (sim *Sim) Insert(waitFor uint) *SimulationEvent {
 		waitFor:       waitFor,
 		timeStart:     sim.time,
 		state:         true,
-		isInitialized: true,
 		OnProc:        utils.NewEventContainer[bool](),
 	}
 

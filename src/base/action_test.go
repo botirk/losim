@@ -3,7 +3,7 @@ package base
 import "testing"
 
 func TestBaseAction(t *testing.T) {
-	a := NewDefaultAction(*NewDefaultUnit(NewSimulationDefault()))
+	a := NewDefaultAction(NewDefaultUnit(NewSimulationDefault()))
 
 	if a.CastTime() != 0 {
 		t.Fatal(a.CastTime())
@@ -27,5 +27,23 @@ func TestBaseAction(t *testing.T) {
 
 	if a.IsCooldown() {
 		t.Fatal(a.IsCooldown())
+	}
+}
+
+func TestCooldown(t *testing.T) {
+	a := NewDefaultAction(NewDefaultUnit(NewSimulationDefault()))
+
+	a.CooldownTime = func() uint { return 500 }
+
+	a.StartCooldown()
+
+	if a.RemainingCooldown() != 500 || !a.IsCooldown() {
+		t.Fatal(a.RemainingCooldown(), a.IsCooldown())
+	}
+
+	a.FinishCooldown()
+
+	if a.IsCooldown() || a.RemainingCooldown() != 0 {
+		t.Fatal(a.IsCooldown(), a.RemainingCooldown())
 	}
 }

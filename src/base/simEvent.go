@@ -11,7 +11,6 @@ type SimulationEvent struct {
 	waitFor       uint
 	timeStart     uint
 	isComplete    bool
-	isInitialized bool
 	state         bool
 
 	OnProc utils.EventContainer[bool]

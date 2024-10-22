@@ -1,38 +1,79 @@
 package base
 
-type Cast[T any] struct {
-	Owner  *Action[T]
-	se     *SimulationEvent
-	state  bool
-	target T
+import "losim/src/utils"
+
+type void int
+
+type Cast struct {
+	Owner *Action
+
+	OnStartCast  utils.EventContainer[void]
+	OnFinishCast utils.EventContainer[void]
+
+	se       *SimulationEvent
+	isActive bool
+	proc     bool
 }
 
-func InitCast[T any](c *Cast[T], owner *Action[T], target T) *Cast[T] {
+func InitCast(c *Cast, owner *Action) *Cast {
 	c.Owner = owner
-	c.target = target
-	if !owner.Castable(target) {
-		c.state = false
+	c.OnStartCast = utils.NewEventContainer[void]()
+	c.OnFinishCast = utils.NewEventContainer[void]()
+	return c
+}
+
+func NewCast(owner *Action) *Cast {
+	return InitCast(&Cast{}, owner)
+}
+
+func (c *Cast) Cast() *Cast {
+	if !c.Owner.Castable() {
+		c.isActive = false
+		c.proc = false
 	} else {
 		c.Owner.Owner.mana -= c.Owner.ManaCost()
-		if c.Owner.CastTime() <= 0 {
-			c.Owner.StartCooldown()
-			// to-do Procs
-			c.state = true
+		c.Owner.StartCooldown()
+		castTime := c.Owner.CastTime()
+		if castTime <= 0 {
+			c.isActive = false
+			c.proc = true
+			c.OnStartCast.Proc(0)
+			c.OnFinishCast.Proc(0)
 		} else {
-			// not instant cast
+			c.isActive = true
+			c.se = c.Owner.Owner.Sim.Insert(castTime)
+			c.Owner.Owner.currentCast = c
+			c.OnStartCast.Proc(0)
+			c.se.OnProc.MustAdd(func(proc bool) {
+				c.isActive = false
+				c.proc = proc
+				if proc {
+					c.OnFinishCast.Proc(0)
+				} else if c.Owner.IsCooldownFinishedOnInterrupt {
+					c.Owner.FinishCooldown()
+				}
+			})
 		}
 	}
 	return c
 }
 
-func NewCast[T any](owner *Action[T], target T) *Cast[T] {
-	return InitCast(&Cast[T]{}, owner, target)
+func (c *Cast) Wait() bool {
+	if c.IsActive() {
+		return c.se.Wait()
+	} else {
+		return c.proc
+	}
 }
 
-func (c *Cast[T]) Wait() bool {
-	return c.state
+func (c *Cast) IsActive() bool {
+	return c.isActive
 }
 
-func (c *Cast[T]) Target() T {
-	return c.target
+func (c *Cast) MustAdd(toAdd func(proc bool)) {
+	if c.IsActive() {
+		c.se.OnProc.MustAdd(toAdd)
+	} else {
+		toAdd(c.proc)
+	}
 }

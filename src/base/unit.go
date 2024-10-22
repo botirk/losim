@@ -1,6 +1,7 @@
 package base
 
 import (
+	"errors"
 	"fmt"
 	"losim/src/utils"
 )
@@ -25,6 +26,8 @@ type Unit struct {
 	OnPercentDamageReduction utils.EventContainer[*DamageEvent]
 	OnFinalDamageReduction   utils.EventContainer[*DamageEvent]
 	OnTakeDamage             utils.EventContainer[DamageEvent]
+
+	currentCast *Cast
 }
 
 func InitUnit(u *Unit, name string, sim *Sim) *Unit {
@@ -32,15 +35,15 @@ func InitUnit(u *Unit, name string, sim *Sim) *Unit {
 	u.Sim = sim
 	u.Level = 1
 
-	u.dead =      false
-	u.health =    100
+	u.dead = false
+	u.health = 100
 	u.maxHealth = 100
 
-	u.OnTakeDamage =             NewDamageEventContainer()
-	u.OnFlatDamageReduction =    NewCalcDamageEventContainer()
+	u.OnTakeDamage = NewDamageEventContainer()
+	u.OnFlatDamageReduction = NewCalcDamageEventContainer()
 	u.OnPercentDamageReduction = NewCalcDamageEventContainer()
-	u.OnFinalDamageReduction =   NewCalcDamageEventContainer()
-	
+	u.OnFinalDamageReduction = NewCalcDamageEventContainer()
+
 	u.OnPercentDamageReduction.MustAdd(func(proc *DamageEvent) {
 		proc.Value = u.CalcArmorDamageReduction(*proc).Value
 		proc.Value = u.CalcMrDamageReduction(*proc).Value
@@ -96,4 +99,12 @@ func (u *Unit) Dead() bool {
 
 func (u *Unit) SetHealth(h float64) {
 	u.health = h
+}
+
+func (u *Unit) CurrentCast() (*Cast, error) {
+	if u.currentCast != nil && u.currentCast.IsActive() {
+		return u.currentCast, nil
+	} else {
+		return nil, errors.New("no current cast")
+	}
 }

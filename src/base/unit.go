@@ -27,7 +27,7 @@ type Unit struct {
 	OnFinalDamageReduction   utils.EventContainer[*DamageEvent]
 	OnTakeDamage             utils.EventContainer[DamageEvent]
 
-	currentCast *Cast
+	currentCast Cast
 }
 
 func InitUnit(u *Unit, name string, sim *Sim) *Unit {
@@ -101,7 +101,7 @@ func (u *Unit) SetHealth(h float64) {
 	u.health = h
 }
 
-func (u *Unit) CurrentCast() (*Cast, error) {
+func (u *Unit) CurrentCast() (Cast, error) {
 	if u.currentCast != nil && u.currentCast.IsActive() {
 		return u.currentCast, nil
 	} else {

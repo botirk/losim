@@ -2,106 +2,146 @@ package base
 
 import "math"
 
-type Action struct {
-	Name  string
-	Owner *Unit
+type Action interface {
+	// ActionLevel
+	Level() uint
+	LevelUp() bool
+	// ActionCooldown
+	IsCooldown() bool
+	SetRemainingCooldown(rc uint)
+	RemainingCooldown() uint
+	FinishCooldown()
+	StartCooldown() bool
+	WaitCooldown()
+	// ActionHaste
+	AbilityHaste() uint
+	AbilityHasteModifier() float64
+	SetAbilityHaste(ah uint)
 
-	MinLevel                      uint
-	MaxLevel                      uint
-	IsCancelableByUser            bool
-	IsCooldownFinishedOnInterrupt bool
-	IsUltimate                    bool
-
-	level uint
-
-	CastTime     func() uint
-	CooldownTime func() uint
-	ManaCost     func() float64
-
-	Castable func() bool
-
-	cooldown *SimulationEvent
-
-	// zero to ~500
-	AbilityHaste uint
+	// user implemented
+	Owner() *Unit
+	MinLevel() uint
+	MaxLevel() uint
+	CastTime() uint
+	CooldownTime() uint
+	ManaCost() float64
+	IsCancelableByUser() bool
+	IsCooldownFinishedOnInterrupt() bool
+	IsUltimate() bool
 }
 
-func InitAction(a *Action, owner *Unit, name string) *Action {
-	a.Owner = owner
-	a.Name = name
-	a.CastTime = func() uint { return 0 }
-	a.CooldownTime = func() uint { return 0 }
-	a.ManaCost = func() float64 { return 0 }
-	a.Castable = func() bool {
-		return a.Level() >= a.MinLevel && !a.IsCooldown() && !a.Owner.Dead()
+type Cast interface {
+	// CastTiming
+	Owner() Action
+	IsActive() bool
+	IsResolved() bool
+	MustAdd(func(proc bool))
+	Wait() bool
+}
+
+type CastTiming struct {
+	owner    Cast
+	se       *SimulationEvent
+	isActive bool
+	proc     bool
+}
+
+func InitCastTiming(c *CastTiming, owner Cast) {
+	c.owner = owner
+	c.isActive = true
+}
+
+func (c *CastTiming) IsActive() bool {
+	return c.isActive
+}
+
+func (c *CastTiming) IsResolved() bool {
+	return !c.isActive
+}
+
+func (c *CastTiming) Wait() bool {
+	if c.IsActive() {
+		return c.se.Wait()
+	} else {
+		return c.proc
 	}
-	return a
 }
 
-func NewDefaultAction(owner *Unit) *Action {
-	return InitAction(&Action{}, owner, defaultName)
+func (c *CastTiming) MustAdd(toAdd func(proc bool)) {
+	if c.IsActive() {
+		c.se.OnProc.MustAdd(toAdd)
+	} else {
+		toAdd(c.proc)
+	}
 }
 
-func (a *Action) Level() uint {
+func (c *CastTiming) Owner() Action {
+	return c.owner.Owner()
+}
+
+type ActionLevel struct {
+	Owner Action
+	level uint
+}
+
+func (a *ActionLevel) Level() uint {
 	return a.level
 }
 
-func (a *Action) LevelUp() bool {
-	if a.level >= a.MaxLevel {
+func (a *ActionLevel) LevelUp() bool {
+	unitLevel := a.Owner.Owner().Level
+	if a.level >= a.Owner.MaxLevel() {
 		return false
-	} else if a.IsUltimate {
-		if a.Owner.Level < 6 {
+	} else if a.Owner.IsUltimate() {
+		if unitLevel < 6 {
 			return false
-		} else if a.Owner.Level < 11 && a.level >= 1 {
+		} else if unitLevel < 11 && a.level >= 1 {
 			return false
-		} else if a.Owner.Level < 16 && a.level >= 2 {
+		} else if unitLevel < 16 && a.level >= 2 {
 			return false
 		}
-	} else if a.level >= uint(math.Ceil(float64(a.Owner.Level)/2)) {
+	} else if a.level >= uint(math.Ceil(float64(unitLevel)/2)) {
 		return false
 	}
 	a.level += 1
 	return true
 }
 
-func (a *Action) IsCooldown() bool {
+type ActionCooldown struct {
+	Owner    Action
+	cooldown *SimulationEvent
+}
+
+func (a *ActionCooldown) IsCooldown() bool {
 	return a.cooldown != nil && !a.cooldown.IsComplete() && a.cooldown.RemainingTime() > 0
 }
 
-func (a *Action) WaitCooldown() {
+func (a *ActionCooldown) WaitCooldown() {
 	if a.cooldown != nil {
 		a.cooldown.Wait()
 	}
 }
 
-func (a *Action) RemainingCooldown() uint {
+func (a *ActionCooldown) RemainingCooldown() uint {
 	if a.IsCooldown() {
 		return a.cooldown.RemainingTime()
 	}
 	return 0
 }
 
-func (a *Action) SetRemainingCooldown(rc uint) {
+func (a *ActionCooldown) SetRemainingCooldown(rc uint) {
 	a.cooldown.SetRemainingTime(rc)
 }
 
-func (a *Action) FinishCooldown() {
+func (a *ActionCooldown) FinishCooldown() {
 	a.cooldown.Finish(false)
 }
 
-func (a *Action) StartCooldown() bool {
-	ct := a.CooldownTime()
+func (a *ActionCooldown) StartCooldown() bool {
+	ct := a.Owner.CooldownTime()
 	if ct > 0 && !a.IsCooldown() {
-		a.cooldown = a.Owner.Sim.Insert(ct)
+		a.cooldown = a.Owner.Owner().Sim.Insert(ct)
 		return true
 	}
 	return false
-}
-
-func (a *Action) AbilityHasteModifier() float64 {
-	return float64(100) / float64(100+a.AbilityHaste)
-}
-
-func (a *Action) Cast() *Cast {
-	return NewCast(a).Cast()
 }

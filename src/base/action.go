@@ -30,58 +30,13 @@ type Action interface {
 	IsUltimate() bool
 }
 
-type Cast interface {
-	// CastTiming
-	Owner() Action
-	IsActive() bool
-	IsResolved() bool
-	MustAdd(func(proc bool))
-	Wait() bool
-}
-
-type CastTiming struct {
-	owner    Cast
-	se       *SimulationEvent
-	isActive bool
-	proc     bool
-}
-
-func InitCastTiming(c *CastTiming, owner Cast) {
-	c.owner = owner
-	c.isActive = true
-}
-
-func (c *CastTiming) IsActive() bool {
-	return c.isActive
-}
-
-func (c *CastTiming) IsResolved() bool {
-	return !c.isActive
-}
-
-func (c *CastTiming) Wait() bool {
-	if c.IsActive() {
-		return c.se.Wait()
-	} else {
-		return c.proc
-	}
-}
-
-func (c *CastTiming) MustAdd(toAdd func(proc bool)) {
-	if c.IsActive() {
-		c.se.OnProc.MustAdd(toAdd)
-	} else {
-		toAdd(c.proc)
-	}
-}
-
-func (c *CastTiming) Owner() Action {
-	return c.owner.Owner()
-}
-
 type ActionLevel struct {
-	Owner Action
+	Action Action
 	level uint
+}
+
+func InitActionLevel(a *ActionLevel, action Action) {
+	a.Action = action
 }
 
 func (a *ActionLevel) Level() uint {
@@ -89,10 +44,10 @@ func (a *ActionLevel) Level() uint {
 }
 
 func (a *ActionLevel) LevelUp() bool {
-	unitLevel := a.Owner.Owner().Level
-	if a.level >= a.Owner.MaxLevel() {
+	unitLevel := a.Action.Owner().Level
+	if a.level >= a.Action.MaxLevel() {
 		return false
-	} else if a.Owner.IsUltimate() {
+	} else if a.Action.IsUltimate() {
 		if unitLevel < 6 {
 			return false
 		} else if unitLevel < 11 && a.level >= 1 {
@@ -108,8 +63,12 @@ func (a *ActionLevel) LevelUp() bool {
 }
 
 type ActionCooldown struct {
-	Owner    Action
+	Action    Action
 	cooldown *SimulationEvent
+}
+
+func InitActionCooldown(a *ActionCooldown, action Action) {
+	a.Action = action
 }
 
 func (a *ActionCooldown) IsCooldown() bool {
@@ -138,10 +97,31 @@ func (a *ActionCooldown) FinishCooldown() {
 }
 
 func (a *ActionCooldown) StartCooldown() bool {
-	ct := a.Owner.CooldownTime()
+	ct := a.Action.CooldownTime()
 	if ct > 0 && !a.IsCooldown() {
-		a.cooldown = a.Owner.Owner().Sim.Insert(ct)
+		a.cooldown = a.Action.Owner().Sim.Insert(ct)
 		return true
 	}
 	return false
+}
+
+type ActionHaste struct {
+	Action Action
+	haste uint
+}
+
+func InitActionHaste(a *ActionHaste, action Action) {
+	a.Action = action
+}
+
+func (ah *ActionHaste) AbilityHaste() uint {
+	return ah.haste
+}
+
+func (ah *ActionHaste) AbilityHasteModifier() float64 {
+	return 100 / (100 + float64(ah.haste))
+}
+
+func (ah *ActionHaste) SetAbilityHaste(ahIN uint) {
+	ah.haste = ahIN
 }

@@ -28,6 +28,7 @@ type Unit struct {
 	OnTakeDamage             utils.EventContainer[DamageEvent]
 
 	currentCast Cast
+	attack      ActionEnemy
 }
 
 func InitUnit(u *Unit, name string, sim *Sim) *Unit {
@@ -48,6 +49,8 @@ func InitUnit(u *Unit, name string, sim *Sim) *Unit {
 		proc.Value = u.CalcArmorDamageReduction(*proc).Value
 		proc.Value = u.CalcMrDamageReduction(*proc).Value
 	})
+
+	u.attack = NewAttack(u)
 
 	sim.Units = append(sim.Units, u)
 	sim.Log("unit", fmt.Sprintf("%v unit added", name))

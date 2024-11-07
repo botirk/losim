@@ -54,3 +54,7 @@ func InitCastEnemy(c *CastEnemy, action ActionEnemy, target *Unit) (*CastEnemy, 
 		}
 	}
 }
+
+func NewCastEnemy(action ActionEnemy, target *Unit) (*CastEnemy, CastFunc) {
+	return InitCastEnemy(&CastEnemy{}, action, target)
+}

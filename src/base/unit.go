@@ -12,6 +12,8 @@ type Unit struct {
 
 	Level uint
 
+	settings UnitSettings
+
 	health    float64
 	maxHealth float64
 	dead      bool
@@ -21,6 +23,14 @@ type Unit struct {
 
 	armor float64
 	mr    float64
+
+	baseAd    float64
+	bonusAd   float64
+	lifesteal float64
+
+	baseAs  float64
+	bonusAs float64
+	asCap   float64
 
 	OnFlatDamageReduction    utils.EventContainer[*DamageEvent]
 	OnPercentDamageReduction utils.EventContainer[*DamageEvent]
@@ -35,10 +45,14 @@ func InitUnit(u *Unit, name string, sim *Sim) *Unit {
 	u.name = name
 	u.Sim = sim
 	u.Level = 1
+	u.settings = UnitSettings{attackAnimation: 0.25}
 
 	u.dead = false
 	u.health = 100
 	u.maxHealth = 100
+
+	u.baseAd = 1
+	u.baseAs = 0.5
 
 	u.OnTakeDamage = NewDamageEventContainer()
 	u.OnFlatDamageReduction = NewCalcDamageEventContainer()
@@ -53,7 +67,9 @@ func InitUnit(u *Unit, name string, sim *Sim) *Unit {
 	u.attack = NewAttack(u)
 
 	sim.Units = append(sim.Units, u)
-	sim.Log("unit", fmt.Sprintf("%v unit added", name))
+	if sim.isLogEnabled {
+		sim.Log("unit", fmt.Sprintf("%v unit added", name))
+	}
 
 	return u
 }
@@ -110,4 +126,16 @@ func (u *Unit) CurrentCast() (Cast, error) {
 	} else {
 		return nil, errors.New("no current cast")
 	}
+}
+
+func (u *Unit) Ad() float64 {
+	return u.baseAd + u.bonusAd
+}
+
+func (u *Unit) As() float64 {
+	return u.baseAs * (1 + u.bonusAs/100)
+}
+
+func (u *Unit) AsAnimation() float64 {
+	return u.settings.attackAnimation
 }

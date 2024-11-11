@@ -1,5 +1,7 @@
 package base
 
+import "fmt"
+
 type Attack struct {
 	unit                *Unit
 	SettingCastTime     func() uint
@@ -13,8 +15,11 @@ type Attack struct {
 
 func InitAttack(attack *Attack, unit *Unit) *Attack {
 	attack.unit = unit
-	attack.SettingCastTime = func() uint { return 500 }
-	attack.SettingCooldownTime = func() uint { return 500 }
+	attack.SettingCastTime = func() uint { 
+		owner := attack.Owner()
+		return uint((1 / owner.As()) * owner.AsAnimation() * 1000) 
+	}
+	attack.SettingCooldownTime = func() uint { return uint((1 / attack.Owner().As()) * 1000) }
 
 	InitActionHaste(&attack.ActionHaste, attack)
 	InitActionLevel(&attack.ActionLevel, attack)
@@ -30,6 +35,18 @@ func NewAttack(unit *Unit) *Attack {
 
 func (a *Attack) Cast(target *Unit) *CastEnemy {
 	result, init := NewCastEnemy(a, target)
+	result.OnStartCast.MustAdd(func(proc *Unit) {
+		owner := a.Owner()
+		if owner.Sim.isLogEnabled {
+			owner.Sim.Log("attack", fmt.Sprintf("%v starts attack against %v", owner.Name(), proc.Name()))
+		}
+	})
+	result.OnFinishCast.MustAdd(func(proc *Unit) {
+		owner := a.Owner()
+		if owner.Sim.isLogEnabled {
+			owner.Sim.Log("attack", fmt.Sprintf("%v finishes attack against %v", owner.Name(), proc.Name()))
+		}
+	})
 
 	init()
 

@@ -51,7 +51,9 @@ func (u *Unit) TakeDamage(de DamageEvent) DamageEvent {
 	// reduce health
 	u.health -= de.Value
 	// log
-	u.Sim.Log("unitDamage", fmt.Sprintf("%v took %v %v damage from %v", u.Name(), de.Value, de.Dtype.ToString(), de.Src.Name()))
+	if u.Sim.isLogEnabled {
+		u.Sim.Log("unitDamage", fmt.Sprintf("%v took %v %v damage from %v", u.Name(), de.Value, de.Dtype.ToString(), de.Src.Name()))
+	}
 	// call callbacks
 	u.OnTakeDamage.Proc(de)
 	// death check

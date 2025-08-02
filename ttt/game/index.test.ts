@@ -27,8 +27,6 @@ test('simple tic tac game horizontal', async () => {
 
     assert.strictEqual(game.winner, 1)
 
-    game.log()
-
     assert.deepEqual(game.field, [[ 1, undefined, 2 ], [ 1, undefined, 2 ], [ 1, undefined,  undefined ]])
 })
 
@@ -56,8 +54,6 @@ test('simple tic tac game vertical', async () => {
     await game.play()
 
     assert.strictEqual(game.winner, 1)
-
-    game.log()
 
     assert.deepEqual(game.field, [[ 1, 1, 1 ], [ undefined, undefined, undefined ], [ 2, 2, undefined ]])
 })
@@ -87,9 +83,7 @@ test('simple tic tac game diagonal 1', async () => {
 
     assert.strictEqual(game.winner, 1)
 
-    game.log()
-
-    assert.strictEqual(game.log(), 'xo \nox \n  x')
+    assert.strictEqual(game.toString(), 'xo \nox \n  x')
 })
 
 test('simple tic tac game diagonal 2', async () => {
@@ -117,9 +111,7 @@ test('simple tic tac game diagonal 2', async () => {
 
     assert.strictEqual(game.winner, 1)
 
-    game.log()
-
-    assert.strictEqual(game.log(), ' ox\nox \nx  ')
+    assert.strictEqual(game.toString(), ' ox\nox \nx  ')
 })
 
 test('simple tic tac game error', async () => {
@@ -169,6 +161,6 @@ test('simple tic tac game draw', async () => {
     await game.play()
 
     assert.strictEqual(game.winner, undefined)
-    assert.strictEqual(game.log(), 'xxo\noxx\nxoo')
+    assert.strictEqual(game.toString(), 'xxo\noxx\nxoo')
 })
 

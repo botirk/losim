@@ -1,33 +1,10 @@
 {
   "name": "losim",
   "version": "1.0.0",
-  "description": "rpg/moba simulator",
+  "description": "Educatioanal bot coding",
   "scripts": {
-    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
-    "testCurrent": "node --experimental-vm-modules node_modules/jest/bin/jest.js src/items/ad/gangel.test.ts",
-    "bestItems": "tsx src/bin/bestItems.ts",
-    "dev": "parcel src/bin/bestItems.html",
-    "build": "parcel build src/bin/bestItems.html"
   },
   "author": "botirk",
   "license": "ISC",
-  "dependencies": {
-    "seedrandom": "^3.0.5",
-    "setimmediate": "^1.0.5",
-    "tsx": "^4.7.0"
-  },
-  "devDependencies": {
-    "@types/jest": "^29.5.11",
-    "@types/seedrandom": "^3.0.8",
-    "jest": "^29.7.0",
-    "parcel": "^2.11.0",
-    "ts-jest": "^29.1.1",
-    "zx": "^7.2.3"
-  },
-  "alias": {
-    "process": {
-      "global": "{}"
-    }
-  },
   "type": "module"
 }

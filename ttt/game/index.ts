@@ -1,7 +1,7 @@
 
-type FieldItem = undefined | 1 | 2
+type FieldStructureItem = null | 1 | 2
 
-export type Field = [[ FieldItem, FieldItem, FieldItem ], [ FieldItem, FieldItem, FieldItem ], [ FieldItem, FieldItem, FieldItem ]]
+export type FieldStructure = FieldStructureItem[][]
 
 export type Turn = 1 | 2
 
@@ -11,131 +11,103 @@ type Y = number
 
 export type Move = [ X, Y ]
 
-export class Game {
-    private _field: Field = [[undefined, undefined, undefined], [undefined, undefined, undefined], [undefined, undefined, undefined]]
-    get field(): Readonly<Field> { return this._field }
+export class Field {
+    private _startParent: Field
 
     private _turn: Turn = 1
     get turn(): Readonly<Turn> { return this._turn }
 
-    get step() { return this.log.length + 1 }
+    private _width: number
+    get width(): Readonly<number> { return this._startParent?.width ?? this._width }
+    private _height: number
+    get height(): Readonly<number> { return this._startParent?.height ?? this._height }
+    private _winCombo: number
+    get winCombo(): Readonly<number> { return this._startParent?.winCombo ?? this._winCombo }
 
-    private _winner: Turn|void
-    get winner(): Readonly<Turn|void> { return this._winner }
-    
-    static winner(field: Readonly<Field>, turn: Readonly<Turn>, move: Readonly<Move>): boolean {
-        // calc horizontal
-        for (let x = 0, y = move[1]; x <= 3; x += 1) {
-            if (x === 3) {
-                return true
-            } else if (field[x][y] !== turn) {
-                break
-            }
-        }
-        // calc vertical
-        for (let x = move[0], y = 0; y <= 3; y += 1) {
-            if (y === 3) {
-                return true
-            } else if (field[x][y] !== turn) {
-                break
-            }
-        }
-        // calc diagonal 1
-        for (let x = 0, y = 0; x <= 3; x += 1, y += 1) {
-            if (x === 3) {
-                return true
-            } else if (field[x][y] !== turn) {
-                break
-            }
-        }
-        // calc diagonal 2
-        for (let x = 0, y = 2; x <= 3; x += 1, y -= 1) {
-            if (x === 3) {
-                return true
-            } else if (field[x][y] !== turn) {
-                break
-            }
-        }
-        // not winner
-        return false
+    _fieldStructure: FieldStructure
+    get fieldStructure(): Readonly<FieldStructure> { return this._fieldStructure }
+
+    private _full: boolean
+    get full(): Readonly<boolean> { return this._full }
+    private _winner: Turn|null = null
+    get winner(): Readonly<Turn|null> { return this._winner }
+
+    private _fieldLog: Field[] = []
+    get fieldLog(): Readonly<Field[]> { return this._fieldLog }
+
+    private _moveLog: Readonly<Move>[] = []
+    get moveLog(): Readonly<Readonly<Move>[]> { return this._moveLog }
+
+    init(width: Readonly<number> = 3, height: Readonly<number> = 3, winCombo: Readonly<number> = 3) {
+        if (this._fieldStructure) throw new Error('already initiated')
+        if (width < 1 || height < 1 || !Number.isInteger(width) || !Number.isInteger(height)) throw new Error('invalid height/width')
+        if (winCombo < 3 || !Number.isInteger(winCombo)) throw new Error('invalid winCombo')
+        this._width = width
+        this._height = height
+        this._winCombo = winCombo
+        this._fieldStructure = new Array(height).fill(new Array(width).fill(null))
     }
 
-    static full(field: Readonly<Field>): boolean {
-        for (let y = 0; y < 3; y += 1) {
-            for (let x = 0; x <  3; x += 1) {
-                if (!field[x][y]) return false
-            }
-        }
-        return true
-    }
-
-    private applyTurn(turn: Readonly<Turn>, move: Readonly<Move>): boolean {
-        // change field
-        this._field[move[0]][move[1]] = turn
-        // log
-        this.log.push(move)
-        // winner
-        if (Game.winner(this._field, turn, move)) {
-            this._winner = turn
-            return true
-        }
-        // full
-        if (Game.full(this._field)) {
-            return true
-        }
-        // more turns
-        return false
-    }
-
-    maxInvalidMoves = 1
-    
-    player1?: (field: Readonly<Field>, turn: Readonly<Turn>, step: number) => Move | Promise<Move>
-    player2?: (field: Readonly<Field>, turn: Readonly<Turn>, step: number) => Move | Promise<Move>
-
-    static isValidMove(field: Readonly<Field>, move: Readonly<Move>): boolean {
-        if (move[0] < 0 || move[0] > 2 || move[1] < 0 || move[1] > 2) return false
-        if (field[move[0]][move[1]]) return false
+    private isValidMove(move: Readonly<Move>): boolean {
+        if (move[0] < 0 || move[0] >= this.width || move[1] < 0 || move[1] >= this.height) return false
         if (!Number.isInteger(move[0]) || !Number.isInteger(move[1])) return false
+        if (this._fieldStructure[move[0]][move[1]]) return false
         return true
     }
 
-    async play() {
-        if (!this.player1) throw new Error('no player1')
-        if (!this.player2) throw new Error('no player2')
+    private calcFull(): void {
+        if (this._full) return
+        for (let y = 0; y < this.height; y += 1) {
+            for (let x = 0; x < this.width; x += 1) {
+                if (!this._fieldStructure[x][y]) return
+            }
+        }
+        this._full = true
+    }
 
-        let player1InvalidMoves = 0, player2InvalidMoves = 0
-        while (true) {
-            this._turn = 1
-            while (true) {
-                const move = await this.player1(this._field, this._turn, this.step)
-                if (!Game.isValidMove(this._field, move)) {
-                    player1InvalidMoves += 1
-                    if (player1InvalidMoves >= this.maxInvalidMoves) throw new Error('player1 got too much invalid moves')
-                } else {
-                    if (this.applyTurn(this._turn, move)) return
-                    break
-                }
-            }
-            
-            this._turn = 2;
-            while (true) {
-                const move = await this.player2(this._field, this._turn, this.step)
-                if (!Game.isValidMove(this._field, move)) {
-                    player2InvalidMoves += 1
-                    if (player2InvalidMoves >= this.maxInvalidMoves) throw new Error('player2 got too much invalid moves')
-                } else {
-                    if (this.applyTurn(this._turn, move)) return
-                    break
-                }
-            }
+    private calcWinner(): void {
+        if (this._winner || !this._moveLog.length) return
+        const move = this._moveLog[this._moveLog.length - 1]
+        const turn = this._fieldStructure[move[0]][move[1]] as Turn
+
+        let horizontal = 1
+        for (let x = move[0] - 1; x >= 0 && horizontal < this.winCombo && this._fieldStructure[x][move[1]] == turn; x -= 1) horizontal += 1
+        for (let x = move[0] + 1; x < this.width && horizontal < this.winCombo && this._fieldStructure[x][move[1]] == turn; x += 1) horizontal += 1
+        if (horizontal >= this.winCombo) {
+            this._winner = turn
+            return
+        }
+
+        let vertical = 1
+        for (let y = move[1] - 1; y >= 0 && vertical < this.winCombo && this._fieldStructure[move[0]][y] == turn; y -= 1) vertical += 1
+        for (let y = move[1] + 1; y < this.height && vertical < this.winCombo && this._fieldStructure[move[0]][y] == turn; y += 1) vertical += 1
+        if (vertical >= this.winCombo) {
+            this._winner = turn
+            return
+        }
+
+        let diagonal1 = 1
+        for (let x = move[0] - 1, y = move[1] - 1; x >= 0 && y >= 0 && diagonal1 < this.winCombo && this._fieldStructure[x][y] == turn; x -= 1, y -= 1) diagonal1 += 1
+        for (let x = move[0] + 1, y = move[1] + 1; x < this.width && y < this.height && diagonal1 < this.winCombo && this._fieldStructure[x][y] == turn; x += 1, y += 1) diagonal1 += 1
+        if (diagonal1 >= this.winCombo) {
+            this._winner = turn
+            return
+        }
+
+        let diagonal2 = 1
+        for (let x = move[0] - 1, y = move[1] + 1; x >= 0 && y < this.height && diagonal2 < this.winCombo && this._fieldStructure[x][y] == turn; x -= 1, y += 1) diagonal2 += 1
+        for (let x = move[0] + 1, y = move[1] - 1; x < this.width && y >= 0 && diagonal2 < this.winCombo && this._fieldStructure[x][y] == turn; x += 1, y -= 1) diagonal2 += 1
+        if (diagonal2 >= this.winCombo) {
+            this._winner = turn
+            return
         }
     }
 
-    static toString(field: Readonly<Field>) {
+    toString(): string {
         let result = ''
-        for (let y = 0; y < 3; y += 1) {
-            for (let x = 0; x < 3; x += 1) {
-                switch (field[x][y]) {
+        for (let y = 0; y < this.height; y += 1) {
+            for (let x = 0; x < this.width; x += 1) {
+                switch (this._fieldStructure[x][y]) {
                     case 1:
                         result += 'x'
                         break
@@ -147,30 +119,82 @@ export class Game {
                         break
                 }
             }
-            if (y < 2) result += '\n'
+            if (y < this.height - 1) result += '\n'
         }
         return result
     }
 
-    toString() {
-        return Game.toString(this._field)
+    move(move: Readonly<Move>): Field {
+        if (this._winner) throw new Error('game ended with winner')
+        if (this._full) throw new Error('game ended with draw')
+        if (!this.isValidMove(move)) throw new Error('invalid move')
+
+        const newField = new Field()
+        newField._startParent = this._startParent ?? this
+        newField._fieldLog = [...this._fieldLog, this]
+        newField._moveLog = [...this._moveLog, move]
+        newField._fieldStructure = [...this._fieldStructure]
+        newField._fieldStructure[move[0]] = [...newField._fieldStructure[move[0]]]
+        newField._fieldStructure[move[0]][move[1]] = this.turn
+        newField.calcWinner()
+        newField.calcFull()
+        newField._turn = (this._turn === 1 ? 2 : 1)
+        return newField
+    }
+}
+
+export class Game {
+    constructor(width = 3, height = 3, winCombo = 3, maxInvalidMoves = 1) {
+        this._field = new Field()
+        this._field.init(width, height, winCombo)
+        this.maxInvalidMoves = maxInvalidMoves
+    }
+    
+    private _field: Field
+    get field(): Readonly<Field> { return this._field }
+    
+    private maxInvalidMoves: number
+    player1?: (field: Readonly<Field>) => Move | Promise<Move>
+    private player1InvalidMoves = 0
+    player2?: (field: Readonly<Field>) => Move | Promise<Move>
+    private player2InvalidMoves = 0
+
+    canPlay() {
+        return !this.field.winner && !this.field.full
     }
 
-    static immutableMove(field: Readonly<Field>, move: Move, turn: Turn): Field {
-        const result: Field = [...field]
-        result[move[0]] = [...field[move[0]]]
-        result[move[0]][move[1]] = turn
-        return result
-    }
-
-    static fieldsEqual(field1: Readonly<Field>, field2: Readonly<Field>) {
-        for (let y = 0; y < 3; y += 1) {
-            for (let x = 0; x <  3; x += 1) {
-                if (field1[x][y] != field2[x][y]) return false
+    async playTurn() {
+        if (!this.canPlay()) throw new Error('game is over')
+        if (this.field.turn == 1) {
+            if (!this.player1) throw new Error('no player1')
+            if (this.player1InvalidMoves >= this.maxInvalidMoves) throw new Error('player1 max invalid moves')
+            while (true) {
+                try {
+                    const move = await this.player1(this.field)
+                    this._field = this._field.move(move)
+                    break
+                } catch {
+                    this.player1InvalidMoves += 1
+                    if (this.player1InvalidMoves >= this.maxInvalidMoves) throw new Error('player1 max invalid moves')
+                }
+            }
+        } else {
+            if (!this.player2) throw new Error('no player2')
+            if (this.player2InvalidMoves >= this.maxInvalidMoves) throw new Error('player2 max invalid moves')
+            while (true) {
+                try {
+                    const move = await this.player2(this.field)
+                    this._field = this._field.move(move)
+                    break
+                } catch {
+                    this.player2InvalidMoves += 1
+                    if (this.player2InvalidMoves >= this.maxInvalidMoves) throw new Error('player2 max invalid moves')
+                }
             }
         }
-        return true
     }
 
-    log: Readonly<Move>[] = []
+    async play() {
+        while (this.canPlay()) await this.playTurn()
+    }
 }

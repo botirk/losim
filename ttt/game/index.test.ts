@@ -23,11 +23,17 @@ test('simple tic tac game horizontal', async () => {
         return player2turns.shift() ?? [ 2, 2 ]
     }
 
-    await game.play()
+    try {
+         await game.play()
+    } catch (e) {
+        console.log(game.field.toString(), game.field.winner)
+        throw e
+    }
+   
 
-    assert.strictEqual(game.winner, 1)
+    assert.strictEqual(game.field.winner, 1)
 
-    assert.deepEqual(game.field, [[ 1, undefined, 2 ], [ 1, undefined, 2 ], [ 1, undefined,  undefined ]])
+    assert.deepEqual(game.field.fieldStructure, [[ 1, null, 2 ], [ 1, null, 2 ], [ 1, null, null ]])
 })
 
 test('simple tic tac game vertical', async () => {
@@ -53,9 +59,9 @@ test('simple tic tac game vertical', async () => {
 
     await game.play()
 
-    assert.strictEqual(game.winner, 1)
+    assert.strictEqual(game.field.winner, 1)
 
-    assert.deepEqual(game.field, [[ 1, 1, 1 ], [ undefined, undefined, undefined ], [ 2, 2, undefined ]])
+    assert.deepEqual(game.field.fieldStructure, [[ 1, 1, 1 ], [ null, null, null ], [ 2, 2, null ]])
 })
 
 test('simple tic tac game diagonal 1', async () => {
@@ -81,9 +87,9 @@ test('simple tic tac game diagonal 1', async () => {
 
     await game.play()
 
-    assert.strictEqual(game.winner, 1)
+    assert.strictEqual(game.field.winner, 1)
 
-    assert.strictEqual(game.toString(), 'xo \nox \n  x')
+    assert.strictEqual(game.field.toString(), 'xo \nox \n  x')
 })
 
 test('simple tic tac game diagonal 2', async () => {
@@ -109,9 +115,9 @@ test('simple tic tac game diagonal 2', async () => {
 
     await game.play()
 
-    assert.strictEqual(game.winner, 1)
+    assert.strictEqual(game.field.winner, 1)
 
-    assert.strictEqual(game.toString(), ' ox\nox \nx  ')
+    assert.strictEqual(game.field.toString(), ' ox\nox \nx  ')
 })
 
 test('simple tic tac game error', async () => {
@@ -160,7 +166,7 @@ test('simple tic tac game draw', async () => {
 
     await game.play()
 
-    assert.strictEqual(game.winner, undefined)
-    assert.strictEqual(game.toString(), 'xxo\noxx\nxoo')
+    assert.strictEqual(game.field.winner, null)
+    assert.strictEqual(game.field.toString(), 'xxo\noxx\nxoo')
 })
 

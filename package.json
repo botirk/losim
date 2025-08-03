@@ -3,8 +3,7 @@
   "version": "1.0.0",
   "description": "Educatioanal bot coding",
   "scripts": {
-    "test": "node --test",
-    "cache": "node cache.ts"
+    "test": "node --test"
   },
   "author": "botirk",
   "license": "ISC",

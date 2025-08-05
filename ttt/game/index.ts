@@ -11,20 +11,25 @@ type Y = number
 
 export type Move = [ X, Y ]
 
+export type Player = (field: Readonly<Field>) => Move | Promise<Move>
+
+export interface State {
+    timeToWin: number
+    combosToWin: Readonly<Move[][]>
+}
+
 export class Field {
     private _startParent: Field
 
     private _turn: Turn = 1
     get turn(): Readonly<Turn> { return this._turn }
 
-    private _width: number
-    get width(): Readonly<number> { return this._startParent?.width ?? this._width }
-    private _height: number
-    get height(): Readonly<number> { return this._startParent?.height ?? this._height }
+    get width(): Readonly<number> { return this._fieldStructure[0].length }
+    get height(): Readonly<number> { return this._fieldStructure.length }
     private _winCombo: number
     get winCombo(): Readonly<number> { return this._startParent?.winCombo ?? this._winCombo }
 
-    _fieldStructure: FieldStructure
+    private _fieldStructure: FieldStructure
     get fieldStructure(): Readonly<FieldStructure> { return this._fieldStructure }
 
     private _full: boolean
@@ -38,14 +43,40 @@ export class Field {
     private _moveLog: Readonly<Move>[] = []
     get moveLog(): Readonly<Readonly<Move>[]> { return this._moveLog }
 
+    private _player1log: Readonly<Move>[] = []
+    get player1log(): Readonly<Readonly<Move>[]> { return this._player1log }
+
+    private _player2log: Readonly<Move>[] = []
+    get player2log(): Readonly<Readonly<Move>[]> { return this._player2log }
+
     init(width: Readonly<number> = 3, height: Readonly<number> = 3, winCombo: Readonly<number> = 3) {
         if (this._fieldStructure) throw new Error('already initiated')
-        if (width < 1 || height < 1 || !Number.isInteger(width) || !Number.isInteger(height)) throw new Error('invalid height/width')
+        if (width < 3 || height < 3 || !Number.isInteger(width) || !Number.isInteger(height)) throw new Error('invalid height/width')
         if (winCombo < 3 || !Number.isInteger(winCombo)) throw new Error('invalid winCombo')
-        this._width = width
-        this._height = height
         this._winCombo = winCombo
         this._fieldStructure = new Array(height).fill(new Array(width).fill(null))
+    }
+
+    initFromFieldStructure(fieldStructure: FieldStructure, winCombo: Readonly<number> = fieldStructure.length, turn: Turn = 1) {
+        if (this._fieldStructure) throw new Error('already initiated')
+        if (fieldStructure.length < 3 || fieldStructure[0].length < 3) throw new Error('invalid fieldStructure')
+        this._fieldStructure = fieldStructure
+        this._winCombo = winCombo
+        this._turn = turn
+        for (let y = 0; y < this.height; y += 1) {
+            for (let x = 0; x < this.width; x += 1) {
+                if (this._fieldStructure[x][y]) {
+                    const move: Move = [x, y]
+                    this._moveLog.push(move)
+                    if (this._fieldStructure[x][y] === 1) {
+                        this._player1log.push(move)
+                    } else {
+                        this._player2log.push(move)
+                    }
+                }
+                
+            }
+        }
     }
 
     private isValidMove(move: Readonly<Move>): boolean {
@@ -141,23 +172,39 @@ export class Field {
         newField._turn = (this._turn === 1 ? 2 : 1)
         return newField
     }
+
+    findFreeCenter(step: number = 0, center: Move = [Math.floor(this.width / 2), Math.floor(this.height / 2)]): Move {
+        if (step > Math.max(this.width / 2, this.height / 2)) throw new Error('full field')
+        if (!this._fieldStructure[center[0]][center[1]]) return center
+        for (let x = Math.max(0, center[0] - step); x <= center[0] + step && x < this.height; x += 1) {
+            for (let y = Math.max(0, center[1] - step); y <= center[1] + step && y < this.height; y += 1) {
+                if (!this._fieldStructure[center[0]][center[1]]) return [x, y]
+            }
+        }
+        return this.findFreeCenter(step + 1, center)
+    }
+
+    getState(turn: Turn): State {
+        if (this._full || this._winner) throw new Error('draw or winner exists')
+        throw new Error('todo')
+    }
 }
 
 export class Game {
     constructor(width = 3, height = 3, winCombo = 3, maxInvalidMoves = 1) {
         this._field = new Field()
         this._field.init(width, height, winCombo)
-        this.maxInvalidMoves = maxInvalidMoves
+        this._maxInvalidMoves = maxInvalidMoves
     }
     
     private _field: Field
     get field(): Readonly<Field> { return this._field }
     
-    private maxInvalidMoves: number
-    player1?: (field: Readonly<Field>) => Move | Promise<Move>
-    private player1InvalidMoves = 0
-    player2?: (field: Readonly<Field>) => Move | Promise<Move>
-    private player2InvalidMoves = 0
+    private _maxInvalidMoves: number
+    player1?: Player
+    private _player1InvalidMoves = 0
+    player2?: Player
+    private _player2InvalidMoves = 0
 
     canPlay() {
         return !this.field.winner && !this.field.full
@@ -167,28 +214,28 @@ export class Game {
         if (!this.canPlay()) throw new Error('game is over')
         if (this.field.turn == 1) {
             if (!this.player1) throw new Error('no player1')
-            if (this.player1InvalidMoves >= this.maxInvalidMoves) throw new Error('player1 max invalid moves')
+            if (this._player1InvalidMoves >= this._maxInvalidMoves) throw new Error('player1 max invalid moves')
             while (true) {
                 try {
                     const move = await this.player1(this.field)
                     this._field = this._field.move(move)
                     break
                 } catch {
-                    this.player1InvalidMoves += 1
-                    if (this.player1InvalidMoves >= this.maxInvalidMoves) throw new Error('player1 max invalid moves')
+                    this._player1InvalidMoves += 1
+                    if (this._player1InvalidMoves >= this._maxInvalidMoves) throw new Error('player1 max invalid moves')
                 }
             }
         } else {
             if (!this.player2) throw new Error('no player2')
-            if (this.player2InvalidMoves >= this.maxInvalidMoves) throw new Error('player2 max invalid moves')
+            if (this._player2InvalidMoves >= this._maxInvalidMoves) throw new Error('player2 max invalid moves')
             while (true) {
                 try {
                     const move = await this.player2(this.field)
                     this._field = this._field.move(move)
                     break
                 } catch {
-                    this.player2InvalidMoves += 1
-                    if (this.player2InvalidMoves >= this.maxInvalidMoves) throw new Error('player2 max invalid moves')
+                    this._player2InvalidMoves += 1
+                    if (this._player2InvalidMoves >= this._maxInvalidMoves) throw new Error('player2 max invalid moves')
                 }
             }
         }

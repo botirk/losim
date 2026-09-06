@@ -48,6 +48,11 @@ export class Wheel {
         return this._maxTime
     }
 
+    private _finished = false
+    get finished() {
+        return this._finished
+    }
+
     private sortedItems: WheelItem[] = []
     private setItems: Set<WheelItem> = new Set()
 
@@ -63,6 +68,7 @@ export class Wheel {
     }
 
     insert(item: WheelItem) {
+        this.checkFinished()
         item.checkChildOf(this)
         if (this.setItems.has(item)) throw new Error('Cant insert, item already exists')
 
@@ -85,6 +91,7 @@ export class Wheel {
     }
 
     remove(item: WheelItem) {
+        this.checkFinished()
         item.checkChildOf(this)
         if (!this.has(item)) return
 
@@ -106,7 +113,12 @@ export class Wheel {
         this.setItems.delete(item)
     }
 
+    checkFinished() {
+        if (this._finished) throw new Error('simulation is finished already')
+    }
+
     run() {
+        this.checkFinished()
         while (this.sortedItems[0]) {
             if (this._time >= this._maxTime) throw new Error('max time reached')
             const next = this.sortedItems[0]
@@ -115,6 +127,11 @@ export class Wheel {
             this.setItems.delete(next)
             next.proc?.()
         }
+        this._finished = true
+    }
+
+    isEmpty() {
+        return !this.sortedItems.length
     }
 }
 

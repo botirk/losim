@@ -26,6 +26,7 @@ test('wheelItem inserted & removed & reinserted & isActive & time', () => {
 test('multiple insert & run', () => {
     const wheel = new Wheel(10 * 10000)
 
+    assert.equal(wheel.finished, false)
     assert.equal(wheel.maxTime, 10 * 10000)
 
     const wItem1 = wheel.createItem(13)
@@ -69,4 +70,27 @@ test('multiple insert & run', () => {
     assert.equal(countMap.get(wItem2), 3)
     assert.equal(countMap.get(wItem3), 0)
     assert.equal(countMap.get(wItem4), 2)
+})
+
+test('multiple remove', () => {
+    const wheel = new Wheel(10 * 10000)
+
+    assert.equal(wheel.finished, false)
+    assert.equal(wheel.maxTime, 10 * 10000)
+
+    const wItem1 = wheel.createItem(13)
+    const wItem2 = wheel.createItem(14)
+    const wItem3 = wheel.createItem(12)
+    const wItem4 = wheel.createItem(14)
+
+    wItem1.reinsert()
+    wItem2.reinsert()
+    wItem3.reinsert()
+    wItem4.reinsert()
+    wItem1.remove()
+    wItem2.remove()
+    wItem3.remove()
+    wItem4.remove()
+
+    assert.equal(wheel.isEmpty(), true)
 })

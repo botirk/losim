@@ -3,12 +3,12 @@
   "version": "1.0.0",
   "description": "Educatioanal bot coding",
   "scripts": {
-    "test": "node --test"
+    "test": "node --test --experimental-test-coverage"
   },
   "author": "botirk",
   "license": "ISC",
   "type": "module",
   "devDependencies": {
-    "@types/node": "^24.1.0"
+    "@types/node": "^26.4.1"
   }
 }

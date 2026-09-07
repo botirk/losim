@@ -70,6 +70,11 @@ test('multiple insert & run', () => {
     assert.equal(countMap.get(wItem2), 3)
     assert.equal(countMap.get(wItem3), 0)
     assert.equal(countMap.get(wItem4), 2)
+
+    assert.equal(timeMap.get(wItem1), 13)
+    assert.equal(timeMap.get(wItem2), 14)
+    assert.equal(timeMap.get(wItem3), 12)
+    assert.equal(timeMap.get(wItem4), 14)
 })
 
 test('multiple remove', () => {
